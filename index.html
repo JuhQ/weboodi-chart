@@ -2,50 +2,105 @@
 
 <script src="chart.js"></script>
 
-<canvas id="myChart" width="400" height="200"></canvas>
+<canvas id="myChart" width="500" height="200"></canvas>
+<!-- <canvas id="myChart2" width="500" height="200"></canvas> -->
 <script>
 
 const data = [{"lyhenne":"A582103","kurssi":"Avoin yo: Ohjelmoinnin jatkokurssi","op":5,"cumulativeOp":5,"arvosana":5,"pvm":"11.05.2017","pvmDate":"2017-05-10T21:00:00.000Z"},{"lyhenne":"A581325","kurssi":"Avoin yo: Ohjelmoinnin perusteet","op":5,"cumulativeOp":10,"arvosana":4,"pvm":"11.05.2017","pvmDate":"2017-05-10T21:00:00.000Z"},{"lyhenne":"TKT10002","kurssi":"Ohjelmoinnin perusteet","op":5,"cumulativeOp":15,"arvosana":5,"pvm":"01.08.2017","pvmDate":"2017-07-31T21:00:00.000Z"},{"lyhenne":"TKT10003","kurssi":"Ohjelmoinnin jatkokurssi","op":5,"cumulativeOp":20,"arvosana":5,"pvm":"01.08.2017","pvmDate":"2017-07-31T21:00:00.000Z"},{"lyhenne":"A582104","kurssi":"Avoin yo: Ohjelmistotekniikan menetelmät","op":5,"cumulativeOp":25,"arvosana":2,"pvm":"23.08.2017","pvmDate":"2017-08-22T21:00:00.000Z"},{"lyhenne":"581328","kurssi":"Tietokantojen perusteet","op":5,"cumulativeOp":30,"arvosana":5,"pvm":"22.09.2017","pvmDate":"2017-09-21T21:00:00.000Z"},{"lyhenne":"DIGI-100A","kurssi":"Opiskelijan digitaidot: orientaatio (Kumpula)","op":2,"cumulativeOp":32,"arvosana":null,"pvm":"24.09.2017","pvmDate":"2017-09-23T21:00:00.000Z"},{"lyhenne":"TKT50003","kurssi":"Tietokone työvälineenä","op":1,"cumulativeOp":33,"arvosana":5,"pvm":"01.10.2017","pvmDate":"2017-09-30T21:00:00.000Z"},{"lyhenne":"TKT10001","kurssi":"Johdatus tietojenkäsittelytieteeseen","op":5,"cumulativeOp":38,"arvosana":5,"pvm":"15.12.2017","pvmDate":"2017-12-14T22:00:00.000Z"},{"lyhenne":"TKT20011","kurssi":"Aineopintojen harjoitustyö: Tietokantasovellus","op":4,"cumulativeOp":42,"arvosana":5,"pvm":"15.12.2017","pvmDate":"2017-12-14T22:00:00.000Z"},{"lyhenne":"MFK-M101A","kurssi":"Lukiomatematiikan kertaus","op":2,"cumulativeOp":44,"arvosana":null,"pvm":"18.12.2017","pvmDate":"2017-12-17T22:00:00.000Z"},{"lyhenne":"TKT21015","kurssi":"Versionhallinta","op":1,"cumulativeOp":45,"arvosana":null,"pvm":"19.12.2017","pvmDate":"2017-12-18T22:00:00.000Z"},{"lyhenne":"TKT20006","kurssi":"Ohjelmistotuotanto","op":6,"cumulativeOp":51,"arvosana":4,"pvm":"19.12.2017","pvmDate":"2017-12-18T22:00:00.000Z"},{"lyhenne":"KK-ENMALU","kurssi":"Academic and Professional Communication in English 1 & 2 (CEFR B2)","op":4,"cumulativeOp":55,"arvosana":null,"pvm":"29.01.2018","pvmDate":"2018-01-28T22:00:00.000Z"},{"lyhenne":"TKT20007","kurssi":"Ohjelmistotuotantoprojekti","op":10,"cumulativeOp":65,"arvosana":null,"pvm":"30.01.2018","pvmDate":"2018-01-29T22:00:00.000Z"},{"lyhenne":"610046","kurssi":"Johdatus mediakasvatukseen","op":3,"cumulativeOp":68,"arvosana":5,"pvm":"16.02.2018","pvmDate":"2018-02-15T22:00:00.000Z"},{"lyhenne":"DATA20003","kurssi":"Cloud Computing Fundamentals: AWS","op":5,"cumulativeOp":73,"arvosana":null,"pvm":"03.03.2018","pvmDate":"2018-03-02T22:00:00.000Z"},{"lyhenne":"TKT210091","kurssi":"Full Stack -websovelluskehitys, lisäosa","op":2,"cumulativeOp":75,"arvosana":null,"pvm":"10.03.2018","pvmDate":"2018-03-09T22:00:00.000Z"},{"lyhenne":"TKT21009","kurssi":"Full Stack -websovelluskehitys","op":5,"cumulativeOp":80,"arvosana":5,"pvm":"11.03.2018","pvmDate":"2018-03-10T22:00:00.000Z"},{"lyhenne":"KIK-LG208","kurssi":"Ohjelmointia lingvisteille","op":5,"cumulativeOp":85,"arvosana":5,"pvm":"12.03.2018","pvmDate":"2018-03-11T22:00:00.000Z"},{"lyhenne":"TKT21999","kurssi":"Valinnaisia aineopintoja","op":1,"cumulativeOp":86,"arvosana":null,"pvm":"31.03.2018","pvmDate":"2018-03-30T21:00:00.000Z"},{"lyhenne":"AY930031","kurssi":"Avoin yo: Johdatus taidehistorian opintoihin","op":2,"cumulativeOp":88,"arvosana":null,"pvm":"25.04.2018","pvmDate":"2018-04-24T21:00:00.000Z"},{"lyhenne":"TKT21014","kurssi":"Johdatus funktionaaliseen ohjelmointiin","op":5,"cumulativeOp":93,"arvosana":2,"pvm":"13.05.2018","pvmDate":"2018-05-12T21:00:00.000Z"},{"lyhenne":"CSM14207","kurssi":"Game Project Course","op":5,"cumulativeOp":98,"arvosana":4,"pvm":"17.05.2018","pvmDate":"2018-05-16T21:00:00.000Z"},{"lyhenne":"AYFYS4012","kurssi":"Avoin yo: Maailmankaikkeus nyt","op":3,"cumulativeOp":101,"arvosana":1,"pvm":"30.05.2018","pvmDate":"2018-05-29T21:00:00.000Z"},{"lyhenne":"TKT21010","kurssi":"Full Stack -websovelluskehitys harjoitustyö","op":10,"cumulativeOp":111,"arvosana":null,"pvm":"31.05.2018","pvmDate":"2018-05-30T21:00:00.000Z"},{"lyhenne":"MAT11001","kurssi":"Johdatus yliopistomatematiikkaan","op":5,"cumulativeOp":116,"arvosana":5,"pvm":"22.06.2018","pvmDate":"2018-06-21T21:00:00.000Z"},{"lyhenne":"AYTKT21018","kurssi":"Open uni: The Elements of AI","op":2,"cumulativeOp":118,"arvosana":null,"pvm":"31.07.2018","pvmDate":"2018-07-30T21:00:00.000Z"},{"lyhenne":"AYFYS4014","kurssi":"Avoin yo: Johdatus astrobiologiaan","op":3,"cumulativeOp":121,"arvosana":1,"pvm":"08.08.2018","pvmDate":"2018-08-07T21:00:00.000Z"}]
 
-console.log('data', data)
+const find = (list, key) => list.find(({pvm}) => pvm === key)
 
+const grouped = data.reduce((initial, item) => {
+  const found = find(initial, item.pvm)
+  if (!found) {
+    return [...initial, item]
+  }
 
-
-var ctx = document.getElementById("myChart");
-var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: data.map(({pvm}) => pvm),
-        datasets: [{
-            label: 'suoritukset',
-            data: data.map(({cumulativeOp}) => cumulativeOp),
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
+  return initial.map(jee => {
+    if (jee.pvm === item.pvm) {
+      return {
+        ...jee,
+        cumulativeOp: item.op + jee.cumulativeOp
+      }
     }
+
+    return jee
+  })
+}, [])
+
+const draw = ({id, labels, datasets}) => {
+  var ctx = document.getElementById(id);
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {labels, datasets},
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero:true
+          }
+        }]
+      }
+    }
+  });
+
+}
+
+
+draw({
+  id: "myChart",
+  labels: grouped.map(({ pvm }) => pvm),
+  datasets: [
+    {
+      label: "suoritukset groupattu päivien mukaan",
+      data: grouped.map(({ cumulativeOp }) => cumulativeOp),
+      backgroundColor: [
+        "rgba(255, 99, 132, 0.2)",
+        "rgba(54, 162, 235, 0.2)",
+        "rgba(255, 206, 86, 0.2)",
+        "rgba(75, 192, 192, 0.2)",
+        "rgba(153, 102, 255, 0.2)",
+        "rgba(255, 159, 64, 0.2)"
+      ],
+      borderColor: [
+        "rgba(255,99,132,1)",
+        "rgba(54, 162, 235, 1)",
+        "rgba(255, 206, 86, 1)",
+        "rgba(75, 192, 192, 1)",
+        "rgba(153, 102, 255, 1)",
+        "rgba(255, 159, 64, 1)"
+      ],
+      borderWidth: 1
+    }
+  ]
 });
+
+// draw({
+//   id: "myChart2",
+//   labels: data.map(({ pvm }) => pvm),
+//   datasets: [
+//     {
+//       label: "suoritukset ilman grouppausta",
+//       data: data.map(({ cumulativeOp }) => cumulativeOp),
+//       backgroundColor: [
+//         "rgba(255, 99, 132, 0.2)",
+//         "rgba(54, 162, 235, 0.2)",
+//         "rgba(255, 206, 86, 0.2)",
+//         "rgba(75, 192, 192, 0.2)",
+//         "rgba(153, 102, 255, 0.2)",
+//         "rgba(255, 159, 64, 0.2)"
+//       ],
+//       borderColor: [
+//         "rgba(255,99,132,1)",
+//         "rgba(54, 162, 235, 1)",
+//         "rgba(255, 206, 86, 1)",
+//         "rgba(75, 192, 192, 1)",
+//         "rgba(153, 102, 255, 1)",
+//         "rgba(255, 159, 64, 1)"
+//       ],
+//       borderWidth: 1
+//     }
+//   ]
+// });
+
 </script>
