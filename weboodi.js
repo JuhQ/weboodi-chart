@@ -71,7 +71,7 @@ const keskiarvot = stuff
     arvosanaTotal += item.arvosana;
     return {
       ...item,
-      keskiarvo: arvosanaTotal / (i + 1)
+      keskiarvo: (arvosanaTotal / (i + 1)).toFixed(2)
     };
   });
 
@@ -95,13 +95,14 @@ const luennoitsijat = stuff
       .filter(item => !isNaN(item.arvosana))
       .map(({ arvosana }) => arvosana);
 
+    const keskiarvo = arvosanat.reduce((a, b) => a + b, 0) / arvosanat.length;
+
     return {
       ...item,
       kurssimaara: luennot.length,
       luennot: {
         arvosanat,
-        keskiarvo:
-          arvosanat.reduce((a, b) => a + b, 0) / arvosanat.length || "hyv",
+        keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : "hyv",
         op: luennot.map(({ op }) => op),
         totalOp: luennot.map(({ op }) => op).reduce((a, b) => a + b, 0)
       }
