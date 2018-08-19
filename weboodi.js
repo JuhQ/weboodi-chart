@@ -10,7 +10,7 @@ const stuff = [...list]
   .map(item => item.map(value => value.textContent.trim()))
   .filter(([lyhenne]) => !["A582103", "A581325"].includes(lyhenne))
   .reverse()
-  .map(([lyhenne, kurssi, op, arvosana, pvm]) => {
+  .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => {
     const [paiva, kuukausi, vuosi] = pvm.split(".");
     const opNumber = Number(op);
 
@@ -23,13 +23,15 @@ const stuff = [...list]
       cumulativeOp,
       arvosana: Number(arvosana),
       pvm,
-      pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva)
+      pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva),
+      luennoitsija
     };
   });
 
 const yolo = `
 <canvas id="chart-op" width="500" height="200"></canvas>
 <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
+<div id="luennoitsijat"></div>
 `;
 
 const listaTaulukko = document.querySelectorAll("table")[1];
@@ -71,6 +73,64 @@ const keskiarvot = stuff
       ...item,
       keskiarvo: arvosanaTotal / (i + 1)
     };
+  });
+
+const luennoitsijat = stuff
+  .reduce(
+    (initial, item) => [
+      ...initial,
+      ...item.luennoitsija
+        .split(",")
+        .map(luennoitsija => luennoitsija.trim())
+        .filter(luennoitsija => luennoitsija.length)
+        .map(luennoitsija => ({ ...item, luennoitsija }))
+    ],
+    []
+  )
+  .map((item, i, arr) => {
+    const luennot = arr.filter(
+      ({ luennoitsija }) => luennoitsija === item.luennoitsija
+    );
+    const arvosanat = luennot
+      .filter(item => !isNaN(item.arvosana))
+      .map(({ arvosana }) => arvosana);
+
+    return {
+      ...item,
+      kurssimaara: luennot.length,
+      luennot: {
+        arvosanat,
+        keskiarvo:
+          arvosanat.reduce((a, b) => a + b, 0) / arvosanat.length || "hyv",
+        op: luennot.map(({ op }) => op),
+        totalOp: luennot.map(({ op }) => op).reduce((a, b) => a + b, 0)
+      }
+    };
+  })
+  .sort((a, b) => b.kurssimaara - a.kurssimaara)
+  .reduce(
+    (initial, item) =>
+      initial.find(({ luennoitsija }) => luennoitsija === item.luennoitsija)
+        ? initial
+        : [...initial, item],
+    []
+  );
+
+const luennoitsijatElement = document.querySelector("#luennoitsijat");
+
+luennoitsijatElement.innerHTML =
+  luennoitsijatElement.innerHTML +
+  "<p><strong>Luennoitsijoiden top lista</strong></p>";
+
+const drawLuennoitsijat = () =>
+  luennoitsijat.forEach(item => {
+    const wadap = `<p>
+    ${item.luennoitsija},
+    kursseja ${item.kurssimaara},
+    keskiarvo: ${item.luennot.keskiarvo},
+    noppia: ${item.luennot.totalOp}
+    </p>`;
+    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + wadap;
   });
 
 const draw = ({
@@ -166,3 +226,5 @@ draw({
     }
   ]
 });
+
+drawLuennoitsijat();
