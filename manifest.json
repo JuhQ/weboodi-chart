@@ -1,0 +1,17 @@
+{
+    "name": "weboodi charts",
+    "version": "1.0",
+    "manifest_version": 2,
+    "description": "op chart for weboodi",
+    "permissions": [
+      "tabs"
+    ],
+    "content_scripts": [{
+        "js": [
+            "chart.js",
+            "weboodi.js"
+        ],
+        "run_at": "document_end",
+        "matches": ["https://weboodi.helsinki.fi/hy/omatopinn.jsp?*"]
+    }]
+}
