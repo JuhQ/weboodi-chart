@@ -240,7 +240,11 @@ drawLuennoitsijat({
   lista: [
     ...luennoitsijat
       .filter(({ luennot }) => luennot.keskiarvo !== "hyv")
-      .sort((a, b) => b.luennot.keskiarvo - a.luennot.keskiarvo),
+      .sort(
+        (a, b) =>
+          b.luennot.keskiarvo - a.luennot.keskiarvo ||
+          b.kurssimaara - a.kurssimaara
+      ),
     ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === "hyv")
   ]
 });
