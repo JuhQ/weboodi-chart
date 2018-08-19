@@ -236,12 +236,12 @@ drawLuennoitsijat({
 
 drawLuennoitsijat({
   title: "Luennoitsijoiden top lista by keskiarvo",
-  lista: luennoitsijat.sort(
-    (a, b) =>
-      [a.luennot.keskiarvo, b.luennot.keskiarvo].includes("hyv")
-        ? 10000000
-        : b.luennot.keskiarvo - a.luennot.keskiarvo
-  )
+  lista: [
+    ...luennoitsijat
+      .filter(({ luennot }) => luennot.keskiarvo !== "hyv")
+      .sort((a, b) => b.luennot.keskiarvo - a.luennot.keskiarvo),
+    ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === "hyv")
+  ]
 });
 
 drawLuennoitsijat({
