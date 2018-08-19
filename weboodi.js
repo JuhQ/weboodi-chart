@@ -2,29 +2,29 @@ const list = document.querySelectorAll(
   "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
 );
 
-const mm = [...list];
-
 let cumulativeOp = 0;
 
-shit = mm
+stuff = [...list]
   .map(item => [...item.querySelectorAll("td")])
   .filter(item => item.length)
+  .map(item => item.map(value => value.textContent.trim()))
+  .filter(([lyhenne]) => !["A582103", "A581325"].includes(lyhenne))
   .reverse()
   .map(([lyhenne, kurssi, op, arvosana, pvm]) => {
-    const [paiva, kuukausi, vuosi] = pvm.textContent.trim().split(".");
-    const opNumber = Number(op.textContent.trim());
+    const [paiva, kuukausi, vuosi] = pvm.split(".");
+    const opNumber = Number(op);
 
     cumulativeOp += opNumber;
 
     return {
-      lyhenne: lyhenne.textContent.trim(),
-      kurssi: kurssi.textContent.trim(),
+      lyhenne,
+      kurssi,
       op: opNumber,
       cumulativeOp,
-      arvosana: Number(arvosana.textContent.trim()),
-      pvm: pvm.textContent.trim(),
+      arvosana: Number(arvosana),
+      pvm,
       pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva)
     };
   });
 
-JSON.stringify(shit);
+JSON.stringify(stuff);
