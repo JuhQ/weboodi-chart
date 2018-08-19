@@ -31,7 +31,7 @@ const stuff = [...list]
 const yolo = `
 <canvas id="chart-op" width="500" height="200"></canvas>
 <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
-<div id="luennoitsijat"></div>
+<div id="luennoitsijat" style="clear:both;display:inline-block;margin-bottom:100px;"></div>
 `;
 
 const listaTaulukko = document.querySelectorAll("table")[1];
@@ -107,7 +107,7 @@ const luennoitsijat = stuff
       }
     };
   })
-  .sort((a, b) => b.kurssimaara - a.kurssimaara)
+
   .reduce(
     (initial, item) =>
       initial.find(({ luennoitsija }) => luennoitsija === item.luennoitsija)
@@ -118,20 +118,22 @@ const luennoitsijat = stuff
 
 const luennoitsijatElement = document.querySelector("#luennoitsijat");
 
-luennoitsijatElement.innerHTML =
-  luennoitsijatElement.innerHTML +
-  "<p><strong>Luennoitsijoiden top lista</strong></p>";
+const drawLuennoitsijat = ({ title, lista }) => {
+  let html = `<div style="float: left; margin-right: 10px;"><p><strong>${title}</strong></p>`;
 
-const drawLuennoitsijat = () =>
-  luennoitsijat.forEach(item => {
+  lista.forEach(item => {
     const wadap = `<p>
     ${item.luennoitsija},
     kursseja ${item.kurssimaara},
     keskiarvo: ${item.luennot.keskiarvo},
     noppia: ${item.luennot.totalOp}
     </p>`;
-    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + wadap;
+    html += wadap;
   });
+
+  html += "</div>";
+  luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+};
 
 const draw = ({
   id,
@@ -227,4 +229,17 @@ draw({
   ]
 });
 
-drawLuennoitsijat();
+drawLuennoitsijat({
+  title: "Luennoitsijoiden top lista by kurssimaara",
+  lista: luennoitsijat.sort((a, b) => b.kurssimaara - a.kurssimaara)
+});
+
+drawLuennoitsijat({
+  title: "Luennoitsijoiden top lista by keskiarvo",
+  lista: luennoitsijat.sort((a, b) => b.luennot.keskiarvo - a.luennot.keskiarvo)
+});
+
+drawLuennoitsijat({
+  title: "Luennoitsijoiden top lista by nopat",
+  lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp)
+});
