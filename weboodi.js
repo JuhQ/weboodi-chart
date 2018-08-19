@@ -27,7 +27,10 @@ const stuff = [...list]
     };
   });
 
-const yolo = '<canvas id="chart" width="500" height="200"></canvas>';
+const yolo = `
+<canvas id="chart-op" width="500" height="200"></canvas>
+<canvas id="chart-keskiarvo" width="500" height="200"></canvas>
+`;
 
 const listaTaulukko = document.querySelectorAll("table")[1];
 listaTaulukko.outerHTML = listaTaulukko.outerHTML + yolo;
@@ -58,28 +61,48 @@ const grouped = stuff
   }, [])
   .map(item => ({ ...item, op: item.op * 10 }));
 
-const draw = ({ id, labels, datasets }) => {
+let arvosanaTotal = 0;
+
+const keskiarvot = stuff
+  .filter(item => !isNaN(item.arvosana))
+  .map((item, i) => {
+    arvosanaTotal += item.arvosana;
+    return {
+      ...item,
+      keskiarvo: arvosanaTotal / (i + 1)
+    };
+  });
+
+const draw = ({
+  id,
+  labels,
+  datasets,
+  type = "bar",
+  customTooltip = false
+}) => {
+  const tooltip = {
+    tooltips: {
+      callbacks: {
+        label: function(tooltipItem, data) {
+          const label = data.datasets[tooltipItem.datasetIndex].label || "";
+
+          const value = Math.round(tooltipItem.yLabel * 100) / 100;
+
+          // datasetIndex = bar chart, values are multiplied by ten to show larger bars
+          const labelValue = tooltipItem.datasetIndex ? value : value / 10;
+
+          return `${label}: ${labelValue}`;
+        }
+      }
+    }
+  };
+
   var ctx = document.getElementById(id);
   var chart = new Chart(ctx, {
-    type: "bar",
+    type,
     data: { labels, datasets },
     options: {
-      tooltips: {
-        callbacks: {
-          label: function(tooltipItem, data) {
-            console.log("tooltip", tooltipItem);
-
-            const label = data.datasets[tooltipItem.datasetIndex].label || "";
-
-            const value = Math.round(tooltipItem.yLabel * 100) / 100;
-
-            // datasetIndex = bar chart, values are multiplied by ten to show larger bars
-            const labelValue = tooltipItem.datasetIndex ? value : value / 10;
-
-            return `${label}: ${labelValue}`;
-          }
-        }
-      },
+      ...(customTooltip && tooltip),
       scales: {
         yAxes: [
           {
@@ -114,7 +137,8 @@ const style = {
 };
 
 draw({
-  id: "chart",
+  id: "chart-op",
+  customTooltip: true,
   labels: grouped.map(({ pvm }) => pvm),
   datasets: [
     {
@@ -126,6 +150,19 @@ draw({
       data: grouped.map(({ cumulativeOp }) => cumulativeOp),
       ...style,
       type: "line"
+    }
+  ]
+});
+
+draw({
+  id: "chart-keskiarvo",
+  labels: keskiarvot.map(({ pvm }) => pvm),
+  type: "line",
+  datasets: [
+    {
+      label: "Päivän keskiarvo",
+      data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
+      ...style
     }
   ]
 });
