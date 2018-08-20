@@ -108,7 +108,6 @@ const luennoitsijat = stuff
       }
     };
   })
-
   .reduce(
     (initial, item) =>
       initial.find(({ luennoitsija }) => luennoitsija === item.luennoitsija)
@@ -119,20 +118,21 @@ const luennoitsijat = stuff
 
 const luennoitsijatElement = document.querySelector("#luennoitsijat");
 
-const drawLuennoitsijat = ({ title, lista }) => {
-  let html = `<div style="float: left; margin-right: 10px;"><p><strong>${title}</strong></p>`;
-
-  lista.forEach(item => {
-    const wadap = `<p>
-    ${item.luennoitsija},
-    kursseja ${item.kurssimaara},
-    keskiarvo: ${item.luennot.keskiarvo},
-    noppia: ${item.luennot.totalOp}
+const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
+    ${luennoitsija},
+    kursseja ${kurssimaara},
+    keskiarvo: ${luennot.keskiarvo},
+    noppia: ${luennot.totalOp}
     </p>`;
-    html += wadap;
-  });
 
-  html += "</div>";
+const drawLuennoitsijat = ({ title, lista }) => {
+  const html = `
+    <div style="float: left; margin-right: 10px;">
+      <p><strong>${title}</strong></p>
+      ${lista.map(createLuennoitsijaRivi).join("")}
+    </div>
+  `;
+
   luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
 };
 
