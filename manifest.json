@@ -12,6 +12,6 @@
             "weboodi.js"
         ],
         "run_at": "document_end",
-        "matches": ["https://weboodi.helsinki.fi/hy/omatopinn.jsp?*"]
+        "matches": ["https://weboodi.helsinki.fi/hy/omatopinn.jsp?NaytSuor=1"]
     }]
 }
