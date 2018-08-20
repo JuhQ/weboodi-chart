@@ -136,12 +136,15 @@ const drawLuennoitsijat = ({ title, lista }) => {
   luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
 };
 
+const getMax = lista => Math.max.apply(null, lista);
+
 const draw = ({
   id,
   labels,
   datasets,
   type = "bar",
-  customTooltip = false
+  customTooltip = false,
+  customTicks = false
 }) => {
   const tooltip = {
     tooltips: {
@@ -169,8 +172,27 @@ const draw = ({
       scales: {
         yAxes: [
           {
+            ...(customTicks && {
+              gridLines: {
+                drawBorder: false,
+                color: [
+                  "pink",
+                  "red",
+                  "orange",
+                  "yellow",
+                  "green",
+                  "blue",
+                  "indigo",
+                  "purple"
+                ]
+              }
+            }),
             ticks: {
-              beginAtZero: true
+              beginAtZero: true,
+              ...(customTicks && {
+                max: getMax(datasets.map(({ data }) => getMax(data))) + 20,
+                stepSize: 55
+              })
             }
           }
         ]
@@ -202,6 +224,7 @@ const style = {
 draw({
   id: "chart-op",
   customTooltip: true,
+  customTicks: true,
   labels: grouped.map(({ pvm }) => pvm),
   datasets: [
     {
