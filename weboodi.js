@@ -223,7 +223,7 @@ draw({
   type: "line",
   datasets: [
     {
-      label: "Päivän keskiarvo",
+      label: "Arvosanojen päivittäinen keskiarvo",
       data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
       ...style
     }
