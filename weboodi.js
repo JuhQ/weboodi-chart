@@ -4,11 +4,13 @@ const list = document.querySelectorAll(
 
 let cumulativeOp = 0;
 
+const duplikaattiKurssit = ["A582103", "A581325"];
+
 const stuff = [...list]
   .map(item => [...item.querySelectorAll("td")])
   .filter(item => item.length)
   .map(item => item.map(value => value.textContent.trim()))
-  .filter(([lyhenne]) => !["A582103", "A581325"].includes(lyhenne))
+  .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
   .reverse()
   .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => {
     const [paiva, kuukausi, vuosi] = pvm.split(".");
@@ -23,7 +25,7 @@ const stuff = [...list]
       cumulativeOp,
       arvosana: Number(arvosana),
       pvm,
-      pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva),
+      pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva), // not used anywhere yet
       luennoitsija
     };
   });
@@ -56,7 +58,7 @@ const grouped = stuff
           : null;
 
       return {
-        ...jee,
+        ...jee, // 💩👌
         ...today
       };
     });
