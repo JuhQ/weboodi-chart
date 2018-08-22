@@ -2,11 +2,22 @@ const list = document.querySelectorAll(
   "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
 );
 
-const getDuplikaattiKurssit = () =>
-  JSON.parse(localStorage.getItem("duplikaattiKurssit") || "[]");
+const getLocalStorage = key => JSON.parse(localStorage.getItem(key) || "[]");
+const setLocalStorage = (key, value) =>
+  localStorage.setItem(key, JSON.stringify(value));
+
+const getDuplikaattiKurssit = () => getLocalStorage("duplikaattiKurssit");
 
 const setDuplikaattiKurssit = kurssit =>
-  localStorage.setItem("duplikaattiKurssit", JSON.stringify(kurssit));
+  setLocalStorage("duplikaattiKurssit", kurssit);
+
+const getPerusOpinnot = () => getLocalStorage("perusOpinnot");
+
+const setPerusOpinnot = kurssit => setLocalStorage("perusOpinnot", kurssit);
+
+const getAineOpinnot = () => getLocalStorage("aineOpinnot");
+
+const setAineOpinnot = kurssit => setLocalStorage("aineOpinnot", kurssit);
 
 const getMax = lista => Math.max.apply(null, lista);
 
@@ -75,6 +86,20 @@ const draw = ({
   });
 };
 
+const drawPie = ({ id, labels, datasets, backgroundColor }) => {
+  document.getElementById(`${id}-container`).style.display = "block";
+
+  var ctx = document.getElementById(id);
+  const myPieChart = new Chart(ctx, {
+    type: "pie",
+    // data: { labels, datasets }
+    data: {
+      datasets: [{ data: datasets, backgroundColor }],
+      labels
+    }
+  });
+};
+
 const style = {
   backgroundColor: [
     "rgba(255, 99, 132, 0.2)",
@@ -95,19 +120,45 @@ const style = {
   borderWidth: 1
 };
 
-const createDom = ({ duplikaattiKurssit }) => {
+const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
   const yolo = `
   <div id="nuggets" style="margin-bottom:100px;">
-    <canvas id="chart-op" width="500" height="200"></canvas>
+    <div id="perusopinnot-container" style="display:none;">
+      Perusopinnot
+      <canvas id="perusopinnot" width="500" height="200"></canvas>
+    </div>
+    <div id="aineopinnot-container" style="display:none;">
+      Aineopinnot
+      <canvas id="aineopinnot" width="500" height="100"></canvas>
+    </div>
+    <canvas id="chart-nopat" width="500" height="200"></canvas>
     <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
     <div id="luennoitsijat" style="clear:both;display:inline-block;margin-bottom:100px;"></div>
     <div id="tools">
-      <label>
-        Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: 'A582103,A581325'<br/>
-        <input type="text" name="duplikaattiKurssit" value="${duplikaattiKurssit}" />
-      </label>
+      <p>
+        <label style="margin-bottom:30px;">
+          Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: 'A582103,A581325'<br/>
+          <input type="text" name="duplikaattiKurssit" value="${duplikaattiKurssit}" />
+        </label>
+      </p>
 
-      <button id="kliketi-klik">Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen</button>
+      <p>
+        <label style="margin-bottom:30px;">
+          Merkkaa tähän inputtiin pilkulla erottaen perusopintokurssisi pääaineesta, kas näin vaikkapa: 'A582103,A581325'<br/>
+          <input type="text" name="perusOpinnot" value="${perusOpinnot}" />
+        </label>
+      </p>
+
+      <p>
+        <label style="margin-bottom:30px;">
+          Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: 'A582103,A581325'<br/>
+          <input type="text" name="aineOpinnot" value="${aineOpinnot}" />
+        </label>
+      </p>
+
+      <p>
+        <button id="kliketi-klik">Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen</button>
+      </p>
     </div>
   </div>
   `;
@@ -121,11 +172,29 @@ const createDom = ({ duplikaattiKurssit }) => {
   }
 };
 
+const createCoursesArray = target => target.value.split(",").map(k => k.trim());
+
 const kuunteleDuplikaattiInputtia = () => {
   const input = document.querySelector("input[name='duplikaattiKurssit']");
 
   input.addEventListener("input", ({ target }) => {
-    setDuplikaattiKurssit(target.value.split(",").map(k => k.trim()));
+    setDuplikaattiKurssit(createCoursesArray(target));
+  });
+};
+
+const kuunteleppaNiitäPerusopintoja = () => {
+  const input = document.querySelector("input[name='perusOpinnot']");
+
+  input.addEventListener("input", ({ target }) => {
+    setPerusOpinnot(createCoursesArray(target));
+  });
+};
+
+const tahtoisinVaanKuunnellaAineopintoja = () => {
+  const input = document.querySelector("input[name='aineOpinnot']");
+
+  input.addEventListener("input", ({ target }) => {
+    setAineOpinnot(createCoursesArray(target));
   });
 };
 
@@ -200,21 +269,8 @@ const annaMulleKeskiarvotKursseista = stuff => {
   });
 };
 
-// tästä tää lähtee!
-const start = () => {
-  const duplikaattiKurssit = getDuplikaattiKurssit();
-
-  createDom({ duplikaattiKurssit });
-  kuunteleDuplikaattiInputtia();
-  kuunteleppaNapinpainalluksiaJuu();
-
-  const stuff = makeSomeStuff({ list, duplikaattiKurssit });
-
-  const grouped = groupThemCourses(stuff);
-
-  const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
-
-  const luennoitsijat = stuff
+const haluaisinTietääLuennoitsijoista = stuff =>
+  stuff
     .reduce(
       (initial, item) => [
         ...initial,
@@ -255,32 +311,76 @@ const start = () => {
       []
     );
 
-  const luennoitsijatElement = document.querySelector("#luennoitsijat");
-
-  const createLuennoitsijaRivi = ({
-    luennoitsija,
-    kurssimaara,
-    luennot
-  }) => `<p>
+const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
     ${luennoitsija},
     kursseja ${kurssimaara},
     keskiarvo: ${luennot.keskiarvo},
     noppia: ${luennot.totalOp}
     </p>`;
 
-  const drawLuennoitsijat = ({ title, lista }) => {
-    const html = `
+const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
+  const html = `
     <div style="float: left; margin-right: 10px;">
       <p><strong>${title}</strong></p>
       ${lista.map(createLuennoitsijaRivi).join("")}
     </div>
   `;
 
-    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
-  };
+  luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+};
+
+const drawOpintoDonitsi = ({ id, stuff, data }) => {
+  const opintoData = [
+    ...stuff
+      .filter(({ lyhenne }) => data.includes(lyhenne))
+      .map(({ lyhenne }) => ({ lyhenne, done: true })),
+    ...data
+      .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
+      .map(lyhenne => ({ lyhenne, done: false }))
+  ];
+
+  drawPie({
+    id,
+    labels: opintoData.map(({ lyhenne }) => lyhenne),
+    datasets: opintoData.map(() => (1 / opintoData.length) * 100),
+    backgroundColor: opintoData.map(
+      ({ done }) => (done ? "lightgreen" : "lightgray")
+    )
+  });
+};
+
+// tästä tää lähtee!
+const start = () => {
+  const duplikaattiKurssit = getDuplikaattiKurssit();
+  const aineOpinnot = getAineOpinnot();
+  const perusOpinnot = getPerusOpinnot();
+
+  createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
+  kuunteleDuplikaattiInputtia();
+  kuunteleppaNiitäPerusopintoja();
+  tahtoisinVaanKuunnellaAineopintoja();
+  kuunteleppaNapinpainalluksiaJuu();
+
+  const stuff = makeSomeStuff({ list, duplikaattiKurssit });
+
+  const grouped = groupThemCourses(stuff);
+
+  const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
+
+  const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
+
+  const luennoitsijatElement = document.querySelector("#luennoitsijat");
+
+  if (aineOpinnot.length) {
+    drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
+  }
+
+  if (perusOpinnot.length) {
+    drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
+  }
 
   draw({
-    id: "chart-op",
+    id: "chart-nopat",
     customTooltip: true,
     customTicks: true,
     labels: grouped.map(({ pvm }) => pvm),
@@ -313,7 +413,8 @@ const start = () => {
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by kurssimaara",
-    lista: luennoitsijat.sort((a, b) => b.kurssimaara - a.kurssimaara)
+    lista: luennoitsijat.sort((a, b) => b.kurssimaara - a.kurssimaara),
+    luennoitsijatElement
   });
 
   drawLuennoitsijat({
@@ -327,12 +428,14 @@ const start = () => {
             b.kurssimaara - a.kurssimaara
         ),
       ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === "hyv")
-    ]
+    ],
+    luennoitsijatElement
   });
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by nopat",
-    lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp)
+    lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
+    luennoitsijatElement
   });
 };
 
