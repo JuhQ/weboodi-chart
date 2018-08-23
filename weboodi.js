@@ -92,7 +92,6 @@ const drawPie = ({ id, labels, datasets, backgroundColor }) => {
   var ctx = document.getElementById(id);
   const myPieChart = new Chart(ctx, {
     type: "pie",
-    // data: { labels, datasets }
     data: {
       datasets: [{ data: datasets, backgroundColor }],
       labels
@@ -120,38 +119,65 @@ const style = {
   borderWidth: 1
 };
 
+const doCss = () => {
+  return `
+  <style>
+    #luennoitsijat {
+      clear: both;
+      display: inline-block;
+      margin-bottom: 100px;
+    }
+
+    .clear {
+      clear: both;
+      display: table;
+    }
+
+    .pull-left {
+      float: left;
+    }
+
+    .margin-bottom-large {
+      margin-bottom: 100px;
+    }
+  </style>
+  `;
+};
+
 const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
   const yolo = `
-  <div id="nuggets" style="margin-bottom:100px;">
-    <div id="perusopinnot-container" style="display:none;">
-      Perusopinnot
-      <canvas id="perusopinnot" width="500" height="200"></canvas>
-    </div>
-    <div id="aineopinnot-container" style="display:none;">
-      Aineopinnot
-      <canvas id="aineopinnot" width="500" height="100"></canvas>
+  <div id="nuggets" class="margin-bottom-large">
+    <div class="clear margin-bottom-large">
+      <div id="perusopinnot-container" class="pull-left" style="display:none;">
+        Perusopinnot
+        <canvas id="perusopinnot" width="500" height="200"></canvas>
+      </div>
+      <div id="aineopinnot-container" class="pull-left" style="display:none;">
+        Aineopinnot
+        <canvas id="aineopinnot" width="500" height="200"></canvas>
+      </div>
     </div>
     <canvas id="chart-nopat" width="500" height="200"></canvas>
     <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
-    <div id="luennoitsijat" style="clear:both;display:inline-block;margin-bottom:100px;"></div>
+    <div id="luennoitsijat"></div>
     <div id="tools">
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: 'A582103,A581325'<br/>
+          Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: A582103,A581325<br/>
           <input type="text" name="duplikaattiKurssit" value="${duplikaattiKurssit}" />
         </label>
       </p>
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen perusopintokurssisi pääaineesta, kas näin vaikkapa: 'A582103,A581325'<br/>
+          Merkkaa tähän inputtiin pilkulla erottaen perusopintokurssisi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
           <input type="text" name="perusOpinnot" value="${perusOpinnot}" />
         </label>
       </p>
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: 'A582103,A581325'<br/>
+          Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
           <input type="text" name="aineOpinnot" value="${aineOpinnot}" />
         </label>
       </p>
@@ -168,7 +194,7 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
   if (nuggetsExist) {
     nuggetsExist.outerHTML = yolo;
   } else {
-    listaTaulukko.outerHTML = listaTaulukko.outerHTML + yolo;
+    listaTaulukko.outerHTML = listaTaulukko.outerHTML + doCss() + yolo;
   }
 };
 
