@@ -172,7 +172,7 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
     <canvas id="chart-nopat" width="500" height="200"></canvas>
     <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
     <div id="luennoitsijat"></div>
-    <div id="tools">
+    <div id="tools" class="margin-bottom-large">
       <p>
         <label style="margin-bottom:30px;">
           Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: A582103,A581325<br/>
@@ -200,6 +200,12 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
         </button>
       </p>
     </div>
+
+    <p>
+      Haluatko lisätoiminnallisuutta tähän plugariin? Löysitkö virheen?<br>
+      Mikäli olet tkt opiskelija, <a href="https://github.com/JuhQ/weboodi-chart">tee pull request</a>.<br>
+      Mikäli opiskelet jotain muuta, laita mailia juha.tauriainen@helsinki.fi
+    </p>
   </div>
   `;
 
