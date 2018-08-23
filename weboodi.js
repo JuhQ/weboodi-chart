@@ -119,6 +119,18 @@ const style = {
   borderWidth: 1
 };
 
+const styleBlue = {
+  backgroundColor: ["rgba(118, 99, 255, 0.2)"],
+  borderColor: ["rgba(118,99,132,1)"],
+  borderWidth: 1
+};
+
+const styleGreen = {
+  backgroundColor: ["rgba(99, 255, 157, 0.2)"],
+  borderColor: ["rgba(99,99,132,1)"],
+  borderWidth: 1
+};
+
 const doCss = () => {
   return `
   <style>
@@ -183,7 +195,9 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
       </p>
 
       <p>
-        <button id="kliketi-klik">Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen</button>
+        <button id="kliketi-klik">
+          Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen
+        </button>
       </p>
     </div>
   </div>
@@ -295,6 +309,21 @@ const annaMulleKeskiarvotKursseista = stuff => {
   });
 };
 
+const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) => {
+  let arvosanaTotal = 0;
+
+  return stuff
+    .filter(item => !isNaN(item.arvosana))
+    .filter(({ lyhenne }) => kurssit.includes(lyhenne))
+    .map((item, i) => {
+      arvosanaTotal += item.arvosana;
+      return {
+        ...item,
+        keskiarvo: (arvosanaTotal / (i + 1)).toFixed(2)
+      };
+    });
+};
+
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
     .reduce(
@@ -375,6 +404,21 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   });
 };
 
+const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
+  keskiarvot,
+  opinnot
+}) =>
+  keskiarvot.reduce((initial, item) => {
+    const jeejee = opinnot.find(({ lyhenne }) => lyhenne === item.lyhenne);
+    if (jeejee) {
+      return [...initial, { ...jeejee, fromOpinnot: true }];
+    }
+
+    const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
+
+    return [...initial, !mitäs ? item : mitäs];
+  }, []);
+
 // tästä tää lähtee!
 const start = () => {
   const duplikaattiKurssit = getDuplikaattiKurssit();
@@ -392,6 +436,26 @@ const start = () => {
   const grouped = groupThemCourses(stuff);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
+
+  const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
+    {
+      keskiarvot,
+      opinnot: annaMulleKeskiarvotTietyistäKursseista({
+        kurssit: perusOpinnot,
+        stuff
+      })
+    }
+  );
+
+  const keskiarvotAineopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
+    {
+      keskiarvot,
+      opinnot: annaMulleKeskiarvotTietyistäKursseista({
+        kurssit: aineOpinnot,
+        stuff
+      })
+    }
+  );
 
   const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
 
@@ -430,9 +494,19 @@ const start = () => {
     type: "line",
     datasets: [
       {
-        label: "Arvosanojen päivittäinen keskiarvo",
+        label: "Arvosanojen päivittäinen keskiarvo kaikista kursseista",
         data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
         ...style
+      },
+      {
+        label: "Arvosanojen päivittäinen keskiarvo perusopinnoista",
+        data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
+        ...styleBlue
+      },
+      {
+        label: "Arvosanojen päivittäinen keskiarvo aineopinnoista",
+        data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
+        ...styleGreen
       }
     ]
   });
