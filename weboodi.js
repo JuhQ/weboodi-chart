@@ -15,6 +15,17 @@ const max = lista => Math.max(...lista);
 
 const findPvm = (list, key) => list.find(({ pvm }) => pvm === key);
 
+const chartColors = [
+  "pink",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "indigo",
+  "purple"
+];
+
 const teeHienoTooltip = () => ({
   tooltips: {
     callbacks: {
@@ -51,16 +62,7 @@ const draw = ({
             ...(customTicks && {
               gridLines: {
                 drawBorder: false,
-                color: [
-                  "pink",
-                  "red",
-                  "orange",
-                  "yellow",
-                  "green",
-                  "blue",
-                  "indigo",
-                  "purple"
-                ]
+                color: chartColors
               }
             }),
             ticks: {
@@ -336,7 +338,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
         ...item.luennoitsija
           .split(",")
           .map(luennoitsija => luennoitsija.trim())
-          .filter(luennoitsija => luennoitsija.length)
+          .filter(notEmpty)
           .map(luennoitsija => ({ ...item, luennoitsija }))
       ],
       []
@@ -438,6 +440,45 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   }, []);
 };
 
+const isTruthy = v => v;
+
+const rakenteleDataSetitKeskiarvoChartille = ({
+  keskiarvot,
+  keskiarvotPerusopinnoista,
+  keskiarvotAineopinnoista
+}) =>
+  [
+    {
+      label: "Päivittäinen keskiarvo kaikista kursseista",
+      data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
+      ...style
+    },
+    notEmpty(keskiarvotPerusopinnoista) && {
+      label: "Päivittäinen keskiarvo perusopinnoista",
+      data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
+      ...styleBlue
+    },
+    notEmpty(keskiarvotAineopinnoista) && {
+      label: "Päivittäinen keskiarvo aineopinnoista",
+      data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
+      ...styleGreen
+    }
+  ].filter(isTruthy);
+
+const rakenteleDataSetitNoppaChartille = grouped =>
+  [
+    {
+      label: "Päivän opintopisteet",
+      data: grouped.map(({ op }) => op)
+    },
+    {
+      label: "Suoritukset",
+      data: grouped.map(({ cumulativeOp }) => cumulativeOp),
+      ...style,
+      type: "line"
+    }
+  ].filter(isTruthy);
+
 const drawGraphs = ({
   stuff,
   keskiarvot,
@@ -451,18 +492,7 @@ const drawGraphs = ({
       customTooltip: true,
       customTicks: true,
       labels: grouped.map(({ pvm }) => pvm),
-      datasets: [
-        {
-          label: "Päivän opintopisteet",
-          data: grouped.map(({ op }) => op)
-        },
-        {
-          label: "Suoritukset",
-          data: grouped.map(({ cumulativeOp }) => cumulativeOp),
-          ...style,
-          type: "line"
-        }
-      ].filter(v => v)
+      datasets: rakenteleDataSetitNoppaChartille(grouped)
     });
 
   notEmpty(keskiarvot) &&
@@ -470,23 +500,11 @@ const drawGraphs = ({
       id: "chart-keskiarvo",
       labels: keskiarvot.map(({ pvm }) => pvm),
       type: "line",
-      datasets: [
-        {
-          label: "Päivittäinen keskiarvo kaikista kursseista",
-          data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
-          ...style
-        },
-        notEmpty(keskiarvotPerusopinnoista) && {
-          label: "Päivittäinen keskiarvo perusopinnoista",
-          data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
-          ...styleBlue
-        },
-        notEmpty(keskiarvotAineopinnoista) && {
-          label: "Päivittäinen keskiarvo aineopinnoista",
-          data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
-          ...styleGreen
-        }
-      ].filter(v => v)
+      datasets: rakenteleDataSetitKeskiarvoChartille({
+        keskiarvot,
+        keskiarvotPerusopinnoista,
+        keskiarvotAineopinnoista
+      })
     });
 };
 
@@ -499,6 +517,9 @@ const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
     drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
   }
 };
+
+const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
+  b.luennot.keskiarvo - a.luennot.keskiarvo || b.kurssimaara - a.kurssimaara;
 
 const piirräLuennoitsijaListat = stuff => {
   const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
@@ -516,11 +537,7 @@ const piirräLuennoitsijaListat = stuff => {
     lista: [
       ...luennoitsijat
         .filter(({ luennot }) => luennot.keskiarvo !== "hyv")
-        .sort(
-          (a, b) =>
-            b.luennot.keskiarvo - a.luennot.keskiarvo ||
-            b.kurssimaara - a.kurssimaara
-        ),
+        .sort(sorttaaLuennoitsijatKeskiarvonMukaan),
       ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === "hyv")
     ],
     luennoitsijatElement
