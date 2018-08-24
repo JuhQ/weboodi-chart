@@ -1,7 +1,3 @@
-const list = document.querySelectorAll(
-  "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
-);
-
 const getLocalStorage = key => JSON.parse(localStorage.getItem(key) || "[]");
 const setLocalStorage = (key, value) =>
   localStorage.setItem(key, JSON.stringify(value));
@@ -140,6 +136,10 @@ const doCss = () => {
       margin-bottom: 100px;
     }
 
+    .luennoitsijat {
+      margin-right: 10px;
+    }
+
     .clear {
       clear: both;
       display: table;
@@ -151,6 +151,10 @@ const doCss = () => {
 
     .margin-bottom-large {
       margin-bottom: 100px;
+    }
+
+    #nuggets input {
+      width: 100%;
     }
   </style>
   `;
@@ -248,6 +252,13 @@ const kuunteleppaNapinpainalluksiaJuu = () => {
   const input = document.querySelector("button#kliketi-klik");
 
   input.addEventListener("click", start);
+};
+
+const kuunteleAsijoita = () => {
+  kuunteleDuplikaattiInputtia();
+  kuunteleppaNiitäPerusopintoja();
+  tahtoisinVaanKuunnellaAineopintoja();
+  kuunteleppaNapinpainalluksiaJuu();
 };
 
 const groupThemCourses = stuff =>
@@ -381,7 +392,7 @@ const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
 
 const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
   const html = `
-    <div style="float: left; margin-right: 10px;">
+    <div class="luennoitsijat pull-left">
       <p><strong>${title}</strong></p>
       ${lista.map(createLuennoitsijaRivi).join("")}
     </div>
@@ -410,71 +421,39 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   });
 };
 
+const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
+  opinnot.find(item => lyhenne === item.lyhenne);
+
 const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
+  stuff,
   keskiarvot,
-  opinnot
-}) =>
-  keskiarvot.reduce((initial, item) => {
-    const jeejee = opinnot.find(({ lyhenne }) => lyhenne === item.lyhenne);
+  kurssit
+}) => {
+  const opinnot = annaMulleKeskiarvotTietyistäKursseista({
+    kurssit,
+    stuff
+  });
+
+  return keskiarvot.reduce((initial, item) => {
+    const jeejee = findOpintoByLyhenne({ opinnot, lyhenne: item.lyhenne });
+
     if (jeejee) {
       return [...initial, { ...jeejee, fromOpinnot: true }];
     }
 
     const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
 
-    return [...initial, !mitäs ? item : mitäs];
+    return [...initial, mitäs || item];
   }, []);
+};
 
-// tästä tää lähtee!
-const start = () => {
-  const duplikaattiKurssit = getDuplikaattiKurssit();
-  const aineOpinnot = getAineOpinnot();
-  const perusOpinnot = getPerusOpinnot();
-
-  createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
-  kuunteleDuplikaattiInputtia();
-  kuunteleppaNiitäPerusopintoja();
-  tahtoisinVaanKuunnellaAineopintoja();
-  kuunteleppaNapinpainalluksiaJuu();
-
-  const stuff = makeSomeStuff({ list, duplikaattiKurssit });
-
+const drawGraphs = ({
+  stuff,
+  keskiarvot,
+  keskiarvotPerusopinnoista,
+  keskiarvotAineopinnoista
+}) => {
   const grouped = groupThemCourses(stuff);
-
-  const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
-
-  const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
-    {
-      keskiarvot,
-      opinnot: annaMulleKeskiarvotTietyistäKursseista({
-        kurssit: perusOpinnot,
-        stuff
-      })
-    }
-  );
-
-  const keskiarvotAineopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
-    {
-      keskiarvot,
-      opinnot: annaMulleKeskiarvotTietyistäKursseista({
-        kurssit: aineOpinnot,
-        stuff
-      })
-    }
-  );
-
-  const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
-
-  const luennoitsijatElement = document.querySelector("#luennoitsijat");
-
-  if (aineOpinnot.length) {
-    drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
-  }
-
-  if (perusOpinnot.length) {
-    drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
-  }
-
   draw({
     id: "chart-nopat",
     customTooltip: true,
@@ -516,6 +495,22 @@ const start = () => {
       }
     ]
   });
+};
+
+const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
+  if (aineOpinnot.length) {
+    drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
+  }
+
+  if (perusOpinnot.length) {
+    drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
+  }
+};
+
+const piirräLuennoitsijaListat = stuff => {
+  const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
+
+  const luennoitsijatElement = document.querySelector("#luennoitsijat");
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by kurssimaara",
@@ -543,6 +538,71 @@ const start = () => {
     lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
     luennoitsijatElement
   });
+};
+
+const hommaaMatskutLocalStoragesta = () => {
+  const duplikaattiKurssit = getDuplikaattiKurssit();
+  const aineOpinnot = getAineOpinnot();
+  const perusOpinnot = getPerusOpinnot();
+
+  return { duplikaattiKurssit, aineOpinnot, perusOpinnot };
+};
+
+const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
+  const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
+    {
+      stuff,
+      keskiarvot,
+      kurssit: perusOpinnot
+    }
+  );
+
+  const keskiarvotAineopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
+    {
+      stuff,
+      keskiarvot,
+      kurssit: aineOpinnot
+    }
+  );
+
+  return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
+};
+
+// tästä tää lähtee!
+const start = () => {
+  const list = document.querySelectorAll(
+    "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
+  );
+
+  const {
+    duplikaattiKurssit,
+    aineOpinnot,
+    perusOpinnot
+  } = hommaaMatskutLocalStoragesta();
+
+  createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
+
+  kuunteleAsijoita(); // 👂
+
+  const stuff = makeSomeStuff({ list, duplikaattiKurssit });
+
+  const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
+
+  const {
+    keskiarvotPerusopinnoista,
+    keskiarvotAineopinnoista
+  } = laskeKeskiarvot({ stuff, keskiarvot, perusOpinnot, aineOpinnot });
+
+  drawGraphs({
+    stuff,
+    keskiarvot,
+    keskiarvotPerusopinnoista,
+    keskiarvotAineopinnoista
+  }); // 📈
+
+  piirräDonitsit({ stuff, aineOpinnot, perusOpinnot }); // 🍩
+
+  piirräLuennoitsijaListat(stuff); // 👩‍🏫👨‍🏫
 };
 
 start();
