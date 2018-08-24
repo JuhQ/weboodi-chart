@@ -1,23 +1,35 @@
 const getLocalStorage = key => JSON.parse(localStorage.getItem(key) || "[]");
-const setLocalStorage = (key, value) =>
+const setLocalStorage = key => value =>
   localStorage.setItem(key, JSON.stringify(value));
 
 const getDuplikaattiKurssit = () => getLocalStorage("duplikaattiKurssit");
 
-const setDuplikaattiKurssit = kurssit =>
-  setLocalStorage("duplikaattiKurssit", kurssit);
+const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
+const setPerusOpinnot = setLocalStorage("perusOpinnot");
+const setAineOpinnot = setLocalStorage("aineOpinnot");
 
-const getPerusOpinnot = () => getLocalStorage("perusOpinnot");
+const getPerusOpinnot = () => getLocalStorage("perusOpinnot").filter(notEmpty);
+const getAineOpinnot = () => getLocalStorage("aineOpinnot").filter(notEmpty);
 
-const setPerusOpinnot = kurssit => setLocalStorage("perusOpinnot", kurssit);
-
-const getAineOpinnot = () => getLocalStorage("aineOpinnot");
-
-const setAineOpinnot = kurssit => setLocalStorage("aineOpinnot", kurssit);
-
-const getMax = lista => Math.max.apply(null, lista);
+const max = lista => Math.max(...lista);
 
 const findPvm = (list, key) => list.find(({ pvm }) => pvm === key);
+
+const teeHienoTooltip = () => ({
+  tooltips: {
+    callbacks: {
+      label: (tooltipItem, data) => {
+        const label = data.datasets[tooltipItem.datasetIndex].label || "";
+        const value = Math.round(tooltipItem.yLabel * 100) / 100;
+
+        // datasetIndex = bar chart, values are multiplied by ten to show larger bars
+        const labelValue = tooltipItem.datasetIndex ? value : value / 10;
+
+        return `${label}: ${labelValue}`;
+      }
+    }
+  }
+});
 
 const draw = ({
   id,
@@ -27,29 +39,12 @@ const draw = ({
   customTooltip = false,
   customTicks = false
 }) => {
-  const tooltip = {
-    tooltips: {
-      callbacks: {
-        label: function(tooltipItem, data) {
-          const label = data.datasets[tooltipItem.datasetIndex].label || "";
-
-          const value = Math.round(tooltipItem.yLabel * 100) / 100;
-
-          // datasetIndex = bar chart, values are multiplied by ten to show larger bars
-          const labelValue = tooltipItem.datasetIndex ? value : value / 10;
-
-          return `${label}: ${labelValue}`;
-        }
-      }
-    }
-  };
-
-  var ctx = document.getElementById(id);
-  var chart = new Chart(ctx, {
+  const ctx = document.getElementById(id);
+  new Chart(ctx, {
     type,
     data: { labels, datasets },
     options: {
-      ...(customTooltip && tooltip),
+      ...(customTooltip && teeHienoTooltip()),
       scales: {
         yAxes: [
           {
@@ -71,7 +66,7 @@ const draw = ({
             ticks: {
               beginAtZero: true,
               ...(customTicks && {
-                max: getMax(datasets.map(({ data }) => getMax(data))) + 20,
+                max: max(datasets.map(({ data }) => max(data))) + 20,
                 stepSize: 55
               })
             }
@@ -85,8 +80,8 @@ const draw = ({
 const drawPie = ({ id, labels, datasets, backgroundColor }) => {
   document.getElementById(`${id}-container`).style.display = "block";
 
-  var ctx = document.getElementById(id);
-  const myPieChart = new Chart(ctx, {
+  const ctx = document.getElementById(id);
+  new Chart(ctx, {
     type: "pie",
     data: {
       datasets: [{ data: datasets, backgroundColor }],
@@ -96,34 +91,20 @@ const drawPie = ({ id, labels, datasets, backgroundColor }) => {
 };
 
 const style = {
-  backgroundColor: [
-    "rgba(255, 99, 132, 0.2)",
-    "rgba(54, 162, 235, 0.2)",
-    "rgba(255, 206, 86, 0.2)",
-    "rgba(75, 192, 192, 0.2)",
-    "rgba(153, 102, 255, 0.2)",
-    "rgba(255, 159, 64, 0.2)"
-  ],
-  borderColor: [
-    "rgba(255,99,132,1)",
-    "rgba(54, 162, 235, 1)",
-    "rgba(255, 206, 86, 1)",
-    "rgba(75, 192, 192, 1)",
-    "rgba(153, 102, 255, 1)",
-    "rgba(255, 159, 64, 1)"
-  ],
+  backgroundColor: "rgba(255, 99, 132, 0.2)",
+  borderColor: "rgba(255,99,132,1)",
   borderWidth: 1
 };
 
 const styleBlue = {
-  backgroundColor: ["rgba(118, 99, 255, 0.2)"],
-  borderColor: ["rgba(118,99,132,1)"],
+  backgroundColor: "rgba(118, 99, 255, 0.2)",
+  borderColor: "rgba(118,99,132,1)",
   borderWidth: 1
 };
 
 const styleGreen = {
-  backgroundColor: ["rgba(99, 255, 157, 0.2)"],
-  borderColor: ["rgba(99,99,132,1)"],
+  backgroundColor: "rgba(99, 255, 157, 0.2)",
+  borderColor: "rgba(99,99,132,1)",
   borderWidth: 1
 };
 
@@ -222,7 +203,13 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
   }
 };
 
-const createCoursesArray = target => target.value.split(",").map(k => k.trim());
+const notEmpty = data => data.length > 0;
+
+const createCoursesArray = target =>
+  target.value
+    .split(",")
+    .map(k => k.trim())
+    .filter(notEmpty);
 
 const kuunteleDuplikaattiInputtia = () => {
   const input = document.querySelector("input[name='duplikaattiKurssit']");
@@ -291,7 +278,7 @@ const makeSomeStuff = ({ list, duplikaattiKurssit }) => {
 
   return [...list]
     .map(item => [...item.querySelectorAll("td")])
-    .filter(item => item.length)
+    .filter(notEmpty)
     .map(item => item.map(value => value.textContent.trim()))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
@@ -429,6 +416,10 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   keskiarvot,
   kurssit
 }) => {
+  if (!kurssit.length) {
+    return [];
+  }
+
   const opinnot = annaMulleKeskiarvotTietyistäKursseista({
     kurssit,
     stuff
@@ -454,47 +445,49 @@ const drawGraphs = ({
   keskiarvotAineopinnoista
 }) => {
   const grouped = groupThemCourses(stuff);
-  draw({
-    id: "chart-nopat",
-    customTooltip: true,
-    customTicks: true,
-    labels: grouped.map(({ pvm }) => pvm),
-    datasets: [
-      {
-        label: "Päivän opintopisteet",
-        data: grouped.map(({ op }) => op)
-      },
-      {
-        label: "Suoritukset",
-        data: grouped.map(({ cumulativeOp }) => cumulativeOp),
-        ...style,
-        type: "line"
-      }
-    ]
-  });
+  notEmpty(grouped) &&
+    draw({
+      id: "chart-nopat",
+      customTooltip: true,
+      customTicks: true,
+      labels: grouped.map(({ pvm }) => pvm),
+      datasets: [
+        {
+          label: "Päivän opintopisteet",
+          data: grouped.map(({ op }) => op)
+        },
+        {
+          label: "Suoritukset",
+          data: grouped.map(({ cumulativeOp }) => cumulativeOp),
+          ...style,
+          type: "line"
+        }
+      ].filter(v => v)
+    });
 
-  draw({
-    id: "chart-keskiarvo",
-    labels: keskiarvot.map(({ pvm }) => pvm),
-    type: "line",
-    datasets: [
-      {
-        label: "Arvosanojen päivittäinen keskiarvo kaikista kursseista",
-        data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
-        ...style
-      },
-      {
-        label: "Arvosanojen päivittäinen keskiarvo perusopinnoista",
-        data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
-        ...styleBlue
-      },
-      {
-        label: "Arvosanojen päivittäinen keskiarvo aineopinnoista",
-        data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
-        ...styleGreen
-      }
-    ]
-  });
+  notEmpty(keskiarvot) &&
+    draw({
+      id: "chart-keskiarvo",
+      labels: keskiarvot.map(({ pvm }) => pvm),
+      type: "line",
+      datasets: [
+        {
+          label: "Päivittäinen keskiarvo kaikista kursseista",
+          data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
+          ...style
+        },
+        notEmpty(keskiarvotPerusopinnoista) && {
+          label: "Päivittäinen keskiarvo perusopinnoista",
+          data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
+          ...styleBlue
+        },
+        notEmpty(keskiarvotAineopinnoista) && {
+          label: "Päivittäinen keskiarvo aineopinnoista",
+          data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
+          ...styleGreen
+        }
+      ].filter(v => v)
+    });
 };
 
 const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
