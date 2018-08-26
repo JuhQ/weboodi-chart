@@ -275,33 +275,33 @@ const groupThemCourses = stuff =>
     }, [])
     .map(item => ({ ...item, op: item.op * 10 }));
 
-const makeSomeStuff = ({ list, duplikaattiKurssit }) => {
-  let cumulativeOp = 0;
-
-  return [...list]
+const makeSomeStuff = ({ list, duplikaattiKurssit }) =>
+  [...list]
     .map(item => [...item.querySelectorAll("td")])
     .filter(notEmpty)
-    .map(item => item.map(value => value.textContent.trim()))
+    .map(item =>
+      item.map(value => value.textContent.replace(/&nsp;/g, " ").trim())
+    )
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
-    .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => {
-      const [paiva, kuukausi, vuosi] = pvm.split(".");
-      const opNumber = Number(op);
-
-      cumulativeOp += opNumber;
-
-      return {
-        lyhenne,
-        kurssi,
-        op: opNumber,
-        cumulativeOp,
-        arvosana: Number(arvosana),
-        pvm,
-        pvmDate: new Date(vuosi, Number(kuukausi) - 1, paiva), // not used anywhere yet
-        luennoitsija
-      };
-    });
-};
+    .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => ({
+      lyhenne,
+      kurssi,
+      op: Number(op),
+      arvosana: Number(arvosana),
+      pvm,
+      luennoitsija
+    }))
+    .reduce(
+      (initial, item, i) => [
+        ...initial,
+        {
+          ...item,
+          cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp)
+        }
+      ],
+      []
+    );
 
 const annaMulleKeskiarvotKursseista = stuff => {
   let arvosanaTotal = 0;
@@ -315,20 +315,10 @@ const annaMulleKeskiarvotKursseista = stuff => {
   });
 };
 
-const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) => {
-  let arvosanaTotal = 0;
-
-  return stuff
-    .filter(item => !isNaN(item.arvosana))
-    .filter(({ lyhenne }) => kurssit.includes(lyhenne))
-    .map((item, i) => {
-      arvosanaTotal += item.arvosana;
-      return {
-        ...item,
-        keskiarvo: (arvosanaTotal / (i + 1)).toFixed(2)
-      };
-    });
-};
+const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
+  annaMulleKeskiarvotKursseista(
+    stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne))
+  );
 
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
@@ -377,7 +367,7 @@ const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
     kursseja ${kurssimaara},
     keskiarvo: ${luennot.keskiarvo},
     noppia: ${luennot.totalOp}
-    </p>`;
+  </p>`;
 
 const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
   const html = `
