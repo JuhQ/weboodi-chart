@@ -350,13 +350,13 @@ const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
     .reduce(
       (initial, item) => [
-          ...initial,
-          ...item.luennoitsija
-            .split(",")
-            .map(putsaaTeksti)
-            .filter(notEmpty)
-            .map(luennoitsija => ({ ...item, luennoitsija }))
-        ],
+        ...initial,
+        ...item.luennoitsija
+          .split(",")
+          .map(putsaaTeksti)
+          .filter(notEmpty)
+          .map(luennoitsija => ({ ...item, luennoitsija }))
+      ],
       []
     )
     .map((item, i, arr) => {
@@ -524,12 +524,47 @@ const drawGraphs = ({
     });
 };
 
-const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
-  const kuukausiGroups = stuff.reduce((initial, item) => {
-    const [paiva, kuukausi, vuosi] = item.pvm.split(".");
+// Returns the semester's precise starting and ending dates.
+// TODO: Replace with Moment.js
+const getLukuvuosi = vuosi => [
+  new Date(Number(vuosi), 7, 1),
+  new Date(Number(vuosi) + 1, 6, 31, 23, 59, 59)
+];
 
-    return { ...initial, [vuosi]: item.op + (initial[vuosi] || 0) };
-  }, {});
+const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
+  const kuukausiGroups = stuff
+    .sort((a, b) => {
+      const [paiva, kuukausi, vuosi] = a.pvm.split(".");
+      const [paiva2, kuukausi2, vuosi2] = b.pvm.split(".");
+      return (
+        new Date(vuosi, Number(kuukausi) - 1, paiva) -
+        new Date(vuosi2, Number(kuukausi2) - 1, paiva2)
+      );
+    })
+    .map(juttu => {
+      return {
+        pvm: juttu.pvm,
+        nopat: juttu.op
+      };
+    })
+    .reduce((prev, curr) => {
+      const [paiva, kuukausi, vuosi] = curr.pvm.split(".");
+      const coursePvm = new Date(vuosi, Number(kuukausi) - 1, paiva);
+      const lukuvuosi = getLukuvuosi(vuosi);
+      const nextLukuvuosi = getLukuvuosi(Number(vuosi) + 1);
+      if (coursePvm >= lukuvuosi[0] && coursePvm <= lukuvuosi[1]) {
+        return { ...prev, [vuosi]: curr.nopat + (prev[vuosi] || 0) };
+      } else if (
+        coursePvm >= nextLukuvuosi[0] &&
+        coursePvm <= nextLukuvuosi[1]
+      ) {
+        // If it's not between the current semester, it must be the next one
+        return { ...prev, [vuosi + 1]: curr.nopat + (prev[vuosi + 1] || 0) };
+      } else {
+        // Then.. It must be the previous semester of the previous semester we just checked!
+        return { ...prev, [vuosi - 1]: curr.nopat + (prev[vuosi - 1] || 0) };
+      }
+    }, {});
 
   draw({
     id: "chart-nopat-vuosi",
@@ -537,7 +572,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
     labels: Object.keys(kuukausiGroups),
     datasets: [
       {
-        label: "Noppia per vuosi",
+        label: "Noppia per lukuvuosi",
         data: Object.values(kuukausiGroups),
         ...styleBlue
       }
@@ -613,8 +648,7 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
-
-const undefinedStuffFilter = item => item.luennoitsija !== undefined
+const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 
 // tästä tää lähtee!
 const start = () => {
@@ -626,6 +660,7 @@ const start = () => {
 
   createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
+  // Make stuff & filter out undefined things
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
