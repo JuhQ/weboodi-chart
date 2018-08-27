@@ -210,7 +210,7 @@ const notEmpty = data => data.length > 0;
 const createCoursesArray = target =>
   target.value
     .split(",")
-    .map(k => k.trim())
+    .map(putsaaTeksti)
     .filter(notEmpty);
 
 const kuunteleDuplikaattiInputtia = () => {
@@ -275,13 +275,17 @@ const groupThemCourses = stuff =>
     }, [])
     .map(item => ({ ...item, op: item.op * 10 }));
 
-const makeSomeStuff = ({ list, duplikaattiKurssit }) =>
-  [...list]
+const putsaaTeksti = str => str.replace(/&nbsp;/g, " ").trim();
+
+const makeSomeStuff = duplikaattiKurssit =>
+  [
+    ...document.querySelectorAll(
+      "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
+    )
+  ]
     .map(item => [...item.querySelectorAll("td")])
     .filter(notEmpty)
-    .map(item =>
-      item.map(value => value.textContent.replace(/&nsp;/g, " ").trim())
-    )
+    .map(item => item.map(value => value.textContent).map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
     .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => ({
@@ -327,7 +331,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
         ...initial,
         ...item.luennoitsija
           .split(",")
-          .map(luennoitsija => luennoitsija.trim())
+          .map(putsaaTeksti)
           .filter(notEmpty)
           .map(luennoitsija => ({ ...item, luennoitsija }))
       ],
@@ -540,13 +544,11 @@ const piirräLuennoitsijaListat = stuff => {
   });
 };
 
-const hommaaMatskutLocalStoragesta = () => {
-  const duplikaattiKurssit = getDuplikaattiKurssit();
-  const aineOpinnot = getAineOpinnot();
-  const perusOpinnot = getPerusOpinnot();
-
-  return { duplikaattiKurssit, aineOpinnot, perusOpinnot };
-};
+const hommaaMatskutLocalStoragesta = () => ({
+  duplikaattiKurssit: getDuplikaattiKurssit(),
+  aineOpinnot: getAineOpinnot(),
+  perusOpinnot: getPerusOpinnot()
+});
 
 const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
@@ -570,10 +572,6 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
 
 // tästä tää lähtee!
 const start = () => {
-  const list = document.querySelectorAll(
-    "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
-  );
-
   const {
     duplikaattiKurssit,
     aineOpinnot,
@@ -584,7 +582,7 @@ const start = () => {
 
   kuunteleAsijoita(); // 👂
 
-  const stuff = makeSomeStuff({ list, duplikaattiKurssit });
+  const stuff = makeSomeStuff(duplikaattiKurssit);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
 
