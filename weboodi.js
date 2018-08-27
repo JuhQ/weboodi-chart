@@ -350,13 +350,13 @@ const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
     .reduce(
       (initial, item) => [
-        ...initial,
-        ...item.luennoitsija
-          .split(",")
-          .map(putsaaTeksti)
-          .filter(notEmpty)
-          .map(luennoitsija => ({ ...item, luennoitsija }))
-      ],
+          ...initial,
+          ...item.luennoitsija
+            .split(",")
+            .map(putsaaTeksti)
+            .filter(notEmpty)
+            .map(luennoitsija => ({ ...item, luennoitsija }))
+        ],
       []
     )
     .map((item, i, arr) => {
@@ -613,6 +613,9 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
+
+const undefinedStuffFilter = item => item.luennoitsija !== undefined
+
 // tästä tää lähtee!
 const start = () => {
   const {
@@ -623,7 +626,7 @@ const start = () => {
 
   createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
-  const stuff = makeSomeStuff(duplikaattiKurssit);
+  const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
 
