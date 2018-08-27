@@ -346,17 +346,20 @@ const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
     stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne))
   );
 
+const undefinedLecturerFilter = item => item.luennoitsija !== undefined
+
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
+    .filter(undefinedLecturerFilter)
     .reduce(
       (initial, item) => [
-        ...initial,
-        ...item.luennoitsija
-          .split(",")
-          .map(putsaaTeksti)
-          .filter(notEmpty)
-          .map(luennoitsija => ({ ...item, luennoitsija }))
-      ],
+          ...initial,
+          ...item.luennoitsija
+            .split(",")
+            .map(putsaaTeksti)
+            .filter(notEmpty)
+            .map(luennoitsija => ({ ...item, luennoitsija }))
+        ],
       []
     )
     .map((item, i, arr) => {
