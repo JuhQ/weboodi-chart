@@ -527,11 +527,8 @@ const drawGraphs = ({
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   const kuukausiGroups = stuff.reduce((initial, item) => {
     const [paiva, kuukausi, vuosi] = item.pvm.split(".");
-    if (!initial[vuosi]) {
-      initial[vuosi] = 0;
-    }
 
-    return { ...initial, [vuosi]: initial[vuosi] + item.op };
+    return { ...initial, [vuosi]: item.op + (initial[vuosi] || 0) };
   }, {});
 
   draw({
