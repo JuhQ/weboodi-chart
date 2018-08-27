@@ -537,7 +537,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   draw({
     id: "chart-nopat-vuosi",
     type: "line",
-    labels: Object.keys(kuukausiGroups), //.map(kk => `${kk}`),
+    labels: Object.keys(kuukausiGroups),
     datasets: [
       {
         label: "Noppia per vuosi",
