@@ -346,11 +346,8 @@ const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
     stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne))
   );
 
-const undefinedLecturerFilter = item => item.luennoitsija !== undefined
-
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
-    .filter(undefinedLecturerFilter)
     .reduce(
       (initial, item) => [
           ...initial,
@@ -528,7 +525,7 @@ const drawGraphs = ({
 };
 
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
-  const kuukausiGroups = stuff.filter(undefinedLecturerFilter).reduce((initial, item) => {
+  const kuukausiGroups = stuff.reduce((initial, item) => {
     const [paiva, kuukausi, vuosi] = item.pvm.split(".");
 
     return { ...initial, [vuosi]: item.op + (initial[vuosi] || 0) };
@@ -616,6 +613,9 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
+
+const undefinedStuffFilter = item => item.luennoitsija !== undefined
+
 // tästä tää lähtee!
 const start = () => {
   const {
@@ -626,7 +626,7 @@ const start = () => {
 
   createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
-  const stuff = makeSomeStuff(duplikaattiKurssit);
+  const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
 
