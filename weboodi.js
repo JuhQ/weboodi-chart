@@ -68,7 +68,7 @@ const draw = ({
             ticks: {
               beginAtZero: true,
               ...(customTicks && {
-                max: max(datasets.map(({ data }) => max(data))) + 20,
+                max: max(datasets.map(({ data }) => max(data))) + 10,
                 stepSize: 55
               })
             }
@@ -126,14 +126,25 @@ const doCss = () => {
     .clear {
       clear: both;
       display: table;
+      width: 100%;
     }
 
-    .pull-left {
-      float: left;
+    @media only screen and (min-width: 900px) {
+      .jeejee-pull-left {
+        float: left;
+      }
+
+      .half {
+        width: 50%;
+      }
     }
 
     .margin-bottom-large {
       margin-bottom: 100px;
+    }
+
+    .margin-bottom-small {
+      margin-bottom: 20px;
     }
 
     #nuggets input {
@@ -146,18 +157,29 @@ const doCss = () => {
 const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
   const yolo = `
   <div id="nuggets" class="margin-bottom-large">
-    <div class="clear margin-bottom-large">
-      <div id="perusopinnot-container" class="pull-left" style="display:none;">
+    <div class="clear margin-bottom-small">
+      <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
         Perusopinnot
         <canvas id="perusopinnot" width="500" height="200"></canvas>
       </div>
-      <div id="aineopinnot-container" class="pull-left" style="display:none;">
+      <div id="aineopinnot-container" class="jeejee-pull-left" style="display:none;">
         Aineopinnot
         <canvas id="aineopinnot" width="500" height="200"></canvas>
       </div>
     </div>
-    <canvas id="chart-nopat" width="500" height="200"></canvas>
-    <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
+    <div class="clear">
+      <div class="jeejee-pull-left half">
+        <canvas id="chart-nopat" width="500" height="200"></canvas>
+      </div>
+      <div class="jeejee-pull-left half">
+        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
+      </div>
+    </div>
+    <div class="clear">
+      <div class="jeejee-pull-left half">
+        <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
+      </div>
+    </div>
     <div id="luennoitsijat"></div>
     <div id="tools" class="margin-bottom-large">
       <p>
@@ -502,6 +524,30 @@ const drawGraphs = ({
     });
 };
 
+const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
+  const kuukausiGroups = stuff.reduce((initial, item) => {
+    const [paiva, kuukausi, vuosi] = item.pvm.split(".");
+    if (!initial[vuosi]) {
+      initial[vuosi] = 0;
+    }
+
+    return { ...initial, [vuosi]: initial[vuosi] + item.op };
+  }, {});
+
+  draw({
+    id: "chart-nopat-vuosi",
+    type: "line",
+    labels: Object.keys(kuukausiGroups), //.map(kk => `${kk}`),
+    datasets: [
+      {
+        label: "Noppia per vuosi",
+        data: Object.values(kuukausiGroups),
+        ...styleBlue
+      }
+    ]
+  });
+};
+
 const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
   if (aineOpinnot.length) {
     drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
@@ -580,8 +626,6 @@ const start = () => {
 
   createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
-  kuunteleAsijoita(); // 👂
-
   const stuff = makeSomeStuff(duplikaattiKurssit);
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
@@ -601,6 +645,10 @@ const start = () => {
   piirräDonitsit({ stuff, aineOpinnot, perusOpinnot }); // 🍩
 
   piirräLuennoitsijaListat(stuff); // 👩‍🏫👨‍🏫
+
+  piirteleVuosiJuttujaJookosKookosHaliPus(stuff);
+
+  kuunteleAsijoita(); // 👂
 };
 
 start();
