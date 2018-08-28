@@ -311,12 +311,12 @@ const makeSomeStuff = duplikaattiKurssit =>
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
     .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => ({
-      lyhenne,
-      kurssi,
-      op: Number(op),
-      arvosana: Number(arvosana),
       pvm,
-      luennoitsija
+      kurssi,
+      lyhenne,
+      luennoitsija,
+      op: Number(op),
+      arvosana: Number(arvosana)
     }))
     .reduce(
       (initial, item, i) => [
@@ -531,40 +531,52 @@ const getLukuvuosi = vuosi => [
   new Date(Number(vuosi) + 1, 6, 31, 23, 59, 59)
 ];
 
-const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
-  const kuukausiGroups = stuff
+const rakenteleDateObjekti = ({ vuosi, kuukausi, paiva }) =>
+  new Date(vuosi, Number(kuukausi) - 1, paiva);
+
+const getPvmArray = pvm => pvm.split(".");
+
+const ryhmitteleStuffKivastiLukukausiksi = stuff =>
+  stuff
     .sort((a, b) => {
-      const [paiva, kuukausi, vuosi] = a.pvm.split(".");
-      const [paiva2, kuukausi2, vuosi2] = b.pvm.split(".");
+      const [paiva, kuukausi, vuosi] = getPvmArray(a.pvm);
+      const [paiva2, kuukausi2, vuosi2] = getPvmArray(a.pvm);
+
       return (
-        new Date(vuosi, Number(kuukausi) - 1, paiva) -
-        new Date(vuosi2, Number(kuukausi2) - 1, paiva2)
+        rakenteleDateObjekti({ vuosi, kuukausi, paiva }) -
+        rakenteleDateObjekti({
+          vuosi: vuosi2,
+          kuukausi: kuukausi2,
+          paiva: paiva2
+        })
       );
     })
-    .map(juttu => {
-      return {
-        pvm: juttu.pvm,
-        nopat: juttu.op
-      };
-    })
-    .reduce((prev, curr) => {
-      const [paiva, kuukausi, vuosi] = curr.pvm.split(".");
-      const coursePvm = new Date(vuosi, Number(kuukausi) - 1, paiva);
+    .map(({ pvm, op }) => ({ pvm, nopat: op }))
+    .reduce((prev, { pvm, nopat }) => {
+      const [paiva, kuukausi, vuosi] = getPvmArray(pvm);
+      const coursePvm = rakenteleDateObjekti({ vuosi, kuukausi, paiva });
       const lukuvuosi = getLukuvuosi(vuosi);
       const nextLukuvuosi = getLukuvuosi(Number(vuosi) + 1);
+
+      // Then.. It must be the previous semester of the previous semester we just checked!
+      // this comment makes no sense now that i moved it from else, sorry. - juha
+      let vuosiJuttu = vuosi - 1;
+
       if (coursePvm >= lukuvuosi[0] && coursePvm <= lukuvuosi[1]) {
-        return { ...prev, [vuosi]: curr.nopat + (prev[vuosi] || 0) };
+        vuosiJuttu = vuosi;
       } else if (
         coursePvm >= nextLukuvuosi[0] &&
         coursePvm <= nextLukuvuosi[1]
       ) {
         // If it's not between the current semester, it must be the next one
-        return { ...prev, [vuosi + 1]: curr.nopat + (prev[vuosi + 1] || 0) };
-      } else {
-        // Then.. It must be the previous semester of the previous semester we just checked!
-        return { ...prev, [vuosi - 1]: curr.nopat + (prev[vuosi - 1] || 0) };
+        vuosiJuttu = vuosi + 1;
       }
+
+      return { ...prev, [vuosiJuttu]: nopat + (prev[vuosiJuttu] || 0) };
     }, {});
+
+const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
+  const kuukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
 
   draw({
     id: "chart-nopat-vuosi",
