@@ -154,7 +154,7 @@ const doCss = () => {
   `;
 };
 
-const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
+const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
   const yolo = `
   <div id="nuggets" class="margin-bottom-large">
     <div class="clear margin-bottom-small">
@@ -220,11 +220,18 @@ const createDom = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => {
 
   const listaTaulukko = document.querySelectorAll("table")[1];
   const nuggetsExist = document.querySelector("#nuggets");
+
+  if (!listaTaulukko) {
+    return false;
+  }
+
   if (nuggetsExist) {
     nuggetsExist.outerHTML = yolo;
   } else {
     listaTaulukko.outerHTML = listaTaulukko.outerHTML + doCss() + yolo;
   }
+
+  return true;
 };
 
 const notEmpty = data => data.length > 0;
@@ -329,36 +336,38 @@ const makeSomeStuff = duplikaattiKurssit =>
       []
     );
 
-const annaMulleKeskiarvotKursseista = stuff => {
-  let arvosanaTotal = 0;
+const takeUntil = (list, n) =>
+  list.reduce((initial, item, i) => (i < n ? [...initial, item] : initial), []);
 
-  return stuff.filter(item => !isNaN(item.arvosana)).map((item, i) => {
-    arvosanaTotal += item.arvosana;
-    return {
-      ...item,
-      keskiarvo: (arvosanaTotal / (i + 1)).toFixed(2)
-    };
-  });
-};
+const sum = (a, b) => a + b;
+
+const average = list => list.reduce(sum, 0) / list.length;
+
+const annaMulleKeskiarvotKursseista = stuff =>
+  stuff.filter(item => !isNaN(item.arvosana)).map((item, i, list) => ({
+    ...item,
+    keskiarvo: average(
+      takeUntil(list.map(({ arvosana }) => arvosana), i + 1)
+    ).toFixed(2)
+  }));
 
 const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
   annaMulleKeskiarvotKursseista(
     stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne))
   );
 
+const rakennaListaLuennoitsijoista = (initial, item) => [
+  ...initial,
+  ...item.luennoitsija
+    .split(",")
+    .map(putsaaTeksti)
+    .filter(notEmpty)
+    .map(luennoitsija => ({ ...item, luennoitsija }))
+];
+
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
-    .reduce(
-      (initial, item) => [
-        ...initial,
-        ...item.luennoitsija
-          .split(",")
-          .map(putsaaTeksti)
-          .filter(notEmpty)
-          .map(luennoitsija => ({ ...item, luennoitsija }))
-      ],
-      []
-    )
+    .reduce(rakennaListaLuennoitsijoista, [])
     .map((item, i, arr) => {
       const luennot = arr.filter(
         ({ luennoitsija }) => luennoitsija === item.luennoitsija
@@ -367,7 +376,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
         .filter(item => !isNaN(item.arvosana))
         .map(({ arvosana }) => arvosana);
 
-      const keskiarvo = arvosanat.reduce((a, b) => a + b, 0) / arvosanat.length;
+      const keskiarvo = average(arvosanat);
 
       return {
         ...item,
@@ -376,7 +385,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
           arvosanat,
           keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : "hyv",
           op: luennot.map(({ op }) => op),
-          totalOp: luennot.map(({ op }) => op).reduce((a, b) => a + b, 0)
+          totalOp: luennot.map(({ op }) => op).reduce(sum, 0)
         }
       };
     })
@@ -527,53 +536,52 @@ const drawGraphs = ({
 // Returns the semester's precise starting and ending dates.
 // TODO: Replace with Moment.js
 const getLukuvuosi = vuosi => [
-  new Date(Number(vuosi), 7, 1),
-  new Date(Number(vuosi) + 1, 6, 31, 23, 59, 59)
+  new Date(vuosi, 7, 1),
+  new Date(vuosi + 1, 6, 31, 23, 59, 59)
 ];
 
-const rakenteleDateObjekti = ({ vuosi, kuukausi, paiva }) =>
-  new Date(vuosi, Number(kuukausi) - 1, paiva);
+const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]) =>
+  new Date(vuosi, kuukausi - 1, paiva);
 
-const getPvmArray = pvm => pvm.split(".");
+const getPvmArray = pvm => pvm.split(".").map(Number);
+
+const sorttaaStuffLukukausienMukaan = (a, b) =>
+  rakenteleDateObjekti(getPvmArray(a.pvm)) -
+  rakenteleDateObjekti(getPvmArray(a.pvm));
+
+const isInBetween = ({ value, values: [start, end] }) =>
+  value >= start && value <= end;
+
+const laskeLukukausienNopat = (prev, { pvm, op }) => {
+  const [paiva, kuukausi, vuosi] = getPvmArray(pvm);
+  const coursePvm = rakenteleDateObjekti([paiva, kuukausi, vuosi]);
+
+  // Then.. It must be the previous semester of the previous semester we just checked!
+  // this comment makes no sense now that i moved it from else, sorry. - juha
+  let vuosiJuttu = vuosi - 1;
+
+  const pvmIsCurrentSemester = isInBetween({
+    value: coursePvm,
+    values: getLukuvuosi(vuosi)
+  });
+
+  const pvmIsNextSemester = isInBetween({
+    value: coursePvm,
+    values: getLukuvuosi(vuosi + 1)
+  });
+
+  if (pvmIsCurrentSemester) {
+    vuosiJuttu = vuosi;
+  } else if (pvmIsNextSemester) {
+    // If it's not between the current semester, it must be the next one
+    vuosiJuttu = vuosi + 1;
+  }
+
+  return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
+};
 
 const ryhmitteleStuffKivastiLukukausiksi = stuff =>
-  stuff
-    .sort((a, b) => {
-      const [paiva, kuukausi, vuosi] = getPvmArray(a.pvm);
-      const [paiva2, kuukausi2, vuosi2] = getPvmArray(a.pvm);
-
-      return (
-        rakenteleDateObjekti({ vuosi, kuukausi, paiva }) -
-        rakenteleDateObjekti({
-          vuosi: vuosi2,
-          kuukausi: kuukausi2,
-          paiva: paiva2
-        })
-      );
-    })
-    .map(({ pvm, op }) => ({ pvm, nopat: op }))
-    .reduce((prev, { pvm, nopat }) => {
-      const [paiva, kuukausi, vuosi] = getPvmArray(pvm);
-      const coursePvm = rakenteleDateObjekti({ vuosi, kuukausi, paiva });
-      const lukuvuosi = getLukuvuosi(vuosi);
-      const nextLukuvuosi = getLukuvuosi(Number(vuosi) + 1);
-
-      // Then.. It must be the previous semester of the previous semester we just checked!
-      // this comment makes no sense now that i moved it from else, sorry. - juha
-      let vuosiJuttu = vuosi - 1;
-
-      if (coursePvm >= lukuvuosi[0] && coursePvm <= lukuvuosi[1]) {
-        vuosiJuttu = vuosi;
-      } else if (
-        coursePvm >= nextLukuvuosi[0] &&
-        coursePvm <= nextLukuvuosi[1]
-      ) {
-        // If it's not between the current semester, it must be the next one
-        vuosiJuttu = vuosi + 1;
-      }
-
-      return { ...prev, [vuosiJuttu]: nopat + (prev[vuosiJuttu] || 0) };
-    }, {});
+  stuff.sort(sorttaaStuffLukukausienMukaan).reduce(laskeLukukausienNopat, {});
 
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   const kuukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
@@ -593,13 +601,11 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
 };
 
 const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
-  if (aineOpinnot.length) {
+  notEmpty(aineOpinnot) &&
     drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
-  }
 
-  if (perusOpinnot.length) {
+  notEmpty(perusOpinnot) &&
     drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
-  }
 };
 
 const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
@@ -636,8 +642,8 @@ const piirräLuennoitsijaListat = stuff => {
 
 const hommaaMatskutLocalStoragesta = () => ({
   duplikaattiKurssit: getDuplikaattiKurssit(),
-  aineOpinnot: getAineOpinnot(),
-  perusOpinnot: getPerusOpinnot()
+  perusOpinnot: getPerusOpinnot(),
+  aineOpinnot: getAineOpinnot()
 });
 
 const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
@@ -666,11 +672,19 @@ const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 const start = () => {
   const {
     duplikaattiKurssit,
-    aineOpinnot,
-    perusOpinnot
+    perusOpinnot,
+    aineOpinnot
   } = hommaaMatskutLocalStoragesta();
 
-  createDom({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
+  const onnistuikoDomminLuontiHÄ = createDom({
+    duplikaattiKurssit,
+    perusOpinnot,
+    aineOpinnot
+  });
+
+  if (!onnistuikoDomminLuontiHÄ) {
+    return;
+  }
 
   // Make stuff & filter out undefined things
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
