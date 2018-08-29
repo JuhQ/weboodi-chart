@@ -452,7 +452,7 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
 
     const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
 
-    return [...initial, mitäs || item];
+    return [...initial, { ...mitäs, arvosana: 0 } || item];
   }, []);
 };
 
