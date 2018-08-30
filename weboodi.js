@@ -1,5 +1,6 @@
 const getLocalStorage = key =>
   JSON.parse(localStorage.getItem(key) || "[]").filter(notEmpty);
+
 const setLocalStorage = key => value =>
   localStorage.setItem(key, JSON.stringify(value));
 
@@ -54,6 +55,26 @@ const kurssitietokanta = {
     aineopinnot: {
       TKT20001: "Tietorakenteet ja algoritmit",
       TKT20002: "Ohjelmistotekniikan menetelmät",
+      TKT20003: "Käyttöjärjestelmät",
+      TKT20004: "Tietoliikenteen perusteet",
+      TKT20005: "Laskennan mallit",
+      TKT20006: "Ohjelmistotuotanto",
+      TKT20007: "Ohjelmistotuotantoprojekti",
+      TKT20008: "Johdatus tekoälyyn",
+      TKT20009: "Tietoturvan perusteet",
+      TKT20013: "Kandidaatin tutkielma",
+      TKT20014: "Kypsyysnäyte LuK"
+    },
+    perusopinnotPre2017: {
+      TKT10001: "Johdatus tietojenkäsittelytieteeseen",
+      TKT10002: "Ohjelmoinnin perusteet",
+      TKT10003: "Ohjelmoinnin jatkokurssi",
+      TKT10004: "Tietokantojen perusteet",
+      TKT20002: "Ohjelmistotekniikan menetelmät"
+    },
+    aineopinnotPre2017: {
+      TKT20001: "Tietorakenteet ja algoritmit",
+      TKT10005: "Tietokoneen toiminta",
       TKT20003: "Käyttöjärjestelmät",
       TKT20004: "Tietoliikenteen perusteet",
       TKT20005: "Laskennan mallit",
@@ -264,6 +285,18 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
           Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen
         </button>
       </p>
+
+      <p>
+        <button id="kliketi-klik-esitäyttö-2017">
+          Esitäytä perus- ja aineopinnot tkt opinnoilla (2017 - )
+        </button>
+      </p>
+
+      <p>
+        <button id="kliketi-klik-esitäyttö-pre-2017">
+          Esitäytä perus- ja aineopinnot tkt opinnoilla (- 2016)
+        </button>
+      </p>
     </div>
 
     <p>
@@ -333,11 +366,35 @@ const kuunteleppaNapinpainalluksiaJuu = () => {
   input.addEventListener("click", start);
 };
 
+const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
+  const input = document.querySelector("button#kliketi-klik-esitäyttö-2017");
+
+  input.addEventListener("click", () => {
+    setPerusOpinnot(Object.keys(kurssitietokanta.tkt.perusopinnot));
+    setAineOpinnot(Object.keys(kurssitietokanta.tkt.aineopinnot));
+    start();
+  });
+};
+
+const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
+  const input = document.querySelector(
+    "button#kliketi-klik-esitäyttö-pre-2017"
+  );
+
+  input.addEventListener("click", () => {
+    setPerusOpinnot(Object.keys(kurssitietokanta.tkt.perusopinnotPre2017));
+    setAineOpinnot(Object.keys(kurssitietokanta.tkt.aineopinnotPre2017));
+    start();
+  });
+};
+
 const kuunteleAsijoita = () => {
   kuunteleDuplikaattiInputtia();
   kuunteleppaNiitäPerusopintoja();
   tahtoisinVaanKuunnellaAineopintoja();
   kuunteleppaNapinpainalluksiaJuu();
+  kuunteleEsitäyttönapinKliksutteluja2017();
+  kuunteleEsitäyttönapinKliksutteluja2016();
 };
 
 const setDailyCumulativeNoppas = ({ pvm, op }) => jee => {
