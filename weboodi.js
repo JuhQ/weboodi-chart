@@ -387,7 +387,7 @@ const muutaArrayKivaksiObjektiksi = ([
   luennoitsija,
   op: Number(op),
   arvosana: Number(arvosana),
-  pvmDate: rakenteleDateObjekti(getPvmArray(pvm))
+  pvmDate: rakenteleDateObjekti(getPvmArray(pvm || "1.1.1970"))
 });
 
 const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
