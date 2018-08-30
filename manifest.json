@@ -12,7 +12,10 @@
             "weboodi.js"
         ],
         "run_at": "document_end",
-        "matches": ["https://weboodi.helsinki.fi/hy/omatopinn.jsp?NaytSuor=1"]
+        "matches": [
+            "https://weboodi.helsinki.fi/hy/omatopinn.jsp?NaytSuor=1",
+            "https://weboodi.helsinki.fi/hy/opisluehak.jsp*"
+        ]
     }],
     "icons": {
         "16": "icon16.png",
