@@ -1,4 +1,5 @@
-const getLocalStorage = key => JSON.parse(localStorage.getItem(key) || "[]");
+const getLocalStorage = key =>
+  JSON.parse(localStorage.getItem(key) || "[]").filter(notEmpty);
 const setLocalStorage = key => value =>
   localStorage.setItem(key, JSON.stringify(value));
 
@@ -8,12 +9,25 @@ const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage("perusOpinnot");
 const setAineOpinnot = setLocalStorage("aineOpinnot");
 
-const getPerusOpinnot = () => getLocalStorage("perusOpinnot").filter(notEmpty);
-const getAineOpinnot = () => getLocalStorage("aineOpinnot").filter(notEmpty);
+const getPerusOpinnot = () => getLocalStorage("perusOpinnot");
+const getAineOpinnot = () => getLocalStorage("aineOpinnot");
 
 const max = lista => Math.max(...lista);
 
 const findPvm = (list, key) => list.find(({ pvm }) => pvm === key);
+
+const isTruthy = v => v;
+
+const isString = val => typeof val === "string";
+
+const map = (list, keys) =>
+  list.reduce(
+    (acc, item) => [
+      ...acc,
+      ...(isString(keys) ? [keys] : keys).map(key => item[key])
+    ],
+    []
+  );
 
 const chartColors = [
   "pink",
@@ -50,8 +64,7 @@ const draw = ({
   customTooltip = false,
   customTicks = false
 }) => {
-  const ctx = document.getElementById(id);
-  new Chart(ctx, {
+  new Chart(document.getElementById(id), {
     type,
     data: { labels, datasets },
     options: {
@@ -68,7 +81,7 @@ const draw = ({
             ticks: {
               beginAtZero: true,
               ...(customTicks && {
-                max: max(datasets.map(({ data }) => max(data))) + 10,
+                max: max(map(datasets, "data").map(max)) + 10,
                 stepSize: 55
               })
             }
@@ -82,8 +95,7 @@ const draw = ({
 const drawPie = ({ id, labels, datasets, backgroundColor }) => {
   document.getElementById(`${id}-container`).style.display = "block";
 
-  const ctx = document.getElementById(id);
-  new Chart(ctx, {
+  new Chart(document.getElementById(id), {
     type: "pie",
     data: {
       datasets: [{ data: datasets, backgroundColor }],
@@ -110,8 +122,7 @@ const styleGreen = {
   borderWidth: 1
 };
 
-const doCss = () => {
-  return `
+const doCss = () => `
   <style>
     #luennoitsijat {
       clear: both;
@@ -152,10 +163,8 @@ const doCss = () => {
     }
   </style>
   `;
-};
 
-const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
-  const yolo = `
+const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
   <div id="nuggets" class="margin-bottom-large">
     <div class="clear margin-bottom-small">
       <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
@@ -218,8 +227,12 @@ const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
   </div>
   `;
 
+const pitäisköDomRakentaa = () => !!document.querySelectorAll("table")[1];
+
+const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
   const listaTaulukko = document.querySelectorAll("table")[1];
   const nuggetsExist = document.querySelector("#nuggets");
+  const yolo = yolohtml({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
   if (!listaTaulukko) {
     return false;
@@ -279,62 +292,74 @@ const kuunteleAsijoita = () => {
   kuunteleppaNapinpainalluksiaJuu();
 };
 
+const setDailyCumulativeNoppas = ({ pvm, op }) => jee => {
+  const today =
+    jee.pvm === pvm
+      ? {
+          cumulativeOp: op + jee.cumulativeOp,
+          op: op + jee.op
+        }
+      : null;
+
+  return {
+    ...jee, // 💩👌
+    ...today
+  };
+};
+
 const groupThemCourses = stuff =>
   stuff
-    .reduce((initial, item) => {
-      const found = findPvm(initial, item.pvm);
-      if (!found) {
-        return [...initial, item];
-      }
-
-      return initial.map(jee => {
-        const today =
-          jee.pvm === item.pvm
-            ? {
-                cumulativeOp: item.op + jee.cumulativeOp,
-                op: item.op + jee.op
-              }
-            : null;
-
-        return {
-          ...jee, // 💩👌
-          ...today
-        };
-      });
-    }, [])
+    .reduce(
+      (initial, item) =>
+        findPvm(initial, item.pvm)
+          ? initial.map(setDailyCumulativeNoppas(item))
+          : [...initial, item],
+      []
+    )
     .map(item => ({ ...item, op: item.op * 10 }));
 
 const putsaaTeksti = str => str.replace(/&nbsp;/g, " ").trim();
 
+const muutaArrayKivaksiObjektiksi = ([
+  lyhenne,
+  kurssi,
+  op,
+  arvosana,
+  pvm,
+  luennoitsija
+]) => ({
+  pvm,
+  kurssi,
+  lyhenne,
+  luennoitsija,
+  op: Number(op),
+  arvosana: Number(arvosana),
+  pvmDate: rakenteleDateObjekti(getPvmArray(pvm))
+});
+
+const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
+  ...initial,
+  {
+    ...item,
+    cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp)
+  }
+];
+
+const hommaaMeilleListaAsijoistaDommista = () => [
+  ...document.querySelectorAll(
+    "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
+  )
+];
+
 const makeSomeStuff = duplikaattiKurssit =>
-  [
-    ...document.querySelectorAll(
-      "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
-    )
-  ]
+  hommaaMeilleListaAsijoistaDommista()
     .map(item => [...item.querySelectorAll("td")])
     .filter(notEmpty)
     .map(item => item.map(value => value.textContent).map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
-    .map(([lyhenne, kurssi, op, arvosana, pvm, luennoitsija]) => ({
-      pvm,
-      kurssi,
-      lyhenne,
-      luennoitsija,
-      op: Number(op),
-      arvosana: Number(arvosana)
-    }))
-    .reduce(
-      (initial, item, i) => [
-        ...initial,
-        {
-          ...item,
-          cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp)
-        }
-      ],
-      []
-    );
+    .map(muutaArrayKivaksiObjektiksi)
+    .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
 const takeUntil = (list, n) =>
   list.reduce((initial, item, i) => (i < n ? [...initial, item] : initial), []);
@@ -346,9 +371,7 @@ const average = list => list.reduce(sum, 0) / list.length;
 const annaMulleKeskiarvotKursseista = stuff =>
   stuff.filter(item => !isNaN(item.arvosana)).map((item, i, list) => ({
     ...item,
-    keskiarvo: average(
-      takeUntil(list.map(({ arvosana }) => arvosana), i + 1)
-    ).toFixed(2)
+    keskiarvo: average(takeUntil(map(list, "arvosana"), i + 1)).toFixed(2)
   }));
 
 const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
@@ -372,9 +395,11 @@ const haluaisinTietääLuennoitsijoista = stuff =>
       const luennot = arr.filter(
         ({ luennoitsija }) => luennoitsija === item.luennoitsija
       );
-      const arvosanat = luennot
-        .filter(item => !isNaN(item.arvosana))
-        .map(({ arvosana }) => arvosana);
+
+      const arvosanat = map(
+        luennot.filter(item => !isNaN(item.arvosana)),
+        "arvosana"
+      );
 
       const keskiarvo = average(arvosanat);
 
@@ -384,8 +409,8 @@ const haluaisinTietääLuennoitsijoista = stuff =>
         luennot: {
           arvosanat,
           keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : "hyv",
-          op: luennot.map(({ op }) => op),
-          totalOp: luennot.map(({ op }) => op).reduce(sum, 0)
+          op: map(luennot, "op"),
+          totalOp: map(luennot, "op").reduce(sum, 0)
         }
       };
     })
@@ -419,15 +444,15 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   const opintoData = [
     ...stuff
       .filter(({ lyhenne }) => data.includes(lyhenne))
-      .map(({ lyhenne }) => ({ lyhenne, done: true })),
+      .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true })),
     ...data
       .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
-      .map(lyhenne => ({ lyhenne, done: false }))
+      .map(lyhenne => ({ kurssi: lyhenne, done: false }))
   ];
 
   drawPie({
     id,
-    labels: opintoData.map(({ lyhenne }) => lyhenne),
+    labels: map(opintoData, "kurssi"),
     datasets: opintoData.map(() => (1 / opintoData.length) * 100),
     backgroundColor: opintoData.map(
       ({ done }) => (done ? "lightgreen" : "lightgray")
@@ -465,8 +490,6 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   }, []);
 };
 
-const isTruthy = v => v;
-
 const rakenteleDataSetitKeskiarvoChartille = ({
   keskiarvot,
   keskiarvotPerusopinnoista,
@@ -475,17 +498,17 @@ const rakenteleDataSetitKeskiarvoChartille = ({
   [
     {
       label: "Päivittäinen keskiarvo kaikista kursseista",
-      data: keskiarvot.map(({ keskiarvo }) => keskiarvo),
+      data: map(keskiarvot, "keskiarvo"),
       ...style
     },
     notEmpty(keskiarvotPerusopinnoista) && {
       label: "Päivittäinen keskiarvo perusopinnoista",
-      data: keskiarvotPerusopinnoista.map(({ keskiarvo }) => keskiarvo),
+      data: map(keskiarvotPerusopinnoista, "keskiarvo"),
       ...styleBlue
     },
     notEmpty(keskiarvotAineopinnoista) && {
       label: "Päivittäinen keskiarvo aineopinnoista",
-      data: keskiarvotAineopinnoista.map(({ keskiarvo }) => keskiarvo),
+      data: map(keskiarvotAineopinnoista, "keskiarvo"),
       ...styleGreen
     }
   ].filter(isTruthy);
@@ -494,11 +517,11 @@ const rakenteleDataSetitNoppaChartille = grouped =>
   [
     {
       label: "Päivän opintopisteet",
-      data: grouped.map(({ op }) => op)
+      data: map(grouped, "op")
     },
     {
       label: "Suoritukset",
-      data: grouped.map(({ cumulativeOp }) => cumulativeOp),
+      data: map(grouped, "cumulativeOp"),
       ...style,
       type: "line"
     }
@@ -516,14 +539,14 @@ const drawGraphs = ({
       id: "chart-nopat",
       customTooltip: true,
       customTicks: true,
-      labels: grouped.map(({ pvm }) => pvm),
+      labels: map(grouped, "pvm"),
       datasets: rakenteleDataSetitNoppaChartille(grouped)
     });
 
   notEmpty(keskiarvot) &&
     draw({
       id: "chart-keskiarvo",
-      labels: keskiarvot.map(({ pvm }) => pvm),
+      labels: map(keskiarvot, "pvm"),
       type: "line",
       datasets: rakenteleDataSetitKeskiarvoChartille({
         keskiarvot,
@@ -545,28 +568,25 @@ const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]) =>
 
 const getPvmArray = pvm => pvm.split(".").map(Number);
 
-const sorttaaStuffLukukausienMukaan = (a, b) =>
-  rakenteleDateObjekti(getPvmArray(a.pvm)) -
-  rakenteleDateObjekti(getPvmArray(a.pvm));
+const sorttaaStuffLukukausienMukaan = (a, b) => a.pvmDate - b.pvmDate;
 
 const isInBetween = ({ value, values: [start, end] }) =>
   value >= start && value <= end;
 
-const laskeLukukausienNopat = (prev, { pvm, op }) => {
-  const [paiva, kuukausi, vuosi] = getPvmArray(pvm);
-  const coursePvm = rakenteleDateObjekti([paiva, kuukausi, vuosi]);
+const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
+  const vuosi = pvmDate.getFullYear();
 
   // Then.. It must be the previous semester of the previous semester we just checked!
   // this comment makes no sense now that i moved it from else, sorry. - juha
   let vuosiJuttu = vuosi - 1;
 
   const pvmIsCurrentSemester = isInBetween({
-    value: coursePvm,
+    value: pvmDate,
     values: getLukuvuosi(vuosi)
   });
 
   const pvmIsNextSemester = isInBetween({
-    value: coursePvm,
+    value: pvmDate,
     values: getLukuvuosi(vuosi + 1)
   });
 
@@ -615,6 +635,7 @@ const piirräLuennoitsijaListat = stuff => {
   const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
 
   const luennoitsijatElement = document.querySelector("#luennoitsijat");
+  luennoitsijatElement.innerHTML = "";
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by kurssimaara",
@@ -670,21 +691,17 @@ const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 
 // tästä tää lähtee!
 const start = () => {
+  if (!pitäisköDomRakentaa()) {
+    return;
+  }
+
   const {
     duplikaattiKurssit,
     perusOpinnot,
     aineOpinnot
   } = hommaaMatskutLocalStoragesta();
 
-  const onnistuikoDomminLuontiHÄ = createDom({
-    duplikaattiKurssit,
-    perusOpinnot,
-    aineOpinnot
-  });
-
-  if (!onnistuikoDomminLuontiHÄ) {
-    return;
-  }
+  createDom({ duplikaattiKurssit, perusOpinnot, aineOpinnot });
 
   // Make stuff & filter out undefined things
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
