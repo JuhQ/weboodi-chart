@@ -20,6 +20,8 @@ const isTruthy = v => v;
 
 const isString = val => typeof val === "string";
 
+const notEmpty = data => data.length > 0;
+
 const map = (list, keys) =>
   list.reduce(
     (acc, item) => [
@@ -57,12 +59,10 @@ const kurssitietokanta = {
       TKT20005: "Laskennan mallit",
       TKT20006: "Ohjelmistotuotanto",
       TKT20007: "Ohjelmistotuotantoprojekti",
+      TKT20008: "Johdatus tekoälyyn",
+      TKT20009: "Tietoturvan perusteet",
       TKT20013: "Kandidaatin tutkielma",
       TKT20014: "Kypsyysnäyte LuK"
-    },
-    mitasnaaon: {
-      TKT20008: "Johdatus tekoälyyn",
-      TKT20009: "Tietoturvan perusteet"
     },
     labrat: {
       TKT20010: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
@@ -72,26 +72,20 @@ const kurssitietokanta = {
   }
 };
 
-// fug
-const findFromKurssiTietokanta = lyhenne =>
-  Object.keys(kurssitietokanta).reduce(
-    (acc, tiedekunta) =>
+const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
+  Object.keys(db).reduce(
+    (acc, key) =>
       acc ||
-      Object.keys(kurssitietokanta[tiedekunta]).reduce(
-        (acc, wadapmikästääon) =>
-          acc ||
-          Object.keys(kurssitietokanta[tiedekunta][wadapmikästääon]).reduce(
-            (acc, kurssi) =>
-              acc ||
-              (kurssi.toLowerCase() === lyhenne.toLowerCase()
-                ? kurssitietokanta[tiedekunta][wadapmikästääon][kurssi]
-                : acc),
-            ""
-          ),
-        ""
-      ),
+      (isString(db[key])
+        ? key.toLowerCase() === lyhenne.toLowerCase()
+          ? db[key]
+          : acc
+        : findFromKurssiTietokantaRecurse({ db: db[key], lyhenne })),
     ""
   );
+
+const findFromKurssiTietokanta = lyhenne =>
+  findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
 
 const teeHienoTooltip = () => ({
   tooltips: {
@@ -280,10 +274,13 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
   </div>
   `;
 
-const pitäisköDomRakentaa = () => !!document.querySelectorAll("table")[1];
+const suoritusTableSelector = "[name=suoritus] + table + table";
+
+const pitäisköDomRakentaa = () =>
+  !!document.querySelector(suoritusTableSelector);
 
 const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
-  const listaTaulukko = document.querySelectorAll("table")[1];
+  const listaTaulukko = document.querySelector(suoritusTableSelector);
   const nuggetsExist = document.querySelector("#nuggets");
   const yolo = yolohtml({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
 
@@ -299,8 +296,6 @@ const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
 
   return true;
 };
-
-const notEmpty = data => data.length > 0;
 
 const createCoursesArray = target =>
   target.value
@@ -378,7 +373,7 @@ const muutaArrayKivaksiObjektiksi = ([
   kurssi,
   op,
   arvosana,
-  pvm,
+  pvm = "01.01.1970",
   luennoitsija
 ]) => ({
   pvm,
@@ -387,7 +382,7 @@ const muutaArrayKivaksiObjektiksi = ([
   luennoitsija,
   op: Number(op),
   arvosana: Number(arvosana),
-  pvmDate: rakenteleDateObjekti(getPvmArray(pvm || "1.1.1970"))
+  pvmDate: rakenteleDateObjekti(getPvmArray(pvm))
 });
 
 const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
@@ -400,7 +395,7 @@ const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
 
 const hommaaMeilleListaAsijoistaDommista = () => [
   ...document.querySelectorAll(
-    "#legacy-page-wrapper > table:nth-child(17) > tbody > tr > td > table > tbody tr"
+    "[name=suoritus] + table + table:not(.eisei) table.eisei tbody tr"
   )
 ];
 
