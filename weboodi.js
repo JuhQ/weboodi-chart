@@ -40,6 +40,59 @@ const chartColors = [
   "purple"
 ];
 
+const kurssitietokanta = {
+  tkt: {
+    perusopinnot: {
+      TKT10001: "Johdatus tietojenkäsittelytieteeseen",
+      TKT10002: "Ohjelmoinnin perusteet",
+      TKT10003: "Ohjelmoinnin jatkokurssi",
+      TKT10004: "Tietokantojen perusteet",
+      TKT10005: "Tietokoneen toiminta"
+    },
+    aineopinnot: {
+      TKT20001: "Tietorakenteet ja algoritmit",
+      TKT20002: "Ohjelmistotekniikan menetelmät",
+      TKT20003: "Käyttöjärjestelmät",
+      TKT20004: "Tietoliikenteen perusteet",
+      TKT20005: "Laskennan mallit",
+      TKT20006: "Ohjelmistotuotanto",
+      TKT20007: "Ohjelmistotuotantoprojekti",
+      TKT20013: "Kandidaatin tutkielma",
+      TKT20014: "Kypsyysnäyte LuK"
+    },
+    mitasnaaon: {
+      TKT20008: "Johdatus tekoälyyn",
+      TKT20009: "Tietoturvan perusteet"
+    },
+    labrat: {
+      TKT20010: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
+      TKT20011: "Aineopintojen harjoitustyö: Tietokantasovellus",
+      TKT20012: "Aineopintojen harjoitustyö: Tietoliikenne"
+    }
+  }
+};
+
+// fug
+const findFromKurssiTietokanta = lyhenne =>
+  Object.keys(kurssitietokanta).reduce(
+    (acc, tiedekunta) =>
+      acc ||
+      Object.keys(kurssitietokanta[tiedekunta]).reduce(
+        (acc, wadapmikästääon) =>
+          acc ||
+          Object.keys(kurssitietokanta[tiedekunta][wadapmikästääon]).reduce(
+            (acc, kurssi) =>
+              acc ||
+              (kurssi.toLowerCase() === lyhenne.toLowerCase()
+                ? kurssitietokanta[tiedekunta][wadapmikästääon][kurssi]
+                : acc),
+            ""
+          ),
+        ""
+      ),
+    ""
+  );
+
 const teeHienoTooltip = () => ({
   tooltips: {
     callbacks: {
@@ -447,7 +500,10 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
       .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true })),
     ...data
       .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
-      .map(lyhenne => ({ kurssi: lyhenne, done: false }))
+      .map(lyhenne => ({
+        kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
+        done: false
+      }))
   ];
 
   drawPie({
