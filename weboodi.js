@@ -585,6 +585,7 @@ const makeSomeStuff = duplikaattiKurssit =>
     .map(item => item.map(value => value.textContent).map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
+    .filter(item => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
