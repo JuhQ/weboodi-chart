@@ -693,7 +693,7 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
 
   document.getElementById(`${id}-progress`).innerHTML = `${
     coursesDone.length
-  }/${coursesDone.length + coursesNotDone.length}`;
+  }/${opintoData.length}`;
 
   drawPie({
     id,
