@@ -4,12 +4,11 @@ const getLocalStorage = key =>
 const setLocalStorage = key => value =>
   localStorage.setItem(key, JSON.stringify(value));
 
-const getDuplikaattiKurssit = () => getLocalStorage("duplikaattiKurssit");
-
 const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage("perusOpinnot");
 const setAineOpinnot = setLocalStorage("aineOpinnot");
 
+const getDuplikaattiKurssit = () => getLocalStorage("duplikaattiKurssit");
 const getPerusOpinnot = () => getLocalStorage("perusOpinnot");
 const getAineOpinnot = () => getLocalStorage("aineOpinnot");
 
@@ -22,6 +21,10 @@ const isTruthy = v => v;
 const isString = val => typeof val === "string";
 
 const notEmpty = data => data.length > 0;
+
+const isArray = val => Array.isArray(val);
+
+const toLowerCase = str => str.toLowerCase();
 
 const map = (list, keys) =>
   list.reduce(
@@ -45,100 +48,181 @@ const chartColors = [
 
 const kurssitietokanta = {
   tkt: {
-    perusopinnot: {
-      TKT10001: "Johdatus tietojenkäsittelytieteeseen",
-      582102: "Johdatus tietojenkäsittelytieteeseen",
-      TKT10002: "Ohjelmoinnin perusteet",
-      581325: "Ohjelmoinnin perusteet",
-      TKT10003: "Ohjelmoinnin jatkokurssi",
-      582103: "Ohjelmoinnin jatkokurssi",
-      TKT10004: "Tietokantojen perusteet",
-      581328: "Tietokantojen perusteet", 
-      TKT10005: "Tietokoneen toiminta",
-      581305: "Tietokoneen toiminta",
-    },
-    aineopinnot: {
-      TKT20001: "Tietorakenteet ja algoritmit",
-      58131: "Tietorakenteet ja algoritmit",  
-      TKT20002: "Ohjelmistotekniikan menetelmät",
-      582104: "Ohjelmistotekniikan menetelmät",
-      TKT20003: "Käyttöjärjestelmät",
-      582219: "Käyttöjärjestelmät", 
-      TKT20004: "Tietoliikenteen perusteet",
-      582202: "Tietoliikenteen perusteet",
-      TKT20005: "Laskennan mallit",
-      582206: "Laskennan mallit", 
-      TKT20006: "Ohjelmistotuotanto",
-      581259: "Ohjelmistotuotanto", 
-      TKT20007: "Ohjelmistotuotantoprojekti",
-      581260: "Ohjelmistotuotantoprojekti", 
-      TKT20008: "Johdatus tekoälyyn",
-      582216: "Johdatus tekoälyyn",
-      TKT20009: "Tietoturvan perusteet",
-      582215: "Tietoturvan perusteet",
-      TKT20013: "Kandidaatin tutkielma",
-      582204: "Kandidaatin tutkielma",  
-      TKT20014: "Kypsyysnäyte LuK",
-      50036: "Kypsyysnäyte LuK" 
-    },
-    perusopinnotPre2017: {
-      TKT10001: "Johdatus tietojenkäsittelytieteeseen",
-      582102: "Johdatus tietojenkäsittelytieteeseen",
-      TKT10002: "Ohjelmoinnin perusteet",
-      581325: "Ohjelmoinnin perusteet",
-      TKT10003: "Ohjelmoinnin jatkokurssi",
-      582103: "Ohjelmoinnin jatkokurssi",
-      TKT10004: "Tietokantojen perusteet",
-      581328: "Tietokantojen perusteet", 
-      TKT20002: "Ohjelmistotekniikan menetelmät",
-      582104: "Ohjelmistotekniikan menetelmät",
-    },
-    aineopinnotPre2017: {
-      TKT20001: "Tietorakenteet ja algoritmit",
-      58131: "Tietorakenteet ja algoritmit",  
-      TKT10005: "Tietokoneen toiminta",
-      581305: "Tietokoneen toiminta",
-      TKT20003: "Käyttöjärjestelmät",
-      582219: "Käyttöjärjestelmät", 
-      TKT20004: "Tietoliikenteen perusteet",
-      582202: "Tietoliikenteen perusteet", 
-      TKT20005: "Laskennan mallit",
-      582206: "Laskennan mallit", 
-      TKT20006: "Ohjelmistotuotanto",
-      581259: "Ohjelmistotuotanto", 
-      TKT20007: "Ohjelmistotuotantoprojekti",
-      581260: "Ohjelmistotuotantoprojekti", 
-      TKT20008: "Johdatus tekoälyyn",
-      582216: "Johdatus tekoälyyn",
-      TKT20009: "Tietoturvan perusteet",
-      582215: "Tietoturvan perusteet",
-      TKT20013: "Kandidaatin tutkielma",
-      582204: "Kandidaatin tutkielma", 
-      TKT20014: "Kypsyysnäyte LuK",
-      50036: "Kypsyysnäyte LuK" 
-    },
-    labrat: {
-      TKT20010: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
-      58161: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
-      TKT20011: "Aineopintojen harjoitustyö: Tietokantasovellus",
-      582203: "Aineopintojen harjoitustyö: Tietokantasovellus", 
-      TKT20012: "Aineopintojen harjoitustyö: Tietoliikenne",
-      582221: "Aineopintojen harjoitustyö: Ohjelmointi" 
-    }
+    perusopinnot: [
+      {
+        name: "Johdatus tietojenkäsittelytieteeseen",
+        keys: ["TKT10001", "AYTKT10001", "582102", "A582102"]
+      },
+      {
+        name: "Ohjelmoinnin perusteet",
+        keys: ["TKT10002", "AYTKT10002", "581325", "A581325"]
+      },
+      {
+        name: "Ohjelmoinnin jatkokurssi",
+        keys: ["TKT10003", "AYTKT10003", "582103", "A582103"]
+      },
+      {
+        name: "Tietokantojen perusteet",
+        keys: ["TKT10004", "AYTKT10004", "581328", "A581328"]
+      },
+      {
+        name: "Tietokoneen toiminta",
+        keys: ["TKT10005", "AYTKT10005", "581305", "A581305"]
+      }
+    ],
+    aineopinnot: [
+      {
+        name: "Tietorakenteet ja algoritmit",
+        keys: ["TKT20001", "AYTKT20001", "58131", "A58131"]
+      },
+      {
+        name: "Ohjelmistotekniikan menetelmät",
+        keys: ["TKT20002", "AYTKT20002", "582104", "A582104"]
+      },
+      {
+        name: "Käyttöjärjestelmät",
+        keys: ["TKT20003", "AYTKT20003", "582219", "A582219"]
+      },
+      {
+        name: "Tietoliikenteen perusteet",
+        keys: ["TKT20004", "AYTKT20004", "582202", "A582202"]
+      },
+      {
+        name: "Laskennan mallit",
+        keys: ["TKT20005", "AYTKT20005", "582206", "A582206"]
+      },
+      {
+        name: "Ohjelmistotuotanto",
+        keys: ["TKT20006", "AYTKT20006", "581259", "A581259"]
+      },
+      {
+        name: "Ohjelmistotuotantoprojekti",
+        keys: ["TKT20007", "AYTKT20007", "581260", "A581260"]
+      },
+      {
+        name: "Johdatus tekoälyyn",
+        keys: ["TKT20008", "AYTKT20008", "582216", "A582216"]
+      },
+      {
+        name: "Tietoturvan perusteet",
+        keys: ["TKT20009", "AYTKT20009", "582215", "A582215"]
+      },
+      {
+        name: "Kandidaatin tutkielma",
+        keys: ["TKT20013", "AYTKT20013", "582204", "A582204"]
+      },
+      {
+        name: "Kypsyysnäyte LuK",
+        keys: ["TKT20014", "AYTKT20014", "50036", "A50036"]
+      }
+    ],
+    perusopinnotPre2017: [
+      {
+        name: "Johdatus tietojenkäsittelytieteeseen",
+        keys: ["TKT10001", "AYTKT10001", "582102", "A582102"]
+      },
+      {
+        name: "Ohjelmoinnin perusteet",
+        keys: ["TKT10002", "AYTKT10002", "581325", "A581325"]
+      },
+      {
+        name: "Ohjelmoinnin jatkokurssi",
+        keys: ["TKT10003", "AYTKT10003", "582103", "A582103"]
+      },
+      {
+        name: "Tietokantojen perusteet",
+        keys: ["TKT10004", "AYTKT10004", "581328", "A581328"]
+      },
+      {
+        name: "Ohjelmistotekniikan menetelmät",
+        keys: ["TKT20002", "AYTKT20002", "582104", "A582104"]
+      }
+    ],
+    aineopinnotPre2017: [
+      {
+        name: "Tietorakenteet ja algoritmit",
+        keys: ["TKT20001", "AYTKT20001", "58131", "A58131"]
+      },
+      {
+        name: "Käyttöjärjestelmät",
+        keys: ["TKT20003", "AYTKT20003", "582219", "A582219"]
+      },
+      {
+        name: "Tietokoneen toiminta",
+        keys: ["TKT10005", "AYTKT10005", "581305", "A581305"]
+      },
+      {
+        name: "Tietoliikenteen perusteet",
+        keys: ["TKT20004", "AYTKT20004", "582202", "A582202"]
+      },
+      {
+        name: "Laskennan mallit",
+        keys: ["TKT20005", "AYTKT20005", "582206", "A582206"]
+      },
+      {
+        name: "Ohjelmistotuotanto",
+        keys: ["TKT20006", "AYTKT20006", "581259", "A581259"]
+      },
+      {
+        name: "Ohjelmistotuotantoprojekti",
+        keys: ["TKT20007", "AYTKT20007", "581260", "A581260"]
+      },
+      {
+        name: "Johdatus tekoälyyn",
+        keys: ["TKT20008", "AYTKT20008", "582216", "A582216"]
+      },
+      {
+        name: "Tietoturvan perusteet",
+        keys: ["TKT20009", "AYTKT20009", "582215", "A582215"]
+      },
+      {
+        name: "Kandidaatin tutkielma",
+        keys: ["TKT20013", "AYTKT20013", "582204", "A582204"]
+      },
+      {
+        name: "Kypsyysnäyte LuK",
+        keys: ["TKT20014", "AYTKT20014", "50036", "A50036"]
+      }
+    ],
+    labrat: [
+      {
+        name: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
+        keys: ["TKT20010", "58161", "AYTKT20010", "A58161"]
+      },
+      {
+        name: "Aineopintojen harjoitustyö: Tietokantasovellus",
+        keys: ["TKT20011", "582203", "AYTKT20011", "A582203"]
+      },
+      {
+        name: "Aineopintojen harjoitustyö: Tietoliikenne",
+        keys: ["TKT20012", "AYTKT20012"]
+      },
+      {
+        name: "Aineopintojen harjoitustyö: Ohjelmointi",
+        keys: ["582221", "A582221"]
+      }
+    ]
   }
 };
 
 const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
-  Object.keys(db).reduce(
-    (acc, key) =>
+  Object.keys(db).reduce((acc, key) => {
+    const courseFound =
+      !acc.length &&
+      isArray(db[key]) &&
+      db[key].find(({ keys }) =>
+        keys.map(toLowerCase).includes(lyhenne.toLowerCase())
+      );
+
+    return (
       acc ||
-      (isString(db[key])
-        ? key.toLowerCase() === lyhenne.toLowerCase()
-          ? db[key]
+      (isArray(db[key])
+        ? courseFound
+          ? courseFound.name
           : acc
-        : findFromKurssiTietokantaRecurse({ db: db[key], lyhenne })),
-    ""
-  );
+        : findFromKurssiTietokantaRecurse({ db: db[key], lyhenne }))
+    );
+  }, "");
 
 const findFromKurssiTietokanta = lyhenne =>
   findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
@@ -271,11 +355,11 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
   <div id="nuggets" class="margin-bottom-large">
     <div class="clear margin-bottom-small">
       <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
-        Perusopinnot
+        Perusopinnot <span id="perusopinnot-progress"></span>
         <canvas id="perusopinnot" width="500" height="200"></canvas>
       </div>
       <div id="aineopinnot-container" class="jeejee-pull-left" style="display:none;">
-        Aineopinnot
+        Aineopinnot <span id="aineopinnot-progress"></span>
         <canvas id="aineopinnot" width="500" height="200"></canvas>
       </div>
     </div>
@@ -323,13 +407,13 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
 
       <p>
         <button id="kliketi-klik-esitäyttö-2017">
-          Esitäytä perus- ja aineopinnot tkt opinnoilla (2017 - )
+          Esitäytä perus- ja aineopinnot tkt kandi opinnoilla (2017 &ge; ) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
         </button>
       </p>
 
       <p>
         <button id="kliketi-klik-esitäyttö-pre-2017">
-          Esitäytä perus- ja aineopinnot tkt opinnoilla (- 2016)
+          Esitäytä perus- ja aineopinnot tkt kandi opinnoilla (&le; 2016) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
         </button>
       </p>
     </div>
@@ -401,12 +485,15 @@ const kuunteleppaNapinpainalluksiaJuu = () => {
   input.addEventListener("click", start);
 };
 
+const luoKurssiAvainListaTietokannasta = opinnot =>
+  map(kurssitietokanta.tkt[opinnot], "keys").reduce((a, b) => [...a, ...b], []);
+
 const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
   const input = document.querySelector("button#kliketi-klik-esitäyttö-2017");
 
   input.addEventListener("click", () => {
-    setPerusOpinnot(Object.keys(kurssitietokanta.tkt.perusopinnot));
-    setAineOpinnot(Object.keys(kurssitietokanta.tkt.aineopinnot));
+    setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnot"));
+    setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnot"));
     start();
   });
 };
@@ -417,8 +504,8 @@ const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
   );
 
   input.addEventListener("click", () => {
-    setPerusOpinnot(Object.keys(kurssitietokanta.tkt.perusopinnotPre2017));
-    setAineOpinnot(Object.keys(kurssitietokanta.tkt.aineopinnotPre2017));
+    setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnotPre2017"));
+    setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnotPre2017"));
     start();
   });
 };
@@ -580,18 +667,32 @@ const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
   luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
 };
 
+const courseNamesMatch = kurssi => row => row.kurssi === kurssi;
+
+const removeDuplicateCourses = coursesDone => (acc, item) =>
+  acc.find(courseNamesMatch(item.kurssi)) ||
+  coursesDone.find(courseNamesMatch(item.kurssi))
+    ? acc
+    : [...acc, item];
+
 const drawOpintoDonitsi = ({ id, stuff, data }) => {
-  const opintoData = [
-    ...stuff
-      .filter(({ lyhenne }) => data.includes(lyhenne))
-      .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true })),
-    ...data
-      .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
-      .map(lyhenne => ({
-        kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
-        done: false
-      }))
-  ];
+  const coursesDone = stuff
+    .filter(({ lyhenne }) => data.includes(lyhenne))
+    .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true }));
+
+  const coursesNotDone = data
+    .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
+    .map(lyhenne => ({
+      kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
+      done: false
+    }))
+    .reduce(removeDuplicateCourses(coursesDone), []);
+
+  const opintoData = [...coursesDone, ...coursesNotDone];
+
+  document.getElementById(`${id}-progress`).innerHTML = `${
+    coursesDone.length
+  }/${coursesDone.length + coursesNotDone.length}`;
 
   drawPie({
     id,
