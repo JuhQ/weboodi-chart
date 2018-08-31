@@ -47,48 +47,83 @@ const kurssitietokanta = {
   tkt: {
     perusopinnot: {
       TKT10001: "Johdatus tietojenkäsittelytieteeseen",
+      582102: "Johdatus tietojenkäsittelytieteeseen",
       TKT10002: "Ohjelmoinnin perusteet",
+      581325: "Ohjelmoinnin perusteet",
       TKT10003: "Ohjelmoinnin jatkokurssi",
+      582103: "Ohjelmoinnin jatkokurssi",
       TKT10004: "Tietokantojen perusteet",
-      TKT10005: "Tietokoneen toiminta"
+      581328: "Tietokantojen perusteet", 
+      TKT10005: "Tietokoneen toiminta",
+      581305: "Tietokoneen toiminta",
     },
     aineopinnot: {
       TKT20001: "Tietorakenteet ja algoritmit",
+      58131: "Tietorakenteet ja algoritmit",  
       TKT20002: "Ohjelmistotekniikan menetelmät",
+      582104: "Ohjelmistotekniikan menetelmät",
       TKT20003: "Käyttöjärjestelmät",
+      582219: "Käyttöjärjestelmät", 
       TKT20004: "Tietoliikenteen perusteet",
+      582202: "Tietoliikenteen perusteet",
       TKT20005: "Laskennan mallit",
+      582206: "Laskennan mallit", 
       TKT20006: "Ohjelmistotuotanto",
+      581259: "Ohjelmistotuotanto", 
       TKT20007: "Ohjelmistotuotantoprojekti",
+      581260: "Ohjelmistotuotantoprojekti", 
       TKT20008: "Johdatus tekoälyyn",
+      582216: "Johdatus tekoälyyn",
       TKT20009: "Tietoturvan perusteet",
+      582215: "Tietoturvan perusteet",
       TKT20013: "Kandidaatin tutkielma",
-      TKT20014: "Kypsyysnäyte LuK"
+      582204: "Kandidaatin tutkielma",  
+      TKT20014: "Kypsyysnäyte LuK",
+      50036: "Kypsyysnäyte LuK" 
     },
     perusopinnotPre2017: {
       TKT10001: "Johdatus tietojenkäsittelytieteeseen",
+      582102: "Johdatus tietojenkäsittelytieteeseen",
       TKT10002: "Ohjelmoinnin perusteet",
+      581325: "Ohjelmoinnin perusteet",
       TKT10003: "Ohjelmoinnin jatkokurssi",
+      582103: "Ohjelmoinnin jatkokurssi",
       TKT10004: "Tietokantojen perusteet",
-      TKT20002: "Ohjelmistotekniikan menetelmät"
+      581328: "Tietokantojen perusteet", 
+      TKT20002: "Ohjelmistotekniikan menetelmät",
+      582104: "Ohjelmistotekniikan menetelmät",
     },
     aineopinnotPre2017: {
       TKT20001: "Tietorakenteet ja algoritmit",
+      58131: "Tietorakenteet ja algoritmit",  
       TKT10005: "Tietokoneen toiminta",
+      581305: "Tietokoneen toiminta",
       TKT20003: "Käyttöjärjestelmät",
+      582219: "Käyttöjärjestelmät", 
       TKT20004: "Tietoliikenteen perusteet",
+      582202: "Tietoliikenteen perusteet", 
       TKT20005: "Laskennan mallit",
+      582206: "Laskennan mallit", 
       TKT20006: "Ohjelmistotuotanto",
+      581259: "Ohjelmistotuotanto", 
       TKT20007: "Ohjelmistotuotantoprojekti",
+      581260: "Ohjelmistotuotantoprojekti", 
       TKT20008: "Johdatus tekoälyyn",
+      582216: "Johdatus tekoälyyn",
       TKT20009: "Tietoturvan perusteet",
+      582215: "Tietoturvan perusteet",
       TKT20013: "Kandidaatin tutkielma",
-      TKT20014: "Kypsyysnäyte LuK"
+      582204: "Kandidaatin tutkielma", 
+      TKT20014: "Kypsyysnäyte LuK",
+      50036: "Kypsyysnäyte LuK" 
     },
     labrat: {
       TKT20010: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
+      58161: "Aineopintojen harjoitustyö: Tietorakenteet ja algoritmit",
       TKT20011: "Aineopintojen harjoitustyö: Tietokantasovellus",
-      TKT20012: "Aineopintojen harjoitustyö: Tietoliikenne"
+      582203: "Aineopintojen harjoitustyö: Tietokantasovellus", 
+      TKT20012: "Aineopintojen harjoitustyö: Tietoliikenne",
+      582221: "Aineopintojen harjoitustyö: Ohjelmointi" 
     }
   }
 };
