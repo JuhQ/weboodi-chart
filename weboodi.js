@@ -587,6 +587,7 @@ const makeSomeStuff = duplikaattiKurssit =>
     .reverse()
     .filter(item => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
+    .sort(sorttaaStuffLukukausienMukaan)
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
 const takeUntil = (list, n) =>
