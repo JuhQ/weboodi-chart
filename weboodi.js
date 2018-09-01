@@ -676,22 +676,29 @@ const removeAvoinFromKurssiNimi = item => ({
   kurssi: item.kurssi.replace("Avoin yo: ", "")
 });
 
-const drawOpintoDonitsi = ({ id, stuff, data }) => {
-  const coursesDone = stuff
-    .filter(({ lyhenne }) => data.includes(lyhenne))
-    .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true }))
-    .map(removeAvoinFromKurssiNimi);
+const negate = callback => item => !callback(item);
 
-  const coursesNotDone = data
-    .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
-    .map(lyhenne => ({
+const partition = (list, predicate) => [
+  list.filter(negate(predicate)),
+  list.filter(predicate)
+];
+
+const drawOpintoDonitsi = ({ id, stuff, data }) => {
+  const [coursesDone, coursesNotDone] = partition(
+    data,
+    lyhenne => !stuff.find(course => lyhenne === course.lyhenne)
+  );
+
+  const opintoData = [
+    ...coursesDone.map(lyhenne => ({ lyhenne, done: true })),
+    ...coursesNotDone.map(lyhenne => ({ lyhenne, done: false }))
+  ]
+    .map(({ lyhenne, done }) => ({
       kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
-      done: false
+      done
     }))
     .reduce(removeDuplicateCourses(coursesDone), [])
     .map(removeAvoinFromKurssiNimi);
-
-  const opintoData = [...coursesDone, ...coursesNotDone];
 
   const greatSuccess =
     coursesDone.length === opintoData.length ? "All done, nice!" : "";
