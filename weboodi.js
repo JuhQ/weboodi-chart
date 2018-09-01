@@ -100,20 +100,22 @@ const kurssitietokanta = {
         keys: ["TKT20007", "AYTKT20007", "581260", "A581260"]
       },
       {
-        name: "Johdatus tekoälyyn",
-        keys: ["TKT20008", "AYTKT20008", "582216", "A582216"]
-      },
-      {
-        name: "Tietoturvan perusteet",
-        keys: ["TKT20009", "AYTKT20009", "582215", "A582215"]
-      },
-      {
         name: "Kandidaatin tutkielma",
         keys: ["TKT20013", "AYTKT20013", "582204", "A582204"]
       },
       {
         name: "Kypsyysnäyte LuK",
         keys: ["TKT20014", "AYTKT20014", "50036", "A50036"]
+      }
+    ],
+    mitaNaaOn: [
+      {
+        name: "Johdatus tekoälyyn",
+        keys: ["TKT20008", "AYTKT20008", "582216", "A582216"]
+      },
+      {
+        name: "Tietoturvan perusteet",
+        keys: ["TKT20009", "AYTKT20009", "582215", "A582215"]
       }
     ],
     perusopinnotPre2017: [
@@ -166,14 +168,6 @@ const kurssitietokanta = {
       {
         name: "Ohjelmistotuotantoprojekti",
         keys: ["TKT20007", "AYTKT20007", "581260", "A581260"]
-      },
-      {
-        name: "Johdatus tekoälyyn",
-        keys: ["TKT20008", "AYTKT20008", "582216", "A582216"]
-      },
-      {
-        name: "Tietoturvan perusteet",
-        keys: ["TKT20009", "AYTKT20009", "582215", "A582215"]
       },
       {
         name: "Kandidaatin tutkielma",
@@ -677,10 +671,16 @@ const removeDuplicateCourses = coursesDone => (acc, item) =>
     ? acc
     : [...acc, item];
 
+const removeAvoinFromKurssiNimi = item => ({
+  ...item,
+  kurssi: item.kurssi.replace("Avoin yo: ", "")
+});
+
 const drawOpintoDonitsi = ({ id, stuff, data }) => {
   const coursesDone = stuff
     .filter(({ lyhenne }) => data.includes(lyhenne))
-    .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true }));
+    .map(({ kurssi, lyhenne }) => ({ kurssi, lyhenne, done: true }))
+    .map(removeAvoinFromKurssiNimi);
 
   const coursesNotDone = data
     .filter(lyhenne => !stuff.find(course => lyhenne === course.lyhenne))
@@ -688,13 +688,17 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
       kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
       done: false
     }))
-    .reduce(removeDuplicateCourses(coursesDone), []);
+    .reduce(removeDuplicateCourses(coursesDone), [])
+    .map(removeAvoinFromKurssiNimi);
 
   const opintoData = [...coursesDone, ...coursesNotDone];
 
+  const greatSuccess =
+    coursesDone.length === opintoData.length ? "All done, nice!" : "";
+
   document.getElementById(`${id}-progress`).innerHTML = `${
     coursesDone.length
-  }/${opintoData.length}`;
+  }/${opintoData.length} ${greatSuccess}`;
 
   drawPie({
     id,
