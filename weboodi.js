@@ -221,6 +221,8 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
 const findFromKurssiTietokanta = lyhenne =>
   findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
 
+const isFloat = n => Number(n) === n && n % 1 !== 0;
+
 const teeHienoTooltip = () => ({
   tooltips: {
     callbacks: {
@@ -229,7 +231,8 @@ const teeHienoTooltip = () => ({
         const value = Math.round(tooltipItem.yLabel * 100) / 100;
 
         // datasetIndex = bar chart, values are multiplied by ten to show larger bars
-        const labelValue = tooltipItem.datasetIndex ? value : value / 10;
+        const labelValue =
+          tooltipItem.datasetIndex || isFloat(value / 10) ? value : value / 10;
 
         return `${label}: ${labelValue}`;
       }
@@ -542,7 +545,11 @@ const groupThemCourses = stuff =>
           : [...initial, item],
       []
     )
-    .map(item => ({ ...item, op: item.op * 10 }));
+    .map(item => ({
+      ...item,
+      op: item.op <= 10 ? item.op * 10 : item.op,
+      realOp: item.op
+    }));
 
 const putsaaTeksti = str => str.replace(/&nbsp;/g, " ").trim();
 
@@ -558,7 +565,7 @@ const muutaArrayKivaksiObjektiksi = ([
   kurssi,
   lyhenne,
   luennoitsija,
-  op: Number(op),
+  op: Number(op.replace("(", "").replace(")", "")), // paketoitu kandi tms
   arvosana: Number(arvosana),
   pvmDate: rakenteleDateObjekti(getPvmArray(pvm))
 });
@@ -586,6 +593,7 @@ const makeSomeStuff = duplikaattiKurssit =>
     .reverse()
     .filter(item => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
+    .filter(({ op }) => !isNaN(op))
     .sort(sorttaaStuffLukukausienMukaan)
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
@@ -867,15 +875,23 @@ const ryhmitteleStuffKivastiLukukausiksi = stuff =>
 
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   const kuukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
+  let labels = Object.keys(kuukausiGroups);
+  let data = Object.values(kuukausiGroups);
+
+  // if only one year to show, pad it with zeros
+  if (labels.length === 1) {
+    labels = [labels[0] - 1, labels[0], labels[0] + 1];
+    data = [0, data[0], 0];
+  }
 
   draw({
     id: "chart-nopat-vuosi",
     type: "line",
-    labels: Object.keys(kuukausiGroups),
+    labels,
     datasets: [
       {
         label: "Noppia per lukuvuosi",
-        data: Object.values(kuukausiGroups),
+        data,
         ...styleBlue
       }
     ]
