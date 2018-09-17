@@ -35,6 +35,10 @@ const map = (list, keys) =>
     []
   );
 
+const setHtmlContent = ({ id, content }) => {
+  document.getElementById(id).innerHTML = content;
+};
+
 const chartColors = [
   "pink",
   "red",
@@ -372,6 +376,12 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
       <div class="jeejee-pull-left half">
         <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
       </div>
+      <div class="jeejee-pull-left half">
+        <div id="opintojen-maara"></div>
+        <div id="keskiarvo-op-maara"></div>
+        <div id="luennoitsijoiden-maara"></div>
+        <div id="open-uni-maara"></div>
+      </div>
     </div>
     <div id="luennoitsijat"></div>
     <div id="tools" class="margin-bottom-large">
@@ -686,7 +696,7 @@ const removeDuplicateCourses = coursesDone => (acc, item) =>
 
 const removeAvoinFromKurssiNimi = item => ({
   ...item,
-  kurssi: item.kurssi.replace("Avoin yo: ", "")
+  kurssi: item.kurssi.replace("Avoin yo: ", "").replace("Open uni: ", "")
 });
 
 const negate = callback => item => !callback(item);
@@ -716,9 +726,10 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   const greatSuccess =
     coursesDone.length === opintoData.length ? "All done, nice!" : "";
 
-  document.getElementById(`${id}-progress`).innerHTML = `${
-    coursesDone.length
-  }/${opintoData.length} ${greatSuccess}`;
+  setHtmlContent({
+    id: `${id}-progress`,
+    content: `${coursesDone.length}/${opintoData.length} ${greatSuccess}`
+  });
 
   drawPie({
     id,
@@ -909,9 +920,7 @@ const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
 const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
   b.luennot.keskiarvo - a.luennot.keskiarvo || b.kurssimaara - a.kurssimaara;
 
-const piirräLuennoitsijaListat = stuff => {
-  const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
-
+const piirräLuennoitsijaListat = luennoitsijat => {
   const luennoitsijatElement = document.querySelector("#luennoitsijat");
   luennoitsijatElement.innerHTML = "";
 
@@ -965,6 +974,37 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
+const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara }) => {
+  const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
+  setHtmlContent({
+    id: "open-uni-maara",
+    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% kaikista opinnoistasi.`
+  });
+};
+
+const piirraRandomStatistiikkaa = ({
+  kurssimaara,
+  luennoitsijamaara,
+  op,
+  openUniMaara
+}) => {
+  setHtmlContent({
+    id: "opintojen-maara",
+    content: `Olet suorittanut huimat ${kurssimaara} erilaista kurssia! Good for you!`
+  });
+  setHtmlContent({
+    id: "luennoitsijoiden-maara",
+    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla.`
+  });
+  setHtmlContent({
+    id: "keskiarvo-op-maara",
+    content: `Keskiarvolta ${(op / kurssimaara).toFixed(2)} noppaa per kurssi.`
+  });
+  if (openUniMaara) {
+    piirraAvoimenSuorituksia({ kurssimaara, openUniMaara });
+  }
+};
+
 const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 
 // tästä tää lähtee!
@@ -991,6 +1031,8 @@ const start = () => {
     keskiarvotAineopinnoista
   } = laskeKeskiarvot({ stuff, keskiarvot, perusOpinnot, aineOpinnot });
 
+  const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
+
   drawGraphs({
     stuff,
     keskiarvot,
@@ -1000,9 +1042,19 @@ const start = () => {
 
   piirräDonitsit({ stuff, aineOpinnot, perusOpinnot }); // 🍩
 
-  piirräLuennoitsijaListat(stuff); // 👩‍🏫👨‍🏫
+  piirräLuennoitsijaListat(luennoitsijat); // 👩‍🏫👨‍🏫
 
   piirteleVuosiJuttujaJookosKookosHaliPus(stuff);
+
+  piirraRandomStatistiikkaa({
+    kurssimaara: stuff.length,
+    luennoitsijamaara: luennoitsijat.length,
+    op: map(stuff, "op").reduce(sum),
+    openUniMaara: map(stuff, "kurssi")
+      .map(name => name.toLowerCase())
+      .filter(name => name.includes("avoin yo") || name.includes("open uni"))
+      .length
+  });
 
   kuunteleAsijoita(); // 👂
 };
