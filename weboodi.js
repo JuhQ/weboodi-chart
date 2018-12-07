@@ -381,6 +381,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="keskiarvo-op-maara"></div>
         <div id="luennoitsijoiden-maara"></div>
         <div id="open-uni-maara"></div>
+        <div id="hyv-maara"></div>
       </div>
     </div>
     <div id="luennoitsijat"></div>
@@ -615,10 +616,12 @@ const sum = (a, b) => a + b;
 const average = list => list.reduce(sum, 0) / list.length;
 
 const annaMulleKeskiarvotKursseista = stuff =>
-  stuff.filter(item => !isNaN(item.arvosana)).map((item, i, list) => ({
-    ...item,
-    keskiarvo: average(takeUntil(map(list, "arvosana"), i + 1)).toFixed(2)
-  }));
+  stuff
+    .filter(item => !isNaN(item.arvosana))
+    .map((item, i, list) => ({
+      ...item,
+      keskiarvo: average(takeUntil(map(list, "arvosana"), i + 1)).toFixed(2)
+    }));
 
 const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
   annaMulleKeskiarvotKursseista(
@@ -735,8 +738,8 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
     id,
     labels: map(opintoData, "kurssi"),
     datasets: opintoData.map(() => (1 / opintoData.length) * 100),
-    backgroundColor: opintoData.map(
-      ({ done }) => (done ? "lightgreen" : "lightgray")
+    backgroundColor: opintoData.map(({ done }) =>
+      done ? "lightgreen" : "lightgray"
     )
   });
 };
@@ -982,11 +985,20 @@ const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara }) => {
   });
 };
 
+const laitaHyvaksytytSuorituksetDomiinJeps = ({ kurssimaara, hyvMaara }) => {
+  const hyvPercentage = ((hyvMaara / kurssimaara) * 100).toFixed(2);
+  setHtmlContent({
+    id: "hyv-maara",
+    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% kaikista opinnoistasi.`
+  });
+};
+
 const piirraRandomStatistiikkaa = ({
   kurssimaara,
   luennoitsijamaara,
   op,
-  openUniMaara
+  openUniMaara,
+  hyvMaara
 }) => {
   setHtmlContent({
     id: "opintojen-maara",
@@ -1002,6 +1014,10 @@ const piirraRandomStatistiikkaa = ({
   });
   if (openUniMaara) {
     piirraAvoimenSuorituksia({ kurssimaara, openUniMaara });
+  }
+
+  if (hyvMaara) {
+    laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara });
   }
 };
 
@@ -1053,7 +1069,8 @@ const start = () => {
     openUniMaara: map(stuff, "kurssi")
       .map(name => name.toLowerCase())
       .filter(name => name.includes("avoin yo") || name.includes("open uni"))
-      .length
+      .length,
+    hyvMaara: map(stuff, "arvosana").filter(isNaN).length
   });
 
   kuunteleAsijoita(); // 👂
