@@ -576,7 +576,7 @@ const muutaArrayKivaksiObjektiksi = ([
   kurssi,
   lyhenne,
   luennoitsija,
-  op: Number(op.replace("(", "").replace(")", "")), // paketoitu kandi tms
+  op: Number(poistaSulut(op)), // paketoitu kandi tms
   arvosana: Number(arvosana),
   pvmDate: rakenteleDateObjekti(getPvmArray(pvm))
 });
@@ -670,6 +670,36 @@ const haluaisinTietääLuennoitsijoista = stuff =>
           : [...initial, item],
       []
     );
+
+const poistaAvoinKurssiNimestä = kurssi =>
+  kurssi.replace("Avoin yo: ", "").trim();
+
+const poistaSulut = str =>
+  str
+    .replace("(", "")
+    .replace(")", "")
+    .trim();
+
+const poistaPilkut = str => str.replace(",", "").trim();
+
+const liianLyhytNimiSanaPilveen = 2;
+
+const poistaLiianLyhyetNimet = str => str.length > liianLyhytNimiSanaPilveen;
+
+const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff => {
+  return map(stuff, "kurssi")
+    .map(poistaAvoinKurssiNimestä)
+    .map(poistaSulut)
+    .reduce((list, kurssi) => [...list, ...kurssi.split(" ")], [])
+    .filter(poistaLiianLyhyetNimet)
+    .map(poistaPilkut)
+    .reduce((list, kurssi) => {
+      if (list[kurssi]) {
+        return { ...list, [kurssi]: list[kurssi] + 1 };
+      }
+      return { ...list, [kurssi]: 1 };
+    }, {});
+};
 
 const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
     ${luennoitsija},
@@ -1021,6 +1051,8 @@ const piirraRandomStatistiikkaa = ({
   }
 };
 
+const piirraRumaTagipilvi = words => {};
+
 const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 
 // tästä tää lähtee!
@@ -1048,6 +1080,14 @@ const start = () => {
   } = laskeKeskiarvot({ stuff, keskiarvot, perusOpinnot, aineOpinnot });
 
   const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
+
+  const suositutSanat = haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin(
+    stuff
+  );
+
+  console.log("suositut", suositutSanat);
+
+  piirraRumaTagipilvi(suositutSanat);
 
   drawGraphs({
     stuff,
