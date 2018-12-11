@@ -382,6 +382,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="luennoitsijoiden-maara"></div>
         <div id="open-uni-maara"></div>
         <div id="hyv-maara"></div>
+        <div id="tagipilvi"></div>
       </div>
     </div>
     <div id="luennoitsijat"></div>
@@ -1036,7 +1037,9 @@ const piirraRandomStatistiikkaa = ({
   });
   setHtmlContent({
     id: "luennoitsijoiden-maara",
-    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla.`
+    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla, eli ${(
+      kurssimaara / luennoitsijamaara
+    ).toFixed(2)} kurssia per luennoitsija.`
   });
   setHtmlContent({
     id: "keskiarvo-op-maara",
@@ -1051,7 +1054,34 @@ const piirraRandomStatistiikkaa = ({
   }
 };
 
-const piirraRumaTagipilvi = words => {};
+const minFontSize = 7;
+const maxFontSize = 28;
+
+const countFontSize = ({ val, minValue, maxValue }) =>
+  val > minValue
+    ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
+    : 1;
+
+const piirraRumaTagipilvi = words => {
+  const minValue = Math.min(...Object.values(words));
+  const maxValue = Math.max(...Object.values(words));
+
+  const content = Object.keys(words)
+    .map(key => ({
+      key,
+      fontSize: countFontSize({ val: words[key], minValue, maxValue })
+    }))
+    .map(
+      ({ fontSize, key }) =>
+        `<span style="font-size: ${fontSize}px;">${key}</span>`
+    )
+    .join(" ");
+
+  setHtmlContent({
+    id: "tagipilvi",
+    content
+  });
+};
 
 const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 
@@ -1071,6 +1101,11 @@ const start = () => {
 
   // Make stuff & filter out undefined things
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
+
+  // prevent division with 0
+  if (!stuff.length) {
+    return;
+  }
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
 
