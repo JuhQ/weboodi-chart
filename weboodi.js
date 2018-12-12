@@ -673,7 +673,10 @@ const haluaisinTietääLuennoitsijoista = stuff =>
     );
 
 const poistaAvoinKurssiNimestä = kurssi =>
-  kurssi.replace("Avoin yo: ", "").trim();
+  kurssi
+    .replace("Avoin yo:", "")
+    .replace("Open uni:", "")
+    .trim();
 
 const poistaSulut = str =>
   str
@@ -694,12 +697,13 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff => 
     .reduce((list, kurssi) => [...list, ...kurssi.split(" ")], [])
     .filter(poistaLiianLyhyetNimet)
     .map(poistaPilkut)
-    .reduce((list, kurssi) => {
-      if (list[kurssi]) {
-        return { ...list, [kurssi]: list[kurssi] + 1 };
-      }
-      return { ...list, [kurssi]: 1 };
-    }, {});
+    .reduce(
+      (list, kurssi) => ({
+        ...list,
+        [kurssi]: list[kurssi] ? list[kurssi] + 1 : 1
+      }),
+      {}
+    );
 };
 
 const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
@@ -1119,8 +1123,6 @@ const start = () => {
   const suositutSanat = haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin(
     stuff
   );
-
-  console.log("suositut", suositutSanat);
 
   piirraRumaTagipilvi(suositutSanat);
 
