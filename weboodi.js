@@ -252,6 +252,10 @@ const draw = ({
   customTooltip = false,
   customTicks = false
 }) => {
+  const stepSize = 55;
+  const maxValue =
+    Math.ceil(max(map(datasets, "data").map(max)) / stepSize) * stepSize;
+
   new Chart(document.getElementById(id), {
     type,
     data: { labels, datasets },
@@ -269,8 +273,8 @@ const draw = ({
             ticks: {
               beginAtZero: true,
               ...(customTicks && {
-                max: max(map(datasets, "data").map(max)) + 10,
-                stepSize: 55
+                max: maxValue,
+                stepSize
               })
             }
           }
