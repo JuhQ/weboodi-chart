@@ -386,6 +386,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="luennoitsijoiden-maara"></div>
         <div id="open-uni-maara"></div>
         <div id="hyv-maara"></div>
+        <div id="vuodet-arvio"></div>
         <div id="tagipilvi"></div>
       </div>
     </div>
@@ -1032,6 +1033,14 @@ const laitaHyvaksytytSuorituksetDomiinJeps = ({ kurssimaara, hyvMaara }) => {
   });
 };
 
+const arvioidaanOpintoVuodetDomiin = op => {
+  const vuodet = (op / 60).toFixed(2);
+  setHtmlContent({
+    id: "vuodet-arvio",
+    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = ${op} / 60.`
+  });
+};
+
 const piirraRandomStatistiikkaa = ({
   kurssimaara,
   luennoitsijamaara,
@@ -1060,6 +1069,8 @@ const piirraRandomStatistiikkaa = ({
   if (hyvMaara) {
     laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara });
   }
+
+  arvioidaanOpintoVuodetDomiin(op);
 };
 
 const minFontSize = 7;
