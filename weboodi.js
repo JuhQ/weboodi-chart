@@ -929,7 +929,9 @@ const ryhmitteleStuffKivastiLukukausiksi = stuff =>
 
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   const kuukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
-  let labels = Object.keys(kuukausiGroups);
+  let labels = Object.keys(kuukausiGroups).map(
+    i => `${i}-${parseInt(i, 10) + 1}`
+  );
   let data = Object.values(kuukausiGroups);
 
   // if only one year to show, pad it with zeros
