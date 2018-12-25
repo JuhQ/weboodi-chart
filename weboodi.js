@@ -373,12 +373,12 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <canvas id="chart-nopat" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
+        <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
       </div>
     </div>
     <div class="clear">
       <div class="jeejee-pull-left half">
-        <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
         <div id="opintojen-maara"></div>
@@ -390,6 +390,12 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="tagipilvi"></div>
       </div>
     </div>
+    <div class="clear">
+      <div class="jeejee-pull-left half">
+        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
+      </div>
+    </div>
+
     <div id="luennoitsijat"></div>
     <div id="tools" class="margin-bottom-large">
       <p>
@@ -820,18 +826,18 @@ const rakenteleDataSetitKeskiarvoChartille = ({
   keskiarvotAineopinnoista
 }) =>
   [
-    {
-      label: "Päivittäinen keskiarvo kaikista kursseista",
+    notEmpty(keskiarvot) && {
+      label: "Kurssien keskiarvo",
       data: map(keskiarvot, "keskiarvo"),
       ...style
     },
     notEmpty(keskiarvotPerusopinnoista) && {
-      label: "Päivittäinen keskiarvo perusopinnoista",
+      label: "Perusopintojen keskiarvo",
       data: map(keskiarvotPerusopinnoista, "keskiarvo"),
       ...styleBlue
     },
     notEmpty(keskiarvotAineopinnoista) && {
-      label: "Päivittäinen keskiarvo aineopinnoista",
+      label: "Aineopintojen keskiarvo",
       data: map(keskiarvotAineopinnoista, "keskiarvo"),
       ...styleGreen
     }
@@ -897,12 +903,22 @@ const sorttaaStuffLukukausienMukaan = (a, b) => a.pvmDate - b.pvmDate;
 const isInBetween = ({ value, values: [start, end] }) =>
   value >= start && value <= end;
 
+const luoLukuvuodelleKivaAvain = ({
+  vuosi,
+  pvmIsCurrentSemester,
+  pvmIsNextSemester
+}) => {
+  if (pvmIsCurrentSemester) {
+    return (vuosiJuttu = vuosi);
+  } else if (pvmIsNextSemester) {
+    // If it's not between the current semester, it must be the next one
+    return (vuosiJuttu = vuosi + 1);
+  }
+  return (vuosiJuttu = vuosi - 1);
+};
+
 const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
   const vuosi = pvmDate.getFullYear();
-
-  // Then.. It must be the previous semester of the previous semester we just checked!
-  // this comment makes no sense now that i moved it from else, sorry. - juha
-  let vuosiJuttu = vuosi - 1;
 
   const pvmIsCurrentSemester = isInBetween({
     value: pvmDate,
@@ -914,43 +930,77 @@ const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
     values: getLukuvuosi(vuosi + 1)
   });
 
-  if (pvmIsCurrentSemester) {
-    vuosiJuttu = vuosi;
-  } else if (pvmIsNextSemester) {
-    // If it's not between the current semester, it must be the next one
-    vuosiJuttu = vuosi + 1;
-  }
+  const vuosiJuttu = luoLukuvuodelleKivaAvain({
+    vuosi,
+    pvmIsCurrentSemester,
+    pvmIsNextSemester
+  });
 
   return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
+};
+
+const laskeKuukausienNopat = (prev, { pvmDate, op }) => {
+  const vuosi = pvmDate.getFullYear();
+  const kuukausi = pvmDate.toLocaleString("fi", { month: "long" });
+
+  const avainOnneen = `${kuukausi} ${vuosi}`;
+
+  return { ...prev, [avainOnneen]: op + (prev[avainOnneen] || 0) };
 };
 
 const ryhmitteleStuffKivastiLukukausiksi = stuff =>
   stuff.sort(sorttaaStuffLukukausienMukaan).reduce(laskeLukukausienNopat, {});
 
-const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
-  const kuukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
-  let labels = Object.keys(kuukausiGroups).map(
-    i => `${i}-${parseInt(i, 10) + 1}`
-  );
-  let data = Object.values(kuukausiGroups);
+const ryhmitteleStuffKivastiKuukausiksi = stuff =>
+  stuff.sort(sorttaaStuffLukukausienMukaan).reduce(laskeKuukausienNopat, {});
 
-  // if only one year to show, pad it with zeros
-  if (labels.length === 1) {
-    labels = [labels[0] - 1, labels[0], labels[0] + 1];
-    data = [0, data[0], 0];
-  }
-
+const piirräPerusGraafiNopille = ({ id, label, labels, data }) =>
   draw({
-    id: "chart-nopat-vuosi",
+    id,
     type: "line",
     labels,
     datasets: [
       {
-        label: "Noppia per lukuvuosi",
+        label,
         data,
         ...styleBlue
       }
     ]
+  });
+
+const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
+  const lukukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
+  const lukukausiKeys = Object.keys(lukukausiGroups);
+  const lukukausiData = Object.values(lukukausiGroups);
+  const ekaLukukausi = parseInt(lukukausiKeys[0], 10);
+  const vainYksiLukukausiSuoritettu = lukukausiKeys.length === 1;
+  const labels = vainYksiLukukausiSuoritettu
+    ? [
+        `${ekaLukukausi - 1}-${ekaLukukausi}`,
+        `${ekaLukukausi}-${ekaLukukausi + 1}`,
+        `${ekaLukukausi + 1}-${ekaLukukausi + 2}`
+      ]
+    : lukukausiKeys.map(i => `${i}-${parseInt(i, 10) + 1}`);
+
+  // if only one year to show, pad data with zeros
+  const data = vainYksiLukukausiSuoritettu ? [0, data[0], 0] : lukukausiData;
+
+  piirräPerusGraafiNopille({
+    id: "chart-nopat-vuosi",
+    label: "Noppia per lukuvuosi",
+    labels,
+    data
+  });
+};
+
+const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = stuff => {
+  const kuukausiGroups = ryhmitteleStuffKivastiKuukausiksi(stuff);
+
+  piirräPerusGraafiNopille({
+    id: "chart-nopat-kuukaudet",
+    label: "Noppia per kuukausi",
+    labels: Object.keys(kuukausiGroups),
+    data: Object.values(kuukausiGroups)
   });
 };
 
@@ -1155,6 +1205,7 @@ const start = () => {
   piirräLuennoitsijaListat(luennoitsijat); // 👩‍🏫👨‍🏫
 
   piirteleVuosiJuttujaJookosKookosHaliPus(stuff);
+  piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios(stuff);
 
   piirraRandomStatistiikkaa({
     kurssimaara: stuff.length,
