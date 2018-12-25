@@ -1069,19 +1069,23 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
-const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara }) => {
+const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
   const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
   setHtmlContent({
     id: "open-uni-maara",
-    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% kaikista opinnoistasi.`
+    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi. Yhteensä ${openUniOp} op.`
   });
 };
 
-const laitaHyvaksytytSuorituksetDomiinJeps = ({ kurssimaara, hyvMaara }) => {
+const laitaHyvaksytytSuorituksetDomiinJeps = ({
+  kurssimaara,
+  hyvMaara,
+  hyvOp
+}) => {
   const hyvPercentage = ((hyvMaara / kurssimaara) * 100).toFixed(2);
   setHtmlContent({
     id: "hyv-maara",
-    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% kaikista opinnoistasi.`
+    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% kaikista opinnoistasi. Yhteensä ${hyvOp} op.`
   });
 };
 
@@ -1098,7 +1102,9 @@ const piirraRandomStatistiikkaa = ({
   luennoitsijamaara,
   op,
   openUniMaara,
-  hyvMaara
+  openUniOp,
+  hyvMaara,
+  hyvOp
 }) => {
   setHtmlContent({
     id: "opintojen-maara",
@@ -1106,20 +1112,22 @@ const piirraRandomStatistiikkaa = ({
   });
   setHtmlContent({
     id: "luennoitsijoiden-maara",
-    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla, eli ${(
+    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla, ${(
       kurssimaara / luennoitsijamaara
-    ).toFixed(2)} kurssia per luennoitsija.`
+    ).toFixed(2)} kurssia per luennoitsija, ${(op / luennoitsijamaara).toFixed(
+      2
+    )} op per luennoitsija.`
   });
   setHtmlContent({
     id: "keskiarvo-op-maara",
     content: `Keskiarvolta ${(op / kurssimaara).toFixed(2)} noppaa per kurssi.`
   });
   if (openUniMaara) {
-    piirraAvoimenSuorituksia({ kurssimaara, openUniMaara });
+    piirraAvoimenSuorituksia({ kurssimaara, openUniMaara, openUniOp });
   }
 
   if (hyvMaara) {
-    laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara });
+    laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara, hyvOp });
   }
 
   arvioidaanOpintoVuodetDomiin(op);
@@ -1155,6 +1163,9 @@ const piirraRumaTagipilvi = words => {
 };
 
 const undefinedStuffFilter = item => item.luennoitsija !== undefined;
+
+const nameIncludesAvoinYo = name =>
+  name.includes("avoin yo") || name.includes("open uni");
 
 // tästä tää lähtee!
 const start = () => {
@@ -1213,9 +1224,15 @@ const start = () => {
     op: map(stuff, "op").reduce(sum),
     openUniMaara: map(stuff, "kurssi")
       .map(name => name.toLowerCase())
-      .filter(name => name.includes("avoin yo") || name.includes("open uni"))
-      .length,
-    hyvMaara: map(stuff, "arvosana").filter(isNaN).length
+      .filter(nameIncludesAvoinYo).length,
+    openUniOp: stuff
+      .filter(({ kurssi }) => nameIncludesAvoinYo(kurssi.toLowerCase()))
+      .map(({ op }) => op)
+      .reduce(sum),
+    hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
+    hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
+      sum
+    )
   });
 
   kuunteleAsijoita(); // 👂
