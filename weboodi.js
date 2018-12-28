@@ -1085,7 +1085,7 @@ const laitaHyvaksytytSuorituksetDomiinJeps = ({
   const hyvPercentage = ((hyvMaara / kurssimaara) * 100).toFixed(2);
   setHtmlContent({
     id: "hyv-maara",
-    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% kaikista opinnoistasi. Yhteensä ${hyvOp} op.`
+    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% opinnoistasi. Yhteensä ${hyvOp} op.`
   });
 };
 
@@ -1148,11 +1148,12 @@ const piirraRumaTagipilvi = words => {
   const content = Object.keys(words)
     .map(key => ({
       key,
-      fontSize: countFontSize({ val: words[key], minValue, maxValue })
+      fontSize: countFontSize({ val: words[key], minValue, maxValue }),
+      count: words[key]
     }))
     .map(
-      ({ fontSize, key }) =>
-        `<span style="font-size: ${fontSize}px;">${key}</span>`
+      ({ fontSize, key, count }) =>
+        `<span style="font-size: ${fontSize}px;" title="${key} on mainittu ${count} kertaa suorituksissasi">${key}</span>`
     )
     .join(" ");
 
