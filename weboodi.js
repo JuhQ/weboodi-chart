@@ -689,11 +689,7 @@ const poistaAvoinKurssiNimestä = kurssi =>
     .replace("Open uni:", "")
     .trim();
 
-const poistaSulut = str =>
-  str
-    .replace("(", "")
-    .replace(")", "")
-    .trim();
+const poistaSulut = str => str.replace(/\(|\)/g, "").trim();
 
 const poistaPilkut = str => str.replace(",", "").trim();
 
@@ -939,37 +935,49 @@ const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
   return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
 };
 
-const laskeKuukausienNopat = (prev, { pvmDate, op }) => {
+const luoKivaAvainReducelle = pvmDate => {
   const vuosi = pvmDate.getFullYear();
   const kuukausi = pvmDate.toLocaleString("fi", { month: "long" });
 
-  const avainOnneen = `${kuukausi} ${vuosi}`;
+  return `${kuukausi} ${vuosi}`;
+};
 
+const laskeKuukausienNopat = (prev, { pvmDate, op }) => {
+  const avainOnneen = luoKivaAvainReducelle(pvmDate);
   return { ...prev, [avainOnneen]: op + (prev[avainOnneen] || 0) };
 };
 
-const ryhmitteleStuffKivastiLukukausiksi = stuff =>
-  stuff.sort(sorttaaStuffLukukausienMukaan).reduce(laskeLukukausienNopat, {});
+const laskeKumulatiivisetKuukausienNopat = (
+  prev,
+  { pvmDate, cumulativeOp }
+) => ({ ...prev, [luoKivaAvainReducelle(pvmDate)]: cumulativeOp });
 
-const ryhmitteleStuffKivastiKuukausiksi = stuff =>
-  stuff.sort(sorttaaStuffLukukausienMukaan).reduce(laskeKuukausienNopat, {});
+const ryhmitteleStuffKivasti = ({ fn, stuff }) =>
+  stuff.sort(sorttaaStuffLukukausienMukaan).reduce(fn, {});
 
-const piirräPerusGraafiNopille = ({ id, label, labels, data }) =>
+const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
+  [
+    {
+      label,
+      data,
+      ...styleBlue
+    },
+    secondDataSet && { ...secondDataSet, type: "line", ...styleGreen }
+  ].filter(isTruthy);
+
+const piirräPerusGraafiNopille = ({ id, label, labels, data, secondDataSet }) =>
   draw({
     id,
-    type: "line",
+    type: secondDataSet ? "bar" : "line",
     labels,
-    datasets: [
-      {
-        label,
-        data,
-        ...styleBlue
-      }
-    ]
+    datasets: hemmettiSentäänTeeDataSetti({ label, data, secondDataSet })
   });
 
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
-  const lukukausiGroups = ryhmitteleStuffKivastiLukukausiksi(stuff);
+  const lukukausiGroups = ryhmitteleStuffKivasti({
+    fn: laskeLukukausienNopat,
+    stuff
+  });
   const lukukausiKeys = Object.keys(lukukausiGroups);
   const lukukausiData = Object.values(lukukausiGroups);
   const ekaLukukausi = parseInt(lukukausiKeys[0], 10);
@@ -994,13 +1002,24 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
 };
 
 const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = stuff => {
-  const kuukausiGroups = ryhmitteleStuffKivastiKuukausiksi(stuff);
+  const kuukausiGroups = ryhmitteleStuffKivasti({
+    fn: laskeKuukausienNopat,
+    stuff
+  });
+  const kumulatiivisetKuukaudetGroups = ryhmitteleStuffKivasti({
+    fn: laskeKumulatiivisetKuukausienNopat,
+    stuff
+  });
 
   piirräPerusGraafiNopille({
     id: "chart-nopat-kuukaudet",
     label: "Noppia per kuukausi",
     labels: Object.keys(kuukausiGroups),
-    data: Object.values(kuukausiGroups)
+    data: Object.values(kuukausiGroups),
+    secondDataSet: {
+      label: "Kumulatiiviset nopat",
+      data: Object.values(kumulatiivisetKuukaudetGroups)
+    }
   });
 };
 
