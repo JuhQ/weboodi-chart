@@ -1,6 +1,6 @@
 {
     "name": "weboodi charts",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "manifest_version": 2,
     "description": "op chart for weboodi",
     "permissions": [
