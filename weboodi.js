@@ -387,6 +387,8 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="open-uni-maara"></div>
         <div id="hyv-maara"></div>
         <div id="vuodet-arvio"></div>
+        <div id="max-kuukausi-nopat"></div>
+        <div id="keskiarvo"></div>
         <div id="tagipilvi"></div>
       </div>
     </div>
@@ -1001,16 +1003,10 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   });
 };
 
-const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = stuff => {
-  const kuukausiGroups = ryhmitteleStuffKivasti({
-    fn: laskeKuukausienNopat,
-    stuff
-  });
-  const kumulatiivisetKuukaudetGroups = ryhmitteleStuffKivasti({
-    fn: laskeKumulatiivisetKuukausienNopat,
-    stuff
-  });
-
+const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
+  kuukausiGroups,
+  kumulatiivisetKuukaudetGroups
+}) => {
   piirräPerusGraafiNopille({
     id: "chart-nopat-kuukaudet",
     label: "Noppia per kuukausi",
@@ -1112,7 +1108,7 @@ const arvioidaanOpintoVuodetDomiin = op => {
   const vuodet = (op / 60).toFixed(2);
   setHtmlContent({
     id: "vuodet-arvio",
-    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = ${op} / 60.`
+    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.`
   });
 };
 
@@ -1123,12 +1119,30 @@ const piirraRandomStatistiikkaa = ({
   openUniMaara,
   openUniOp,
   hyvMaara,
-  hyvOp
+  hyvOp,
+  maxKuukausi,
+  keskiarvo,
+  painotettuKeskiarvo
 }) => {
   setHtmlContent({
     id: "opintojen-maara",
     content: `Olet suorittanut huimat ${kurssimaara} erilaista kurssia! Good for you!`
   });
+
+  const [kuukausi, vuosi] = maxKuukausi[0].split(" ");
+
+  setHtmlContent({
+    id: "max-kuukausi-nopat",
+    content: `Olit tulessa ${kuukausi}ssa ${vuosi}! Suoritit silloin ${
+      maxKuukausi[1]
+    } noppaa! Whoah!`
+  });
+
+  setHtmlContent({
+    id: "keskiarvo",
+    content: `Opintojen keskiarvo: ${keskiarvo}. Painotettu keskiarvo: ${painotettuKeskiarvo}.`
+  });
+
   setHtmlContent({
     id: "luennoitsijoiden-maara",
     content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla, ${(
@@ -1187,6 +1201,19 @@ const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 const nameIncludesAvoinYo = name =>
   name.includes("avoin yo") || name.includes("open uni");
 
+const laskePainotettuKeskiarvo = stuff => {
+  const arvosanallisetOpintosuoritukset = stuff.filter(
+    ({ arvosana }) => !isNaN(arvosana)
+  );
+
+  return (
+    arvosanallisetOpintosuoritukset.reduce(
+      (acc, { op, arvosana }) => acc + arvosana * op,
+      0
+    ) / map(arvosanallisetOpintosuoritukset, "op").reduce(sum)
+  ).toFixed(2);
+};
+
 // tästä tää lähtee!
 const start = () => {
   if (!pitäisköDomRakentaa()) {
@@ -1222,6 +1249,21 @@ const start = () => {
     stuff
   );
 
+  const kuukausiGroups = ryhmitteleStuffKivasti({
+    fn: laskeKuukausienNopat,
+    stuff
+  });
+
+  const kumulatiivisetKuukaudetGroups = ryhmitteleStuffKivasti({
+    fn: laskeKumulatiivisetKuukausienNopat,
+    stuff
+  });
+
+  const maxKuukausiNopat = max(Object.values(kuukausiGroups));
+  const maxKuukausi = Object.entries(kuukausiGroups).find(
+    ([_, op]) => op === maxKuukausiNopat
+  );
+
   piirraRumaTagipilvi(suositutSanat);
 
   drawGraphs({
@@ -1236,8 +1278,13 @@ const start = () => {
   piirräLuennoitsijaListat(luennoitsijat); // 👩‍🏫👨‍🏫
 
   piirteleVuosiJuttujaJookosKookosHaliPus(stuff);
-  piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios(stuff);
+  piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios({
+    kuukausiGroups,
+    kumulatiivisetKuukaudetGroups
+  });
 
+  const { keskiarvo } = keskiarvot.reverse()[0];
+  const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
   piirraRandomStatistiikkaa({
     kurssimaara: stuff.length,
     luennoitsijamaara: luennoitsijat.length,
@@ -1252,7 +1299,10 @@ const start = () => {
     hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
       sum
-    )
+    ),
+    maxKuukausi,
+    keskiarvo,
+    painotettuKeskiarvo
   });
 
   kuunteleAsijoita(); // 👂
