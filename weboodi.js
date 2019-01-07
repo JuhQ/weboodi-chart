@@ -378,7 +378,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
     </div>
     <div class="clear">
       <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
         <div id="opintojen-maara"></div>
@@ -394,7 +394,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
     </div>
     <div class="clear">
       <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
       </div>
     </div>
 
@@ -699,8 +699,8 @@ const liianLyhytNimiSanaPilveen = 2;
 
 const poistaLiianLyhyetNimet = str => str.length > liianLyhytNimiSanaPilveen;
 
-const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff => {
-  return map(stuff, "kurssi")
+const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
+  map(stuff, "kurssi")
     .map(poistaAvoinKurssiNimestä)
     .map(poistaSulut)
     .reduce((list, kurssi) => [...list, ...kurssi.split(" ")], [])
@@ -713,7 +713,6 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff => 
       }),
       {}
     );
-};
 
 const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
     ${luennoitsija},
@@ -1210,7 +1209,7 @@ const laskePainotettuKeskiarvo = stuff => {
     arvosanallisetOpintosuoritukset.reduce(
       (acc, { op, arvosana }) => acc + arvosana * op,
       0
-    ) / map(arvosanallisetOpintosuoritukset, "op").reduce(sum)
+    ) / map(arvosanallisetOpintosuoritukset, "op").reduce(sum, 0)
   ).toFixed(2);
 };
 
@@ -1264,6 +1263,9 @@ const start = () => {
     ([_, op]) => op === maxKuukausiNopat
   );
 
+  const { keskiarvo } = [...keskiarvot].pop();
+  const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
+
   piirraRumaTagipilvi(suositutSanat);
 
   drawGraphs({
@@ -1283,19 +1285,17 @@ const start = () => {
     kumulatiivisetKuukaudetGroups
   });
 
-  const { keskiarvo } = keskiarvot.reverse()[0];
-  const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
   piirraRandomStatistiikkaa({
     kurssimaara: stuff.length,
     luennoitsijamaara: luennoitsijat.length,
-    op: map(stuff, "op").reduce(sum),
+    op: map(stuff, "op").reduce(sum, 0),
     openUniMaara: map(stuff, "kurssi")
       .map(name => name.toLowerCase())
       .filter(nameIncludesAvoinYo).length,
     openUniOp: stuff
       .filter(({ kurssi }) => nameIncludesAvoinYo(kurssi.toLowerCase()))
       .map(({ op }) => op)
-      .reduce(sum),
+      .reduce(sum, 0),
     hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
       sum
