@@ -396,6 +396,10 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
       <div class="jeejee-pull-left half">
         <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
       </div>
+      <div class="jeejee-pull-left half">
+        <canvas id="chart-arvosanat-groupattuna" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-groupattuna" width="500" height="200"></canvas>
+      </div>
     </div>
 
     <div id="luennoitsijat"></div>
@@ -1213,6 +1217,37 @@ const laskePainotettuKeskiarvo = stuff => {
   ).toFixed(2);
 };
 
+const laskeStuffistaHalututJutut = ({ stuff, key }) =>
+  stuff.reduce(
+    (acc, item) => ({
+      ...acc,
+      [item[key]]: acc[item[key]] ? acc[item[key]] + 1 : 1
+    }),
+    {}
+  );
+
+const laskeKuinkaMontaMitäkinNoppaaOnOlemassa = stuff =>
+  laskeStuffistaHalututJutut({ stuff, key: "op" });
+
+const laskeKuinkaMontaMitäkinArvosanaaOnOlemassa = stuff =>
+  laskeStuffistaHalututJutut({ stuff, key: "arvosana" });
+
+const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
+  draw({
+    id,
+    type: "bar",
+    labels: Object.keys(data).map(
+      key => `${label} ${isNaN(key) ? "hyv" : key}`
+    ),
+    datasets: [
+      {
+        label: "Suorituksia",
+        data: Object.values(data),
+        ...styleBlue
+      }
+    ]
+  });
+
 // tästä tää lähtee!
 const start = () => {
   if (!pitäisköDomRakentaa()) {
@@ -1265,6 +1300,23 @@ const start = () => {
 
   const { keskiarvo } = [...keskiarvot].pop();
   const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
+
+  const arvosanatGroupattuna = laskeKuinkaMontaMitäkinArvosanaaOnOlemassa(
+    stuff
+  );
+  const nopatGroupattuna = laskeKuinkaMontaMitäkinNoppaaOnOlemassa(stuff);
+
+  piirräGraafiNoppienTaiArvosanojenMäärille({
+    id: "chart-arvosanat-groupattuna",
+    label: "Arvosana",
+    data: arvosanatGroupattuna
+  });
+
+  piirräGraafiNoppienTaiArvosanojenMäärille({
+    id: "chart-nopat-groupattuna",
+    label: "op",
+    data: nopatGroupattuna
+  });
 
   piirraRumaTagipilvi(suositutSanat);
 
