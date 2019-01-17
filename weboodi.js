@@ -395,6 +395,7 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
     <div class="clear">
       <div class="jeejee-pull-left half">
         <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
+        <canvas id="chart-laitos-graafit" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
         <canvas id="chart-arvosanat-groupattuna" width="500" height="200"></canvas>
@@ -1248,6 +1249,67 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
     ]
   });
 
+const parsiLaitoksenKoodi = lyhenne =>
+  lyhenne
+    .replace(/^(ay|a)/i, "")
+    .replace(/-[\d\D]+/i, "")
+    .replace(/_/, "")
+    .replace(/[\d]+/, "");
+
+const grouppaaEriLaitostenKurssit = stuff =>
+  stuff.reduce((acc, { lyhenne, op, arvosana }) => {
+    const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
+    const laitos = laitoksenKoodi.length ? laitoksenKoodi : "emt";
+    const edellisenKierroksenData = acc[laitos];
+    const arvosanat = edellisenKierroksenData
+      ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))
+      : [arvosana].filter(negate(isNaN));
+
+    return {
+      ...acc,
+      [laitos]: edellisenKierroksenData
+        ? {
+            ...edellisenKierroksenData,
+            courseCount: edellisenKierroksenData.courseCount + 1,
+            op: edellisenKierroksenData.op + op,
+            kurssit: [...edellisenKierroksenData.kurssit, lyhenne],
+            arvosanat,
+            keskiarvo: average(arvosanat)
+          }
+        : {
+            courseCount: 1,
+            op,
+            kurssit: [lyhenne],
+            arvosanat,
+            keskiarvo: arvosana
+          }
+    };
+  }, {});
+
+const piirräLaitosGraafit = data =>
+  draw({
+    id: "chart-laitos-graafit",
+    type: "bar",
+    labels: Object.keys(data),
+    datasets: [
+      {
+        label: "Kursseja",
+        data: map(Object.values(data), "courseCount"),
+        ...style
+      },
+      {
+        label: "Nopat",
+        data: map(Object.values(data), "op"),
+        ...styleBlue
+      },
+      {
+        label: "Keskiarvo",
+        data: map(Object.values(data), "keskiarvo"),
+        ...styleGreen
+      }
+    ]
+  });
+
 // tästä tää lähtee!
 const start = () => {
   if (!pitäisköDomRakentaa()) {
@@ -1305,6 +1367,10 @@ const start = () => {
     stuff
   );
   const nopatGroupattuna = laskeKuinkaMontaMitäkinNoppaaOnOlemassa(stuff);
+
+  const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
+
+  piirräLaitosGraafit(laitostenKurssit);
 
   piirräGraafiNoppienTaiArvosanojenMäärille({
     id: "chart-arvosanat-groupattuna",
