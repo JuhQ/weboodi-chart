@@ -35,6 +35,8 @@ const map = (list, keys) =>
     []
   );
 
+const sort = (list, key) => list.sort((a, b) => b[key] - a[key]);
+
 const setHtmlContent = ({ id, content }) => {
   document.getElementById(id).innerHTML = content;
 };
@@ -1040,7 +1042,7 @@ const piirräLuennoitsijaListat = luennoitsijat => {
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by kurssimaara",
-    lista: luennoitsijat.sort((a, b) => b.kurssimaara - a.kurssimaara),
+    lista: sort(luennoitsijat, "kurssimaara"),
     luennoitsijatElement
   });
 
@@ -1270,57 +1272,61 @@ const grouppaaEriLaitostenKurssit = stuff =>
       edellisenKierroksenData ? edellisenKierroksenData.kurssit : [kurssi]
     );
 
+    const dataJeejee = {
+      courseCount: 1,
+      op,
+      kurssit: [kurssi],
+      arvosanat,
+      keskiarvo,
+      painotettuKeskiarvo,
+      laitos
+    };
+
     return {
       ...acc,
       [laitos]: edellisenKierroksenData
         ? {
             ...edellisenKierroksenData,
+            ...dataJeejee,
             courseCount: edellisenKierroksenData.courseCount + 1,
             op: edellisenKierroksenData.op + op,
-            kurssit: [...edellisenKierroksenData.kurssit, kurssi],
-            arvosanat,
-            keskiarvo,
-            painotettuKeskiarvo
+            kurssit: [...edellisenKierroksenData.kurssit, kurssi]
           }
-        : {
-            courseCount: 1,
-            op,
-            kurssit: [kurssi],
-            arvosanat,
-            keskiarvo,
-            painotettuKeskiarvo
-          }
+        : dataJeejee
     };
   }, {});
 
-const piirräLaitosGraafit = data =>
+const piirräLaitosGraafit = data => {
+  const dataset = sort(Object.values(data), "op");
+
   draw({
     id: "chart-laitos-graafit",
     type: "bar",
-    labels: Object.keys(data),
+    labels: map(dataset, "laitos"),
     datasets: [
       {
         label: "Kursseja",
-        data: map(Object.values(data), "courseCount"),
+        data: map(dataset, "courseCount"),
         ...style
       },
       {
         label: "Nopat",
-        data: map(Object.values(data), "op"),
+        data: map(dataset, "op"),
         ...styleBlue
       },
       {
         label: "Keskiarvo",
-        data: map(Object.values(data), "keskiarvo"),
+        data: map(dataset, "keskiarvo"),
         ...styleGreen
       },
       {
         label: "Painotettu keskiarvo",
-        data: map(Object.values(data), "painotettuKeskiarvo"),
+        data: map(dataset, "painotettuKeskiarvo"),
         ...styleGreen
       }
     ]
   });
+};
 
 // tästä tää lähtee!
 const start = () => {
