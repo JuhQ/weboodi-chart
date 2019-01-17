@@ -1205,8 +1205,8 @@ const undefinedStuffFilter = item => item.luennoitsija !== undefined;
 const nameIncludesAvoinYo = name =>
   name.includes("avoin yo") || name.includes("open uni");
 
-const laskePainotettuKeskiarvo = stuff => {
-  const arvosanallisetOpintosuoritukset = stuff.filter(
+const laskePainotettuKeskiarvo = data => {
+  const arvosanallisetOpintosuoritukset = data.filter(
     ({ arvosana }) => !isNaN(arvosana)
   );
 
@@ -1257,13 +1257,18 @@ const parsiLaitoksenKoodi = lyhenne =>
     .replace(/[\d]+/, "");
 
 const grouppaaEriLaitostenKurssit = stuff =>
-  stuff.reduce((acc, { lyhenne, op, arvosana }) => {
+  stuff.reduce((acc, kurssi) => {
+    const { lyhenne, op, arvosana } = kurssi;
     const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
     const laitos = laitoksenKoodi.length ? laitoksenKoodi : "emt";
     const edellisenKierroksenData = acc[laitos];
     const arvosanat = edellisenKierroksenData
       ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))
       : [arvosana].filter(negate(isNaN));
+    const keskiarvo = average(arvosanat).toFixed(2);
+    const painotettuKeskiarvo = laskePainotettuKeskiarvo(
+      edellisenKierroksenData ? edellisenKierroksenData.kurssit : [kurssi]
+    );
 
     return {
       ...acc,
@@ -1272,16 +1277,18 @@ const grouppaaEriLaitostenKurssit = stuff =>
             ...edellisenKierroksenData,
             courseCount: edellisenKierroksenData.courseCount + 1,
             op: edellisenKierroksenData.op + op,
-            kurssit: [...edellisenKierroksenData.kurssit, lyhenne],
+            kurssit: [...edellisenKierroksenData.kurssit, kurssi],
             arvosanat,
-            keskiarvo: average(arvosanat)
+            keskiarvo,
+            painotettuKeskiarvo
           }
         : {
             courseCount: 1,
             op,
-            kurssit: [lyhenne],
+            kurssit: [kurssi],
             arvosanat,
-            keskiarvo: arvosana
+            keskiarvo,
+            painotettuKeskiarvo
           }
     };
   }, {});
@@ -1305,6 +1312,11 @@ const piirräLaitosGraafit = data =>
       {
         label: "Keskiarvo",
         data: map(Object.values(data), "keskiarvo"),
+        ...styleGreen
+      },
+      {
+        label: "Painotettu keskiarvo",
+        data: map(Object.values(data), "painotettuKeskiarvo"),
         ...styleGreen
       }
     ]
