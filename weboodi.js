@@ -620,7 +620,7 @@ const makeSomeStuff = duplikaattiKurssit =>
   hommaaMeilleListaAsijoistaDommista()
     .map(item => [...item.querySelectorAll("td")])
     .filter(notEmpty)
-    .map(item => item.map(value => value.textContent).map(putsaaTeksti))
+    .map(item => map(item, "textContent").map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
     .filter(item => item.length > 3)
@@ -1254,8 +1254,7 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
 const parsiLaitoksenKoodi = lyhenne =>
   lyhenne
     .replace(/^(ay|a)/i, "")
-    .replace(/-[\d\D]+/i, "")
-    .replace(/_/, "")
+    .replace(/(-|_)[\d\D]+/i, "")
     .replace(/[\d]+/, "");
 
 const grouppaaEriLaitostenKurssit = stuff =>
