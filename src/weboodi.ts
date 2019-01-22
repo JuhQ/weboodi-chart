@@ -1103,14 +1103,21 @@ const luoLukuvuodelleKivaAvain = ({
   vuosi,
   pvmIsCurrentSemester,
   pvmIsNextSemester,
+}: {
+  vuosi: number;
+  pvmIsCurrentSemester: boolean;
+  pvmIsNextSemester: boolean;
 }) => {
+  let vuosiJuttu = 0;
   if (pvmIsCurrentSemester) {
-    return (vuosiJuttu = vuosi);
+    vuosiJuttu = vuosi;
   } else if (pvmIsNextSemester) {
     // If it's not between the current semester, it must be the next one
-    return (vuosiJuttu = vuosi + 1);
+    vuosiJuttu = vuosi + 1;
+  } else {
+    vuosiJuttu = vuosi - 1;
   }
-  return (vuosiJuttu = vuosi - 1);
+  return vuosiJuttu;
 };
 
 // TODO: Typings

@@ -751,13 +751,17 @@ const getPvmArray = (pvm) => pvm.split(".").map(Number);
 const sorttaaStuffLukukausienMukaan = (a, b) => a.pvmDate - b.pvmDate;
 const isInBetween = ({ value, values: [start, end] }) => value >= start && value <= end;
 const luoLukuvuodelleKivaAvain = ({ vuosi, pvmIsCurrentSemester, pvmIsNextSemester, }) => {
+    let vuosiJuttu = 0;
     if (pvmIsCurrentSemester) {
-        return (vuosiJuttu = vuosi);
+        vuosiJuttu = vuosi;
     }
     else if (pvmIsNextSemester) {
-        return (vuosiJuttu = vuosi + 1);
+        vuosiJuttu = vuosi + 1;
     }
-    return (vuosiJuttu = vuosi - 1);
+    else {
+        vuosiJuttu = vuosi - 1;
+    }
+    return vuosiJuttu;
 };
 const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
     const vuosi = pvmDate.getFullYear();
