@@ -1,0 +1,15 @@
+{
+  "name": "weboodi-chart",
+  "version": "1.0.18",
+  "description": "op chart for weboodi",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "tslint --project tsconfig.json",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  }
+}

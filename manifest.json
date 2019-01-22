@@ -9,7 +9,7 @@
     "content_scripts": [{
         "js": [
             "chart.js",
-            "weboodi.js"
+            "dist/weboodi.js"
         ],
         "run_at": "document_end",
         "matches": [
