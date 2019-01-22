@@ -786,7 +786,7 @@ const hommaaMeilleListaAsijoistaDommista = () => [
 const makeSomeStuff = (duplikaattiKurssit: string[]) =>
   hommaaMeilleListaAsijoistaDommista()
     .map((item) => [...Array.from(item.querySelectorAll("td"))])
-    .filter(notEmptyList) // Filter empty lists
+    .filter(elementArray => notEmptyList(elementArray)) // Filter empty lists
     .map((item) => map(item, "textContent").map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
