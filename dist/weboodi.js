@@ -467,6 +467,9 @@ const createCoursesArray = (target) => target.value
     .filter(notEmpty);
 const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({ name, callback }) => {
     const input = document.querySelector(`input[name='${name}']`);
+    if (input === null) {
+        throw new Error("luoInputKuuntelijaJokaAsettaaArraynCallbackiin(): Input is null");
+    }
     input.addEventListener("input", ({ target }) => {
         callback(createCoursesArray(target));
     });
@@ -491,7 +494,13 @@ const tahtoisinVaanKuunnellaAineopintoja = () => {
 };
 const jepulisKuuntelePääaineenMuutoksia = () => {
     const input = document.querySelector("input[name='pääaine']");
+    if (input === null) {
+        throw new Error("jepulisKuuntelePääaineenMuutoksia(): Input is null");
+    }
     input.addEventListener("input", ({ target }) => {
+        if (target === null) {
+            throw new Error("jepulisKuuntelePääaineenMuutoksia(): Target is null");
+        }
         setPääaine(target.value.trim());
     });
 };
@@ -503,11 +512,17 @@ const kuunteleSivuaineListanMuutoksia = () => {
 };
 const kuunteleppaNapinpainalluksiaJuu = () => {
     const input = document.querySelector("button#kliketi-klik");
+    if (input === null) {
+        throw new Error("kuunteleppaNapinpainalluksiaJuu(): Input is null");
+    }
     input.addEventListener("click", start);
 };
 const luoKurssiAvainListaTietokannasta = (opinnot) => map(kurssitietokanta.tkt[opinnot], "keys").reduce((a, b) => [...a, ...b], []);
 const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
     const input = document.querySelector("button#kliketi-klik-esitäyttö-2017");
+    if (input === null) {
+        throw new Error("kuunteleEsitäyttönapinKliksutteluja2017(): Input with id `button#kliketi-klik-esitäyttö-2017` is null");
+    }
     input.addEventListener("click", () => {
         setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnot"));
         setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnot"));
@@ -516,6 +531,9 @@ const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
 };
 const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
     const input = document.querySelector("button#kliketi-klik-esitäyttö-pre-2017");
+    if (input === null) {
+        throw new Error("kuunteleEsitäyttönapinKliksutteluja2016(): Input with id `button#kliketi-klik-esitäyttö-pre-2017` is null");
+    }
     input.addEventListener("click", () => {
         setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnotPre2017"));
         setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnotPre2017"));
@@ -620,20 +638,22 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (stuff) =
     .filter(poistaLiianLyhyetNimet)
     .map(poistaPilkut)
     .reduce((list, kurssi) => (Object.assign({}, list, { [kurssi]: list[kurssi] ? list[kurssi] + 1 : 1 })), {});
-const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
+const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot, }) => `<p>
     ${luennoitsija},
     kursseja ${kurssimaara},
     keskiarvo: ${luennot.keskiarvo},
     noppia: ${luennot.totalOp}
   </p>`;
-const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
+const drawLuennoitsijat = ({ title, lista, luennoitsijatElement, }) => {
     const html = `
     <div class="luennoitsijat pull-left">
       <p><strong>${title}</strong></p>
       ${lista.map(createLuennoitsijaRivi).join("")}
     </div>
   `;
-    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+    if (luennoitsijatElement !== undefined) {
+        luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+    }
 };
 const courseNamesMatch = (kurssi) => (row) => row.kurssi === kurssi;
 const removeDuplicateCourses = (coursesDone) => (acc, item) => acc.find(courseNamesMatch(item.kurssi)) ||
@@ -761,7 +781,7 @@ const luoKivaAvainReducelle = (pvmDate) => {
     const kuukausi = pvmDate.toLocaleString("fi", { month: "long" });
     return `${kuukausi} ${vuosi}`;
 };
-const laskeKuukausienNopat = (prev, { pvmDate, op }) => {
+const laskeKuukausienNopat = (prev, { pvmDate, op, }) => {
     const avainOnneen = luoKivaAvainReducelle(pvmDate);
     return Object.assign({}, prev, { [avainOnneen]: op + (prev[avainOnneen] || 0) });
 };
@@ -938,7 +958,7 @@ const piirraRandomStatistiikkaa = ({ kurssimaara, luennoitsijamaara, op, openUni
 };
 const minFontSize = 7;
 const maxFontSize = 28;
-const countFontSize = ({ val, minValue, maxValue }) => val > minValue
+const countFontSize = ({ val, minValue, maxValue, }) => val > minValue
     ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
     : 1;
 const piirraRumaTagipilvi = (words) => {

@@ -577,14 +577,22 @@ const createDom = ({
   return true;
 };
 
+// TODO: Add param typing
 const createCoursesArray = (target) =>
   target.value
     .split(",")
     .map(putsaaTeksti)
     .filter(notEmpty);
 
+// TODO: Add param typing
 const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({ name, callback }) => {
   const input = document.querySelector(`input[name='${name}']`);
+
+  if (input === null) {
+    throw new Error(
+      "luoInputKuuntelijaJokaAsettaaArraynCallbackiin(): Input is null",
+    );
+  }
 
   input.addEventListener("input", ({ target }) => {
     callback(createCoursesArray(target));
@@ -615,7 +623,15 @@ const tahtoisinVaanKuunnellaAineopintoja = () => {
 const jepulisKuuntelePääaineenMuutoksia = () => {
   const input = document.querySelector("input[name='pääaine']");
 
+  if (input === null) {
+    throw new Error("jepulisKuuntelePääaineenMuutoksia(): Input is null");
+  }
+
   input.addEventListener("input", ({ target }) => {
+    if (target === null) {
+      throw new Error("jepulisKuuntelePääaineenMuutoksia(): Target is null");
+    }
+    // TODO: Fix typing
     setPääaine(target.value.trim());
   });
 };
@@ -629,7 +645,9 @@ const kuunteleSivuaineListanMuutoksia = () => {
 
 const kuunteleppaNapinpainalluksiaJuu = () => {
   const input = document.querySelector("button#kliketi-klik");
-
+  if (input === null) {
+    throw new Error("kuunteleppaNapinpainalluksiaJuu(): Input is null");
+  }
   input.addEventListener("click", start);
 };
 
@@ -638,7 +656,11 @@ const luoKurssiAvainListaTietokannasta = (opinnot) =>
 
 const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
   const input = document.querySelector("button#kliketi-klik-esitäyttö-2017");
-
+  if (input === null) {
+    throw new Error(
+      "kuunteleEsitäyttönapinKliksutteluja2017(): Input with id `button#kliketi-klik-esitäyttö-2017` is null",
+    );
+  }
   input.addEventListener("click", () => {
     setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnot"));
     setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnot"));
@@ -650,7 +672,11 @@ const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
   const input = document.querySelector(
     "button#kliketi-klik-esitäyttö-pre-2017",
   );
-
+  if (input === null) {
+    throw new Error(
+      "kuunteleEsitäyttönapinKliksutteluja2016(): Input with id `button#kliketi-klik-esitäyttö-pre-2017` is null",
+    );
+  }
   input.addEventListener("click", () => {
     setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnotPre2017"));
     setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnotPre2017"));
@@ -669,6 +695,7 @@ const kuunteleAsijoita = () => {
   kuunteleEsitäyttönapinKliksutteluja2016();
 };
 
+// TODO: Proper param names and typing
 const setDailyCumulativeNoppas = ({ pvm, op }) => (jee) => {
   const today =
     jee.pvm === pvm
@@ -684,6 +711,7 @@ const setDailyCumulativeNoppas = ({ pvm, op }) => (jee) => {
   };
 };
 
+// TODO: Param typings
 const groupThemCourses = (stuff) =>
   stuff
     .reduce(
@@ -699,8 +727,9 @@ const groupThemCourses = (stuff) =>
       realOp: item.op,
     }));
 
-const putsaaTeksti = (str) => str.replace(/&nbsp;/g, " ").trim();
+const putsaaTeksti = (str: string) => str.replace(/&nbsp;/g, " ").trim();
 
+// TODO: Typings
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
   kurssi,
@@ -732,6 +761,7 @@ const hommaaMeilleListaAsijoistaDommista = () => [
   ),
 ];
 
+// TODO: Typings
 const makeSomeStuff = (duplikaattiKurssit) =>
   hommaaMeilleListaAsijoistaDommista()
     .map((item) => [...item.querySelectorAll("td")])
@@ -745,6 +775,7 @@ const makeSomeStuff = (duplikaattiKurssit) =>
     .sort(sorttaaStuffLukukausienMukaan)
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
+// TODO: Typings
 const takeUntil = (list, n) =>
   list.reduce((initial, item, i) => (i < n ? [...initial, item] : initial), []);
 
@@ -752,6 +783,7 @@ const sum = (a: number, b: number): number => a + b;
 
 const average = (list: number[]): number => list.reduce(sum, 0) / list.length;
 
+// TODO: Typings
 const annaMulleKeskiarvotKursseista = (stuff) =>
   stuff
     .filter((item) => !isNaN(item.arvosana))
@@ -760,11 +792,13 @@ const annaMulleKeskiarvotKursseista = (stuff) =>
       keskiarvo: average(takeUntil(map(list, "arvosana"), i + 1)).toFixed(2),
     }));
 
+// TODO: Typings
 const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
   annaMulleKeskiarvotKursseista(
     stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne)),
   );
 
+// TODO: Typings
 const rakennaListaLuennoitsijoista = (initial, item) => [
   ...initial,
   ...item.luennoitsija
@@ -774,6 +808,7 @@ const rakennaListaLuennoitsijoista = (initial, item) => [
     .map((luennoitsija) => ({ ...item, luennoitsija })),
 ];
 
+// TODO: Typings
 const haluaisinTietääLuennoitsijoista = (stuff) =>
   stuff
     .reduce(rakennaListaLuennoitsijoista, [])
@@ -823,6 +858,7 @@ const liianLyhytNimiSanaPilveen = 2;
 const poistaLiianLyhyetNimet = (str: string) =>
   str.length > liianLyhytNimiSanaPilveen;
 
+// TODO: Typings
 const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (stuff) =>
   map(stuff, "kurssi")
     .map(poistaAvoinKurssiNimestä)
@@ -838,44 +874,74 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (stuff) =
       {},
     );
 
-const createLuennoitsijaRivi = ({ luennoitsija, kurssimaara, luennot }) => `<p>
+interface LecturerRowParams {
+  luennoitsija: string;
+  kurssimaara: number;
+  luennot: {
+    keskiarvo: number;
+    totalOp: number;
+  };
+}
+
+const createLuennoitsijaRivi = ({
+  luennoitsija,
+  kurssimaara,
+  luennot,
+}: LecturerRowParams) => `<p>
     ${luennoitsija},
     kursseja ${kurssimaara},
     keskiarvo: ${luennot.keskiarvo},
     noppia: ${luennot.totalOp}
   </p>`;
 
-const drawLuennoitsijat = ({ title, lista, luennoitsijatElement }) => {
+interface DrawLuennoitsijatParams {
+  title: string;
+  lista: any[];
+  luennoitsijatElement?: HTMLElement;
+}
+
+const drawLuennoitsijat = ({
+  title,
+  lista,
+  luennoitsijatElement,
+}: DrawLuennoitsijatParams) => {
   const html = `
     <div class="luennoitsijat pull-left">
       <p><strong>${title}</strong></p>
       ${lista.map(createLuennoitsijaRivi).join("")}
     </div>
   `;
-
-  luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+  if (luennoitsijatElement !== undefined) {
+    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+  }
 };
 
+// TODO: Typings
 const courseNamesMatch = (kurssi) => (row) => row.kurssi === kurssi;
 
+// TODO: Typings
 const removeDuplicateCourses = (coursesDone) => (acc, item) =>
   acc.find(courseNamesMatch(item.kurssi)) ||
   coursesDone.find(courseNamesMatch(item.kurssi))
     ? acc
     : [...acc, item];
 
+// TODO: Typings
 const removeAvoinFromKurssiNimi = (item) => ({
   ...item,
   kurssi: item.kurssi.replace("Avoin yo: ", "").replace("Open uni: ", ""),
 });
 
+// TODO: Typings
 const negate = (callback) => (item) => !callback(item);
 
+// TODO: Typings
 const partition = (list, predicate) => [
   list.filter(negate(predicate)),
   list.filter(predicate),
 ];
 
+// TODO: Typings
 const drawOpintoDonitsi = ({ id, stuff, data }) => {
   const [coursesDone, coursesNotDone] = partition(
     data,
@@ -911,9 +977,11 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   });
 };
 
+// TODO: Typings
 const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
   opinnot.find((item) => lyhenne === item.lyhenne);
 
+// TODO: Typings
 const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   stuff,
   keskiarvot,
@@ -941,6 +1009,7 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   }, []);
 };
 
+// TODO: Typings
 const rakenteleDataSetitKeskiarvoChartille = ({
   keskiarvot,
   keskiarvotPerusopinnoista,
@@ -964,6 +1033,7 @@ const rakenteleDataSetitKeskiarvoChartille = ({
     },
   ].filter(isTruthy);
 
+// TODO: Typings
 const rakenteleDataSetitNoppaChartille = (grouped) =>
   [
     {
@@ -978,6 +1048,7 @@ const rakenteleDataSetitNoppaChartille = (grouped) =>
     },
   ].filter(isTruthy);
 
+// TODO: Typings
 const drawGraphs = ({
   stuff,
   keskiarvot,
@@ -1014,16 +1085,20 @@ const getLukuvuosi = (vuosi) => [
   new Date(vuosi + 1, 6, 31, 23, 59, 59),
 ];
 
+// TODO: Typings
 const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]) =>
   new Date(vuosi, kuukausi - 1, paiva);
 
 const getPvmArray = (pvm: string) => pvm.split(".").map(Number);
 
+// TODO: Typings
 const sorttaaStuffLukukausienMukaan = (a, b) => a.pvmDate - b.pvmDate;
 
+// TODO: Typings
 const isInBetween = ({ value, values: [start, end] }) =>
   value >= start && value <= end;
 
+// TODO: Typings
 const luoLukuvuodelleKivaAvain = ({
   vuosi,
   pvmIsCurrentSemester,
@@ -1038,6 +1113,7 @@ const luoLukuvuodelleKivaAvain = ({
   return (vuosiJuttu = vuosi - 1);
 };
 
+// TODO: Typings
 const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
   const vuosi = pvmDate.getFullYear();
 
@@ -1060,26 +1136,39 @@ const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
   return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
 };
 
-const luoKivaAvainReducelle = (pvmDate) => {
+const luoKivaAvainReducelle = (pvmDate: Date) => {
   const vuosi = pvmDate.getFullYear();
   const kuukausi = pvmDate.toLocaleString("fi", { month: "long" });
 
   return `${kuukausi} ${vuosi}`;
 };
 
-const laskeKuukausienNopat = (prev, { pvmDate, op }) => {
+// TODO: Remove any & extract interface
+const laskeKuukausienNopat = (
+  prev: any,
+  {
+    pvmDate,
+    op,
+  }: {
+    pvmDate: Date;
+    op: number;
+  },
+) => {
   const avainOnneen = luoKivaAvainReducelle(pvmDate);
   return { ...prev, [avainOnneen]: op + (prev[avainOnneen] || 0) };
 };
 
+// TODO: Typings
 const laskeKumulatiivisetKuukausienNopat = (
   prev,
   { pvmDate, cumulativeOp },
 ) => ({ ...prev, [luoKivaAvainReducelle(pvmDate)]: cumulativeOp });
 
+// TODO: Typings
 const ryhmitteleStuffKivasti = ({ fn, stuff }) =>
   stuff.sort(sorttaaStuffLukukausienMukaan).reduce(fn, {});
 
+// TODO: Typings
 const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
   [
     {
@@ -1090,6 +1179,7 @@ const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
     secondDataSet && { ...secondDataSet, type: "line", ...styleGreen },
   ].filter(isTruthy);
 
+// TODO: Typings
 const piirräPerusGraafiNopille = ({ id, label, labels, data, secondDataSet }) =>
   draw({
     id,
@@ -1098,6 +1188,7 @@ const piirräPerusGraafiNopille = ({ id, label, labels, data, secondDataSet }) =
     datasets: hemmettiSentäänTeeDataSetti({ label, data, secondDataSet }),
   });
 
+// TODO: Typings
 const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff) => {
   const lukukausiGroups = ryhmitteleStuffKivasti({
     fn: laskeLukukausienNopat,
@@ -1128,6 +1219,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff) => {
   });
 };
 
+// TODO: Typings
 const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
   kuukausiGroups,
   kumulatiivisetKuukaudetGroups,
@@ -1144,6 +1236,7 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
   });
 };
 
+// TODO: Typings
 const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
   notEmpty(aineOpinnot) &&
     drawOpintoDonitsi({ id: "aineopinnot", stuff, data: aineOpinnot });
@@ -1151,10 +1244,10 @@ const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
   notEmpty(perusOpinnot) &&
     drawOpintoDonitsi({ id: "perusopinnot", stuff, data: perusOpinnot });
 };
-
+// TODO: Typings
 const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
   b.luennot.keskiarvo - a.luennot.keskiarvo || b.kurssimaara - a.kurssimaara;
-
+// TODO: Typings
 const piirräLuennoitsijaListat = (luennoitsijat) => {
   const luennoitsijatElement = document.querySelector("#luennoitsijat");
   luennoitsijatElement.innerHTML = "";
@@ -1190,7 +1283,7 @@ const hommaaMatskutLocalStoragesta = () => ({
   pääaine: getPääaineFromLokaali(),
   sivuaineet: getSivuaineetFromLokaali(),
 });
-
+// TODO: Typings
 const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
     {
@@ -1210,7 +1303,7 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
 
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
-
+// TODO: Typings
 const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
   const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
   setHtmlContent({
@@ -1218,7 +1311,7 @@ const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
     content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi. Yhteensä ${openUniOp} op.`,
   });
 };
-
+// TODO: Typings
 const laitaHyvaksytytSuorituksetDomiinJeps = ({
   kurssimaara,
   hyvMaara,
@@ -1230,7 +1323,7 @@ const laitaHyvaksytytSuorituksetDomiinJeps = ({
     content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% opinnoistasi. Yhteensä ${hyvOp} op.`,
   });
 };
-
+// TODO: Typings
 const arvioidaanOpintoVuodetDomiin = (op) => {
   const vuodet = (op / 60).toFixed(2);
   setHtmlContent({
@@ -1238,7 +1331,7 @@ const arvioidaanOpintoVuodetDomiin = (op) => {
     content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.`,
   });
 };
-
+// TODO: Typings
 const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
   `${key} ${data.laitos} keskiarvo on ${
     isNaN(data.keskiarvo) ? "hyv" : data.keskiarvo
@@ -1246,6 +1339,7 @@ const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
     isNaN(data.painotettuKeskiarvo) ? "hyv" : data.painotettuKeskiarvo
   }`;
 
+// TODO: Typings
 const piirraRandomStatistiikkaa = ({
   kurssimaara,
   luennoitsijamaara,
@@ -1326,12 +1420,22 @@ const piirraRandomStatistiikkaa = ({
 const minFontSize = 7;
 const maxFontSize = 28;
 
-const countFontSize = ({ val, minValue, maxValue }) =>
+const countFontSize = ({
+  val,
+  minValue,
+  maxValue,
+}: {
+  val: number;
+  minValue: number;
+  maxValue: number;
+}) =>
   val > minValue
     ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
     : 1;
 
-const piirraRumaTagipilvi = (words) => {
+// TODO: Typings
+const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
+  // FIXME: Incorrect Object type assign
   const minValue = Math.min(...Object.values(words));
   const maxValue = Math.max(...Object.values(words));
 
@@ -1353,11 +1457,13 @@ const piirraRumaTagipilvi = (words) => {
   });
 };
 
+// TODO: Typings
 const undefinedStuffFilter = (item) => item.luennoitsija !== undefined;
 
-const nameIncludesAvoinYo = (name) =>
+const nameIncludesAvoinYo = (name: string) =>
   name.includes("avoin yo") || name.includes("open uni");
 
+// TODO: Typings
 const laskePainotettuKeskiarvo = (data) => {
   const arvosanallisetOpintosuoritukset = data.filter(
     ({ arvosana }) => !isNaN(arvosana),
@@ -1371,6 +1477,7 @@ const laskePainotettuKeskiarvo = (data) => {
   ).toFixed(2);
 };
 
+// TODO: Typings
 const laskeStuffistaHalututJutut = ({ stuff, key }) =>
   stuff.reduce(
     (acc, item) => ({
@@ -1380,12 +1487,15 @@ const laskeStuffistaHalututJutut = ({ stuff, key }) =>
     {},
   );
 
+// TODO: Typings
 const laskeKuinkaMontaMitäkinNoppaaOnOlemassa = (stuff) =>
   laskeStuffistaHalututJutut({ stuff, key: "op" });
 
+// TODO: Typings
 const laskeKuinkaMontaMitäkinArvosanaaOnOlemassa = (stuff) =>
   laskeStuffistaHalututJutut({ stuff, key: "arvosana" });
 
+// TODO: Typings
 const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
   draw({
     id,
@@ -1402,12 +1512,13 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
     ],
   });
 
-const parsiLaitoksenKoodi = (lyhenne) =>
+const parsiLaitoksenKoodi = (lyhenne: string) =>
   lyhenne
     .replace(/^(ay|a)/i, "")
     .replace(/(-|_)[\d\D]+/i, "")
     .replace(/[\d]+/, "");
 
+// TODO: Typings
 const grouppaaEriLaitostenKurssit = (stuff) =>
   stuff.reduce((acc, kurssi) => {
     const { lyhenne, op, arvosana } = kurssi;
@@ -1449,6 +1560,7 @@ const grouppaaEriLaitostenKurssit = (stuff) =>
     };
   }, {});
 
+// TODO: Typings
 const piirräLaitosGraafit = (data) => {
   const dataset = sort(Object.values(data), "op");
 
