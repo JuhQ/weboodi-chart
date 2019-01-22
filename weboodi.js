@@ -1,5 +1,8 @@
-const getLocalStorage = key =>
-  JSON.parse(localStorage.getItem(key) || "[]").filter(notEmpty);
+const getLocalStorage = (key, initialValue = "[]") =>
+  JSON.parse(localStorage.getItem(key) || initialValue);
+
+const getListFromLocalStorage = (key, initialValue = "[]") =>
+  getLocalStorage(key, initialValue).filter(notEmpty);
 
 const setLocalStorage = key => value =>
   localStorage.setItem(key, JSON.stringify(value));
@@ -7,10 +10,15 @@ const setLocalStorage = key => value =>
 const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage("perusOpinnot");
 const setAineOpinnot = setLocalStorage("aineOpinnot");
+const setPääaine = setLocalStorage("pääaine");
+const setSivuaineet = setLocalStorage("sivuaineet");
 
-const getDuplikaattiKurssit = () => getLocalStorage("duplikaattiKurssit");
-const getPerusOpinnot = () => getLocalStorage("perusOpinnot");
-const getAineOpinnot = () => getLocalStorage("aineOpinnot");
+const getDuplikaattiKurssit = () =>
+  getListFromLocalStorage("duplikaattiKurssit");
+const getPerusOpinnot = () => getListFromLocalStorage("perusOpinnot");
+const getAineOpinnot = () => getListFromLocalStorage("aineOpinnot");
+const getPääaineFromLokaali = () => getLocalStorage("pääaine", "null");
+const getSivuaineetFromLokaali = () => getListFromLocalStorage("sivuaineet");
 
 const max = lista => Math.max(...lista);
 
@@ -26,6 +34,8 @@ const isArray = val => Array.isArray(val);
 
 const toLowerCase = str => str.toLowerCase();
 
+const contains = (list, key) => list.indexOf(key) > -1;
+
 const map = (list, keys) =>
   list.reduce(
     (acc, item) => [
@@ -34,6 +44,8 @@ const map = (list, keys) =>
     ],
     []
   );
+
+const mapInvoke = (list, method) => list.map(item => item[method](item));
 
 const sort = (list, key) => list.sort((a, b) => b[key] - a[key]);
 
@@ -358,7 +370,13 @@ const doCss = () => `
   </style>
   `;
 
-const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
+const yolohtml = ({
+  duplikaattiKurssit,
+  perusOpinnot,
+  aineOpinnot,
+  pääaine,
+  sivuaineet
+}) => `
   <div id="nuggets" class="margin-bottom-large">
     <div class="clear margin-bottom-small">
       <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
@@ -391,6 +409,8 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <div id="vuodet-arvio"></div>
         <div id="max-kuukausi-nopat"></div>
         <div id="keskiarvo"></div>
+        <div id="pääaine-data"></div>
+        <div id="sivuaineet-data"></div>
         <div id="tagipilvi"></div>
       </div>
     </div>
@@ -425,6 +445,22 @@ const yolohtml = ({ duplikaattiKurssit, perusOpinnot, aineOpinnot }) => `
         <label style="margin-bottom:30px;">
           Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
           <input type="text" name="aineOpinnot" value="${aineOpinnot}" />
+        </label>
+      </p>
+
+      <p>
+        <label style="margin-bottom:30px;">
+          Merkkaa tähän inputtiin pääaineesi tunnus, vaikka näin: TKT<br/>
+          <input type="text" name="pääaine" value="${pääaine}" />
+        </label>
+      </p>
+
+      <p>
+        <label style="margin-bottom:30px;">
+          Merkkaa tähän inputtiin pilkulla erottaen sivuaineesi tunnukset, vaikka näin: TKT,MAT<br/>
+          <input type="text" name="sivuaineet" value="${sivuaineet.join(
+            ","
+          )}" />
         </label>
       </p>
 
@@ -465,10 +501,22 @@ const suoritusTableSelector = "[name=suoritus] + table + table";
 const pitäisköDomRakentaa = () =>
   !!document.querySelector(suoritusTableSelector);
 
-const createDom = ({ duplikaattiKurssit, aineOpinnot, perusOpinnot }) => {
+const createDom = ({
+  duplikaattiKurssit,
+  aineOpinnot,
+  perusOpinnot,
+  pääaine,
+  sivuaineet
+}) => {
   const listaTaulukko = document.querySelector(suoritusTableSelector);
   const nuggetsExist = document.querySelector("#nuggets");
-  const yolo = yolohtml({ duplikaattiKurssit, aineOpinnot, perusOpinnot });
+  const yolo = yolohtml({
+    duplikaattiKurssit,
+    aineOpinnot,
+    perusOpinnot,
+    pääaine,
+    sivuaineet
+  });
 
   if (!listaTaulukko) {
     return false;
@@ -489,27 +537,47 @@ const createCoursesArray = target =>
     .map(putsaaTeksti)
     .filter(notEmpty);
 
-const kuunteleDuplikaattiInputtia = () => {
-  const input = document.querySelector("input[name='duplikaattiKurssit']");
+const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({ name, callback }) => {
+  const input = document.querySelector(`input[name='${name}']`);
 
   input.addEventListener("input", ({ target }) => {
-    setDuplikaattiKurssit(createCoursesArray(target));
+    callback(createCoursesArray(target));
+  });
+};
+
+const kuunteleDuplikaattiInputtia = () => {
+  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
+    name: "duplikaattiKurssit",
+    callback: setDuplikaattiKurssit
   });
 };
 
 const kuunteleppaNiitäPerusopintoja = () => {
-  const input = document.querySelector("input[name='perusOpinnot']");
-
-  input.addEventListener("input", ({ target }) => {
-    setPerusOpinnot(createCoursesArray(target));
+  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
+    name: "perusOpinnot",
+    callback: setPerusOpinnot
   });
 };
 
 const tahtoisinVaanKuunnellaAineopintoja = () => {
-  const input = document.querySelector("input[name='aineOpinnot']");
+  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
+    name: "aineOpinnot",
+    callback: setAineOpinnot
+  });
+};
+
+const jepulisKuuntelePääaineenMuutoksia = () => {
+  const input = document.querySelector("input[name='pääaine']");
 
   input.addEventListener("input", ({ target }) => {
-    setAineOpinnot(createCoursesArray(target));
+    setPääaine(target.value.trim());
+  });
+};
+
+const kuunteleSivuaineListanMuutoksia = () => {
+  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
+    name: "sivuaineet",
+    callback: setSivuaineet
   });
 };
 
@@ -548,6 +616,8 @@ const kuunteleAsijoita = () => {
   kuunteleDuplikaattiInputtia();
   kuunteleppaNiitäPerusopintoja();
   tahtoisinVaanKuunnellaAineopintoja();
+  jepulisKuuntelePääaineenMuutoksia();
+  kuunteleSivuaineListanMuutoksia();
   kuunteleppaNapinpainalluksiaJuu();
   kuunteleEsitäyttönapinKliksutteluja2017();
   kuunteleEsitäyttönapinKliksutteluja2016();
@@ -1067,7 +1137,9 @@ const piirräLuennoitsijaListat = luennoitsijat => {
 const hommaaMatskutLocalStoragesta = () => ({
   duplikaattiKurssit: getDuplikaattiKurssit(),
   perusOpinnot: getPerusOpinnot(),
-  aineOpinnot: getAineOpinnot()
+  aineOpinnot: getAineOpinnot(),
+  pääaine: getPääaineFromLokaali(),
+  sivuaineet: getSivuaineetFromLokaali()
 });
 
 const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
@@ -1118,6 +1190,13 @@ const arvioidaanOpintoVuodetDomiin = op => {
   });
 };
 
+const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
+  `${key} ${data.laitos} keskiarvo on ${
+    isNaN(data.keskiarvo) ? "hyv" : data.keskiarvo
+  } ja painotettu keskiarvo on ${
+    isNaN(data.painotettuKeskiarvo) ? "hyv" : data.painotettuKeskiarvo
+  }`;
+
 const piirraRandomStatistiikkaa = ({
   kurssimaara,
   luennoitsijamaara,
@@ -1128,7 +1207,9 @@ const piirraRandomStatistiikkaa = ({
   hyvOp,
   maxKuukausi,
   keskiarvo,
-  painotettuKeskiarvo
+  painotettuKeskiarvo,
+  pääaine,
+  sivuaineet
 }) => {
   setHtmlContent({
     id: "opintojen-maara",
@@ -1167,6 +1248,27 @@ const piirraRandomStatistiikkaa = ({
 
   if (hyvMaara) {
     laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara, hyvOp });
+  }
+
+  if (pääaine) {
+    setHtmlContent({
+      id: "pääaine-data",
+      content: luoTilastoaAineidenKeskiarvoista({
+        key: "Pääaineesi",
+        data: pääaine
+      })
+    });
+  }
+
+  if (sivuaineet) {
+    setHtmlContent({
+      id: "sivuaineet-data",
+      content: sivuaineet
+        .map(data =>
+          luoTilastoaAineidenKeskiarvoista({ key: "Sivuaineesi", data })
+        )
+        .join("<br>")
+    });
   }
 
   arvioidaanOpintoVuodetDomiin(op);
@@ -1261,7 +1363,10 @@ const grouppaaEriLaitostenKurssit = stuff =>
   stuff.reduce((acc, kurssi) => {
     const { lyhenne, op, arvosana } = kurssi;
     const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
-    const laitos = laitoksenKoodi.length ? laitoksenKoodi : "emt";
+    const laitos = (laitoksenKoodi.length
+      ? laitoksenKoodi
+      : "emt"
+    ).toUpperCase();
     const edellisenKierroksenData = acc[laitos];
     const arvosanat = edellisenKierroksenData
       ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))
@@ -1336,10 +1441,18 @@ const start = () => {
   const {
     duplikaattiKurssit,
     perusOpinnot,
-    aineOpinnot
+    aineOpinnot,
+    pääaine,
+    sivuaineet
   } = hommaaMatskutLocalStoragesta();
 
-  createDom({ duplikaattiKurssit, perusOpinnot, aineOpinnot });
+  createDom({
+    duplikaattiKurssit,
+    perusOpinnot,
+    aineOpinnot,
+    pääaine,
+    sivuaineet
+  });
 
   // Make stuff & filter out undefined things
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
@@ -1386,6 +1499,15 @@ const start = () => {
   const nopatGroupattuna = laskeKuinkaMontaMitäkinNoppaaOnOlemassa(stuff);
 
   const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
+
+  const sivuaineidenMenestys = Object.values(laitostenKurssit).filter(
+    ({ laitos }) =>
+      contains(mapInvoke(sivuaineet, "toUpperCase"), laitos.toUpperCase())
+  );
+
+  const pääaineenMenestys = pääaine
+    ? laitostenKurssit[pääaine.toUpperCase()]
+    : null;
 
   piirräLaitosGraafit(laitostenKurssit);
 
@@ -1437,7 +1559,9 @@ const start = () => {
     ),
     maxKuukausi,
     keskiarvo,
-    painotettuKeskiarvo
+    painotettuKeskiarvo,
+    pääaine: pääaineenMenestys,
+    sivuaineet: sivuaineidenMenestys
   });
 
   kuunteleAsijoita(); // 👂
