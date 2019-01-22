@@ -1,4 +1,10 @@
-import { notEmpty } from "./utils/listUtils";
+import {
+  ConvertedCourse,
+  CourseArrToObjParams,
+  DOMParams,
+  PreCourse,
+} from "./interfaces/Interfaces";
+import { notEmpty, notEmptyList } from "./utils/listUtils";
 import {
   getListFromLocalStorage,
   getLocalStorage,
@@ -16,7 +22,8 @@ const getDuplikaattiKurssit = () =>
   getListFromLocalStorage("duplikaattiKurssit");
 const getPerusOpinnot = () => getListFromLocalStorage("perusOpinnot");
 const getAineOpinnot = () => getListFromLocalStorage("aineOpinnot");
-const getPääaineFromLokaali = () => getLocalStorage("pääaine", "null");
+const getPääaineFromLokaali = () =>
+  getLocalStorage<string | null>("pääaine", "null");
 const getSivuaineetFromLokaali = () => getListFromLocalStorage("sivuaineet");
 
 const max = (lista: number[]) => Math.max(...lista);
@@ -30,7 +37,7 @@ const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
 
 const isTruthy = (v) => v;
 
-const isString = (val: unknown) => typeof val === "string";
+const isString = (val: unknown): val is string => typeof val === "string";
 
 const isArray = <T>(val: unknown): val is T[] => Array.isArray(val);
 
@@ -38,7 +45,8 @@ const toLowerCase = (str: string) => str.toLowerCase();
 
 const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
 
-const map = (list, keys) =>
+// TODO: Remove any
+const map = (list: any[], keys: string | string[]) =>
   list.reduce(
     (acc, item) => [
       ...acc,
@@ -421,7 +429,7 @@ const yolohtml = ({
   aineOpinnot,
   pääaine,
   sivuaineet,
-}) => `
+}: DOMParams) => `
   <div id="nuggets" class="margin-bottom-large">
     <div class="clear margin-bottom-small">
       <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
@@ -552,7 +560,7 @@ const createDom = ({
   perusOpinnot,
   pääaine,
   sivuaineet,
-}) => {
+}: DOMParams) => {
   const listaTaulukko = document.querySelector(suoritusTableSelector);
   const nuggetsExist = document.querySelector("#nuggets");
   const yolo = yolohtml({
@@ -576,15 +584,21 @@ const createDom = ({
   return true;
 };
 
-// TODO: Add param typing
-const createCoursesArray = (target) =>
-  target.value
+const createCoursesArray = (target) => {
+  return target.value
     .split(",")
     .map(putsaaTeksti)
     .filter(notEmpty);
+};
 
-// TODO: Add param typing
-const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({ name, callback }) => {
+// TODO: Remove "any"
+const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({
+  name,
+  callback,
+}: {
+  name: string;
+  callback: any;
+}) => {
   const input = document.querySelector(`input[name='${name}']`);
 
   if (input === null) {
@@ -594,7 +608,13 @@ const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({ name, callback }) => {
   }
 
   input.addEventListener("input", ({ target }) => {
-    callback(createCoursesArray(target));
+    if (target !== null) {
+      callback(createCoursesArray(target));
+    } else {
+      throw new Error(
+        "createCoursesArray(): Cannot create a course array if the target is null",
+      );
+    }
   });
 };
 
@@ -729,7 +749,6 @@ const groupThemCourses = (stuff) =>
 
 const putsaaTeksti = (str: string) => str.replace(/&nbsp;/g, " ").trim();
 
-// TODO: Typings
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
   kurssi,
@@ -737,17 +756,17 @@ const muutaArrayKivaksiObjektiksi = ([
   arvosana,
   pvm = "01.01.1970",
   luennoitsija,
-]) => ({
+]: CourseArrToObjParams): ConvertedCourse => ({
   pvm,
   kurssi,
   lyhenne,
   luennoitsija,
   op: Number(poistaSulut(op)), // paketoitu kandi tms
   arvosana: Number(arvosana),
-  // @ts-ignore
   pvmDate: rakenteleDateObjekti(getPvmArray(pvm)),
 });
 
+// TODO: Fix typings
 const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
   ...initial,
   {
@@ -757,23 +776,28 @@ const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
 ];
 
 const hommaaMeilleListaAsijoistaDommista = () => [
-  ...document.querySelectorAll(
-    "[name=suoritus] + table + table:not(.eisei) table.eisei tbody tr",
+  ...Array.from(
+    document.querySelectorAll(
+      "[name=suoritus] + table + table:not(.eisei) table.eisei tbody tr",
+    ),
   ),
 ];
 
 // TODO: Typings
-const makeSomeStuff = (duplikaattiKurssit) =>
+const makeSomeStuff = (duplikaattiKurssit: string[]) =>
   hommaaMeilleListaAsijoistaDommista()
-    .map((item) => [...item.querySelectorAll("td")])
-    .filter(notEmpty)
+    .map((item) => [...Array.from(item.querySelectorAll("td"))])
+    .filter(notEmptyList) // Filter empty lists
     .map((item) => map(item, "textContent").map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
-    .filter((item) => item.length > 3)
+    .filter((item: PreCourse) => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
     .filter(({ op }) => !isNaN(op))
-    .sort(sorttaaStuffLukukausienMukaan)
+    .sort((a, b) => {
+      // TODO: Replace with filtering function
+      return a.pvmDate.getTime() - b.pvmDate.getTime();
+    })
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
 // TODO: Typings
@@ -1091,13 +1115,25 @@ const getLukuvuosi = (vuosi) => [
 ];
 
 // TODO: Typings
-const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]) =>
-  new Date(vuosi, kuukausi - 1, paiva);
+const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]: [
+  number,
+  number,
+  number
+]) => new Date(vuosi, kuukausi - 1, paiva);
 
-const getPvmArray = (pvm: string) => pvm.split(".").map(Number);
+const getPvmArray = (pvm: string) => {
+  const splitted = pvm.split(".");
+  if (splitted.length === 3) {
+    return splitted.map(Number) as [number, number, number];
+  }
+  // Failsafe
+  throw new Error("getPvmArray(): Parsing date failed");
+};
 
 // TODO: Typings
-const sorttaaStuffLukukausienMukaan = (a, b) => a.pvmDate - b.pvmDate;
+// FIXME: Course type is interfering with PreCourse
+const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
+  a.pvmDate.getTime() - b.pvmDate.getTime();
 
 // TODO: Typings
 const isInBetween = ({ value, values: [start, end] }) =>
@@ -1178,8 +1214,7 @@ const laskeKumulatiivisetKuukausienNopat = (
   { pvmDate, cumulativeOp },
 ) => ({ ...prev, [luoKivaAvainReducelle(pvmDate)]: cumulativeOp });
 
-// TODO: Typings
-const ryhmitteleStuffKivasti = ({ fn, stuff }) =>
+const ryhmitteleStuffKivasti = ({ fn, stuff }: { fn: any; stuff: Course[] }) =>
   stuff.sort(sorttaaStuffLukukausienMukaan).reduce(fn, {});
 
 // TODO: Typings
@@ -1486,7 +1521,7 @@ const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
 };
 
 // TODO: Typings
-const undefinedStuffFilter = (item) => item.luennoitsija !== undefined;
+const undefinedStuffFilter = (item: Course) => item.luennoitsija !== undefined;
 
 const nameIncludesAvoinYo = (name: string) =>
   name.includes("avoin yo") || name.includes("open uni");
@@ -1626,6 +1661,22 @@ const piirräLaitosGraafit = (data) => {
   });
 };
 
+/**
+ * Course interface that is returned by makeSomeStuff();
+ *
+ * @interface Course
+ */
+interface Course {
+  arvosana: number;
+  cumulativeOp: number;
+  kurssi: string;
+  luennoitsija?: string;
+  lyhenne: string;
+  op: string;
+  pvm: string;
+  pvmDate: Date;
+}
+
 // tästä tää lähtee!
 const start = () => {
   if (!pitäisköDomRakentaa()) {
@@ -1649,6 +1700,7 @@ const start = () => {
   });
 
   // Make stuff & filter out undefined things
+  // TODO: makeSomeStuff needs typings finished
   const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
 
   // prevent division with 0
@@ -1698,6 +1750,7 @@ const start = () => {
 
   // @ts-ignore
   const sivuaineidenMenestys = Object.values(laitostenKurssit).filter(
+    // @ts-ignore
     ({ laitos }) =>
       contains(mapInvoke(sivuaineet, "toUpperCase"), laitos.toUpperCase()),
   );
@@ -1749,6 +1802,7 @@ const start = () => {
     openUniOp: stuff
       .filter(({ kurssi }) => nameIncludesAvoinYo(kurssi.toLowerCase()))
       .map(({ op }) => op)
+      // @ts-ignore
       .reduce(sum, 0),
     hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
