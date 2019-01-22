@@ -11,12 +11,11 @@ import {
   setLocalStorage,
 } from "./utils/localStorage";
 
-// TODO: Add types
-const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
-const setPerusOpinnot = setLocalStorage("perusOpinnot");
-const setAineOpinnot = setLocalStorage("aineOpinnot");
-const setPääaine = setLocalStorage("pääaine");
-const setSivuaineet = setLocalStorage("sivuaineet");
+const setDuplikaattiKurssit = setLocalStorage<string[]>("duplikaattiKurssit");
+const setPerusOpinnot = setLocalStorage<string[]>("perusOpinnot");
+const setAineOpinnot = setLocalStorage<string[]>("aineOpinnot");
+const setPääaine = setLocalStorage<string>("pääaine");
+const setSivuaineet = setLocalStorage<string[]>("sivuaineet");
 
 const getDuplikaattiKurssit = () =>
   getListFromLocalStorage("duplikaattiKurssit");
@@ -597,7 +596,7 @@ const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({
   callback,
 }: {
   name: string;
-  callback: any;
+  callback: (params: string[]) => void;
 }) => {
   const input = document.querySelector(`input[name='${name}']`);
 

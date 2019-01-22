@@ -6,8 +6,7 @@ const getLocalStorage = <T>(key: string, initialValue = "[]"): T =>
 const getListFromLocalStorage = (key: string, initialValue = "[]") =>
   getLocalStorage<string[]>(key, initialValue).filter(notEmpty);
 
-// TODO: Remove "any"
-const setLocalStorage = (key: string) => (value: any) =>
+const setLocalStorage = <T>(key: string) => (value: T) =>
   localStorage.setItem(key, JSON.stringify(value));
 
 export { getLocalStorage, setLocalStorage, getListFromLocalStorage };
