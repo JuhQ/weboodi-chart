@@ -1,11 +1,9 @@
-const getLocalStorage = (key: string, initialValue = "[]") =>
-  JSON.parse(localStorage.getItem(key) || initialValue);
-
-const getListFromLocalStorage = (key: string, initialValue = "[]") =>
-  getLocalStorage(key, initialValue).filter(notEmpty);
-
-const setLocalStorage = <T>(key: string) => (value: T) =>
-  localStorage.setItem(key, JSON.stringify(value));
+import { notEmpty } from "./utils/listUtils";
+import {
+  getListFromLocalStorage,
+  getLocalStorage,
+  setLocalStorage,
+} from "./utils/localStorage";
 
 // TODO: Add types
 const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
@@ -33,8 +31,6 @@ const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
 const isTruthy = (v) => v;
 
 const isString = (val: unknown) => typeof val === "string";
-
-const notEmpty = <T>(data: T[]) => data.length > 0;
 
 const isArray = <T>(val: unknown): val is T[] => Array.isArray(val);
 
@@ -299,6 +295,7 @@ const draw = ({
     throw new Error("draw(): Element with id " + id + "is null");
   }
 
+  // @ts-ignore
   new Chart(elem, {
     type,
     data: { labels, datasets },
@@ -347,6 +344,8 @@ const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
     throw new Error("drawPie(): Element with id " + id + " is null");
   }
 
+  // FIXME: Typings
+  // @ts-ignore
   new Chart(elem2, {
     type: "pie",
     data: {
@@ -632,6 +631,7 @@ const jepulisKuuntelePääaineenMuutoksia = () => {
       throw new Error("jepulisKuuntelePääaineenMuutoksia(): Target is null");
     }
     // TODO: Fix typing
+    // @ts-ignore
     setPääaine(target.value.trim());
   });
 };
@@ -744,6 +744,7 @@ const muutaArrayKivaksiObjektiksi = ([
   luennoitsija,
   op: Number(poistaSulut(op)), // paketoitu kandi tms
   arvosana: Number(arvosana),
+  // @ts-ignore
   pvmDate: rakenteleDateObjekti(getPvmArray(pvm)),
 });
 
@@ -1057,6 +1058,8 @@ const drawGraphs = ({
 }) => {
   const grouped = groupThemCourses(stuff);
   notEmpty(grouped) &&
+    // FIXME: ts-ignore
+    // @ts-ignore
     draw({
       id: "chart-nopat",
       customTooltip: true,
@@ -1066,6 +1069,8 @@ const drawGraphs = ({
     });
 
   notEmpty(keskiarvot) &&
+    // FIXME: ts-ignore
+    //  @ts-ignore
     draw({
       id: "chart-keskiarvo",
       labels: map(keskiarvot, "pvm"),
@@ -1126,11 +1131,13 @@ const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
 
   const pvmIsCurrentSemester = isInBetween({
     value: pvmDate,
+    // @ts-ignore
     values: getLukuvuosi(vuosi),
   });
 
   const pvmIsNextSemester = isInBetween({
     value: pvmDate,
+    // @ts-ignore
     values: getLukuvuosi(vuosi + 1),
   });
 
@@ -1188,6 +1195,7 @@ const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
 
 // TODO: Typings
 const piirräPerusGraafiNopille = ({ id, label, labels, data, secondDataSet }) =>
+  // @ts-ignore
   draw({
     id,
     type: secondDataSet ? "bar" : "line",
@@ -1202,6 +1210,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff) => {
     stuff,
   });
   const lukukausiKeys = Object.keys(lukukausiGroups);
+  // @ts-ignore
   const lukukausiData = Object.values(lukukausiGroups);
   const ekaLukukausi = parseInt(lukukausiKeys[0], 10);
   const vainYksiLukukausiSuoritettu = lukukausiKeys.length === 1;
@@ -1218,6 +1227,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff) => {
     ? [0, lukukausiData[0], 0]
     : lukukausiData;
 
+  // @ts-ignore
   piirräPerusGraafiNopille({
     id: "chart-nopat-vuosi",
     label: "Noppia per lukuvuosi",
@@ -1235,9 +1245,11 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
     id: "chart-nopat-kuukaudet",
     label: "Noppia per kuukausi",
     labels: Object.keys(kuukausiGroups),
+    // @ts-ignore
     data: Object.values(kuukausiGroups),
     secondDataSet: {
       label: "Kumulatiiviset nopat",
+      // @ts-ignore
       data: Object.values(kumulatiivisetKuukaudetGroups),
     },
   });
@@ -1257,11 +1269,16 @@ const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
 // TODO: Typings
 const piirräLuennoitsijaListat = (luennoitsijat) => {
   const luennoitsijatElement = document.querySelector("#luennoitsijat");
+  if (luennoitsijatElement === null) {
+    throw new Error("piirräLuennoitsijaListat(): Element is null");
+  }
   luennoitsijatElement.innerHTML = "";
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by kurssimaara",
+    // @ts-ignore
     lista: sort(luennoitsijat, "kurssimaara"),
+    // @ts-ignore
     luennoitsijatElement,
   });
 
@@ -1273,12 +1290,14 @@ const piirräLuennoitsijaListat = (luennoitsijat) => {
         .sort(sorttaaLuennoitsijatKeskiarvonMukaan),
       ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === "hyv"),
     ],
+    // @ts-ignore
     luennoitsijatElement,
   });
 
   drawLuennoitsijat({
     title: "Luennoitsijoiden top lista by nopat",
     lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
+    // @ts-ignore
     luennoitsijatElement,
   });
 };
@@ -1443,7 +1462,9 @@ const countFontSize = ({
 // TODO: Typings
 const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
   // FIXME: Incorrect Object type assign
+  // @ts-ignore
   const minValue = Math.min(...Object.values(words));
+  // @ts-ignore
   const maxValue = Math.max(...Object.values(words));
 
   const content = Object.keys(words)
@@ -1504,15 +1525,18 @@ const laskeKuinkaMontaMitäkinArvosanaaOnOlemassa = (stuff) =>
 
 // TODO: Typings
 const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
+  // @ts-ignore
   draw({
     id,
     type: "bar",
     labels: Object.keys(data).map(
+      // @ts-ignore
       (key) => `${label} ${isNaN(key) ? "hyv" : key}`,
     ),
     datasets: [
       {
         label: "Suorituksia",
+        // @ts-ignore
         data: Object.values(data),
         ...styleBlue,
       },
@@ -1569,8 +1593,10 @@ const grouppaaEriLaitostenKurssit = (stuff) =>
 
 // TODO: Typings
 const piirräLaitosGraafit = (data) => {
+  // @ts-ignore
   const dataset = sort(Object.values(data), "op");
 
+  // @ts-ignore
   draw({
     id: "chart-laitos-graafit",
     type: "bar",
@@ -1653,7 +1679,9 @@ const start = () => {
     stuff,
   });
 
+  // @ts-ignore
   const maxKuukausiNopat = max(Object.values(kuukausiGroups));
+  // @ts-ignore
   const maxKuukausi = Object.entries(kuukausiGroups).find(
     ([_, op]) => op === maxKuukausiNopat,
   );
@@ -1668,6 +1696,7 @@ const start = () => {
 
   const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
 
+  // @ts-ignore
   const sivuaineidenMenestys = Object.values(laitostenKurssit).filter(
     ({ laitos }) =>
       contains(mapInvoke(sivuaineet, "toUpperCase"), laitos.toUpperCase()),
