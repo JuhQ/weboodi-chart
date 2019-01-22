@@ -13,7 +13,7 @@ const getAineOpinnot = () => getListFromLocalStorage("aineOpinnot");
 const getPääaineFromLokaali = () => getLocalStorage("pääaine", "null");
 const getSivuaineetFromLokaali = () => getListFromLocalStorage("sivuaineet");
 const max = (lista) => Math.max(...lista);
-const findPvm = (list, key) => list.find(({ pvm }) => pvm === key);
+const findPvm = (list, key) => list.find((val) => val.pvm === key);
 const isTruthy = (v) => v;
 const isString = (val) => typeof val === "string";
 const notEmpty = (data) => data.length > 0;
@@ -27,7 +27,13 @@ const map = (list, keys) => list.reduce((acc, item) => [
 const mapInvoke = (list, method) => list.map((item) => item[method](item));
 const sort = (list, key) => list.sort((a, b) => b[key] - a[key]);
 const setHtmlContent = ({ id, content }) => {
-    document.getElementById(id).innerHTML = content;
+    const element = document.getElementById(id);
+    if (element !== null) {
+        element.innerHTML = content;
+    }
+    else {
+        console.error("setHtmlContent(): Element with id %s is null", id);
+    }
 };
 const chartColors = [
     "pink",
@@ -219,7 +225,11 @@ const teeHienoTooltip = () => ({
 const draw = ({ id, labels, datasets, type = "bar", customTooltip = false, customTicks = false, }) => {
     const stepSize = 55;
     const maxValue = Math.ceil(max(map(datasets, "data").map(max)) / stepSize) * stepSize;
-    new Chart(document.getElementById(id), {
+    const elem = document.getElementById(id);
+    if (elem === null) {
+        throw new Error("draw(): Element with id " + id + "is null");
+    }
+    new Chart(elem, {
         type,
         data: { labels, datasets },
         options: Object.assign({}, (customTooltip && teeHienoTooltip()), { scales: {
@@ -238,8 +248,16 @@ const draw = ({ id, labels, datasets, type = "bar", customTooltip = false, custo
     });
 };
 const drawPie = ({ id, labels, datasets, backgroundColor }) => {
-    document.getElementById(`${id}-container`).style.display = "block";
-    new Chart(document.getElementById(id), {
+    const elem = document.getElementById(`${id}-container`);
+    if (elem === null) {
+        throw new Error("drawPie(): Element with id " + id + "-container is null");
+    }
+    elem.style.display = "block";
+    const elem2 = document.getElementById(id);
+    if (elem2 === null) {
+        throw new Error("drawPie(): Element with id " + id + " is null");
+    }
+    new Chart(elem2, {
         type: "pie",
         data: {
             datasets: [{ data: datasets, backgroundColor }],

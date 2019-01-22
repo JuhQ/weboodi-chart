@@ -4,9 +4,10 @@ const getLocalStorage = (key: string, initialValue = "[]") =>
 const getListFromLocalStorage = (key: string, initialValue = "[]") =>
   getLocalStorage(key, initialValue).filter(notEmpty);
 
-const setLocalStorage = (key: string) => (value: any) =>
+const setLocalStorage = <T>(key: string) => (value: T) =>
   localStorage.setItem(key, JSON.stringify(value));
 
+// TODO: Add types
 const setDuplikaattiKurssit = setLocalStorage("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage("perusOpinnot");
 const setAineOpinnot = setLocalStorage("aineOpinnot");
@@ -22,7 +23,12 @@ const getSivuaineetFromLokaali = () => getListFromLocalStorage("sivuaineet");
 
 const max = (lista: number[]) => Math.max(...lista);
 
-const findPvm = (list: any[], key: string) => list.find(({ pvm }) => pvm === key);
+interface Paivays {
+  pvm: string;
+}
+
+const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
+  list.find((val) => val.pvm === key);
 
 const isTruthy = (v) => v;
 
@@ -30,7 +36,7 @@ const isString = (val: unknown) => typeof val === "string";
 
 const notEmpty = <T>(data: T[]) => data.length > 0;
 
-const isArray = (val: any) => Array.isArray(val);
+const isArray = <T>(val: unknown): val is T[] => Array.isArray(val);
 
 const toLowerCase = (str: string) => str.toLowerCase();
 
@@ -47,10 +53,17 @@ const map = (list, keys) =>
 
 const mapInvoke = (list, method) => list.map((item) => item[method](item));
 
-const sort = (list, key) => list.sort((a, b) => b[key] - a[key]);
+// TODO: Remove any
+const sort = (list: any, key: number) =>
+  list.sort((a: any, b: any) => b[key] - a[key]);
 
-const setHtmlContent = ({ id, content }) => {
-  document.getElementById(id).innerHTML = content;
+const setHtmlContent = ({ id, content }: { id: string; content: any }) => {
+  const element = document.getElementById(id);
+  if (element !== null) {
+    element.innerHTML = content;
+  } else {
+    console.error("setHtmlContent(): Element with id %s is null", id);
+  }
 };
 
 const chartColors = [
@@ -239,7 +252,8 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
 const findFromKurssiTietokanta = (lyhenne) =>
   findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
 
-const isFloat = (n) => Number(n) === n && n % 1 !== 0;
+// TODO: Check n's typedef with use cases
+const isFloat = (n: string | number) => Number(n) === n && n % 1 !== 0;
 
 const teeHienoTooltip = () => ({
   tooltips: {
@@ -258,6 +272,15 @@ const teeHienoTooltip = () => ({
   },
 });
 
+interface DrawParams {
+  id: string;
+  labels: any;
+  datasets: any;
+  type: string;
+  customTooltip: boolean;
+  customTicks: boolean;
+}
+
 const draw = ({
   id,
   labels,
@@ -265,12 +288,18 @@ const draw = ({
   type = "bar",
   customTooltip = false,
   customTicks = false,
-}) => {
+}: DrawParams) => {
   const stepSize = 55;
   const maxValue =
     Math.ceil(max(map(datasets, "data").map(max)) / stepSize) * stepSize;
 
-  new Chart(document.getElementById(id), {
+  const elem = document.getElementById(id);
+
+  if (elem === null) {
+    throw new Error("draw(): Element with id " + id + "is null");
+  }
+
+  new Chart(elem, {
     type,
     data: { labels, datasets },
     options: {
@@ -298,10 +327,27 @@ const draw = ({
   });
 };
 
-const drawPie = ({ id, labels, datasets, backgroundColor }) => {
-  document.getElementById(`${id}-container`).style.display = "block";
+interface DrawPieParams {
+  id: string;
+  labels: any;
+  datasets: any;
+  backgroundColor: string;
+}
 
-  new Chart(document.getElementById(id), {
+const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
+  const elem = document.getElementById(`${id}-container`);
+  if (elem === null) {
+    throw new Error("drawPie(): Element with id " + id + "-container is null");
+  }
+  elem.style.display = "block";
+
+  const elem2 = document.getElementById(id);
+
+  if (elem2 === null) {
+    throw new Error("drawPie(): Element with id " + id + " is null");
+  }
+
+  new Chart(elem2, {
     type: "pie",
     data: {
       datasets: [{ data: datasets, backgroundColor }],
@@ -774,7 +820,8 @@ const poistaPilkut = (str: string) => str.replace(",", "").trim();
 
 const liianLyhytNimiSanaPilveen = 2;
 
-const poistaLiianLyhyetNimet = (str: string) => str.length > liianLyhytNimiSanaPilveen;
+const poistaLiianLyhyetNimet = (str: string) =>
+  str.length > liianLyhytNimiSanaPilveen;
 
 const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (stuff) =>
   map(stuff, "kurssi")
