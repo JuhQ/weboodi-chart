@@ -1069,7 +1069,9 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
     : lukukausiKeys.map(i => `${i}-${parseInt(i, 10) + 1}`);
 
   // if only one year to show, pad data with zeros
-  const data = vainYksiLukukausiSuoritettu ? [0, lukukausiData[0], 0] : lukukausiData;
+  const data = vainYksiLukukausiSuoritettu
+    ? [0, lukukausiData[0], 0]
+    : lukukausiData;
 
   piirräPerusGraafiNopille({
     id: "chart-nopat-vuosi",
@@ -1555,7 +1557,8 @@ const start = () => {
       .reduce(sum, 0),
     hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
-      sum
+      sum,
+      0
     ),
     maxKuukausi,
     keskiarvo,
