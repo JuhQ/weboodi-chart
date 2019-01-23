@@ -1,5 +1,6 @@
 const notEmpty = (data: string) => data.length > 0;
 const notEmptyList = <T>(data: T[]) => data.length > 0;
+const max = (lista: number[]) => Math.max(...lista);
 const map = <T>(
   list: T[],
   keys: keyof T | Array<keyof T>,
@@ -11,4 +12,4 @@ const map = <T>(
     ];
   }, []);
 
-export { notEmpty, notEmptyList, map };
+export { notEmpty, notEmptyList, map, max };

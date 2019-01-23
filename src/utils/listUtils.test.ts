@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { map, notEmpty, notEmptyList } from "./listUtils";
+import { map, max, notEmpty, notEmptyList } from "./listUtils";
 
 describe("List utils", () => {
   describe("notEmpty()", () => {
@@ -41,6 +41,24 @@ describe("List utils", () => {
       expect(res.length).to.equal(2);
       expect(res[0]).to.equal(2);
       expect(res[1]).to.equal(undefined);
+    });
+  });
+  describe("max()", () => {
+    it("Should return correct maximum value #1", () => {
+      const res = max([1, 2, 3]);
+      expect(res).to.equal(3);
+    });
+    it("Should return correct maximum value #2", () => {
+      const res = max([-1, 20, 3]);
+      expect(res).to.equal(20);
+    });
+    it("Should return correct maximum value #3", () => {
+      const res = max([0, 0, 0]);
+      expect(res).to.equal(0);
+    });
+    it("Should return correct maximum value #3", () => {
+      const res = max([999, 0, -100]);
+      expect(res).to.equal(999);
     });
   });
 });

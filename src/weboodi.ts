@@ -7,7 +7,7 @@ import {
   DOMParams,
   PreCourse,
 } from "./interfaces/Interfaces";
-import { map, notEmpty, notEmptyList } from "./utils/listUtils";
+import { map, max, notEmpty, notEmptyList } from "./utils/listUtils";
 import {
   getListFromLocalStorage,
   getLocalStorage,
@@ -15,7 +15,7 @@ import {
 } from "./utils/localStorage";
 import { average, sum } from "./utils/numberUtils";
 import { toLowerCase } from "./utils/stringUtils";
-import { isArray, isFloat, isString, isTruthy } from "./utils/validators";
+import { isArray, isFloat, isTruthy } from "./utils/validators";
 
 const setDuplikaattiKurssit = setLocalStorage<string[]>("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage<string[]>("perusOpinnot");
@@ -30,8 +30,6 @@ const getAineOpinnot = () => getListFromLocalStorage("aineOpinnot");
 const getPääaineFromLokaali = () =>
   getLocalStorage<string | null>("pääaine", "null");
 const getSivuaineetFromLokaali = () => getListFromLocalStorage("sivuaineet");
-
-const max = (lista: number[]) => Math.max(...lista);
 
 interface Paivays {
   pvm: string;
@@ -624,11 +622,11 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
   hommaaMeilleListaAsijoistaDommista()
     .map((item) => [...Array.from(item.querySelectorAll("td"))])
     .filter((elementArray) => notEmptyList(elementArray)) // Filter empty lists
-    .map((item) => map(item, "textContent").map(putsaaTeksti))
+    .map((item) => map(item, "textContent").map(putsaaTeksti)) // Return type is string[]
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
+    .filter((item) => item.length > 3)
     // @ts-ignore
-    .filter((item: PreCourse) => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
     .filter(({ op }) => !isNaN(op))
     .sort((a, b) => {
