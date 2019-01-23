@@ -14,7 +14,7 @@
 2. Run `yarn install` to install development dependencies
 3. Run `yarn test` to run tests
 4. Run `yarn build` to build the extension
-5. Run `./build.sh` (TODO)
+5. Run `zip -r weboodi-chart.zip manifest.json dist/weboodi.js chart.js icon16.png icon48.png icon128.png`
 
 ## Author
 
