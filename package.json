@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "webpack",
-    "test": "mocha -r ts-node/register src/**/*.test.ts"
+    "test": "nyc mocha -r ts-node/register src/**/*.test.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -15,6 +15,7 @@
     "@types/mocha": "^5.2.5",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.0.1",
     "tslint": "^5.12.1",
@@ -25,5 +26,26 @@
   },
   "dependencies": {
     "chart.js": "^2.7.3"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.test.ts"
+    ],
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }

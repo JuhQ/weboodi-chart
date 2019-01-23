@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { isArray, isFloat, isString } from "./validators";
+import { isArray, isFloat, isString, isTruthy } from "./validators";
 
 describe("Validators", () => {
   describe("isString()", () => {
@@ -55,6 +55,30 @@ describe("Validators", () => {
     it("Should return false if the parameter is not an array #3", () => {
       const result = isArray(undefined);
       expect(result).to.equal(false);
+    });
+  });
+  describe("isTruthy()", () => {
+    it("Should return true if the parameter is truthy #1", () => {
+      const result = ["jee"].filter(isTruthy);
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.equal("jee");
+    });
+    it("Should return true if the parameter is truthy #2", () => {
+      const result = [true].filter(isTruthy);
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.equal(true);
+    });
+    it("Should return false if the parameter is not truthy #1", () => {
+      const result = [false].filter(isTruthy);
+      expect(result.length).to.equal(0);
+    });
+    it("Should return false if the parameter is not truthy #2", () => {
+      const result = [undefined].filter(isTruthy);
+      expect(result.length).to.equal(0);
+    });
+    it("Should return false if the parameter is not truthy #3", () => {
+      const result = [0].filter(isTruthy);
+      expect(result.length).to.equal(0);
     });
   });
 });

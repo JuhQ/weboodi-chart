@@ -42,6 +42,14 @@ describe("List utils", () => {
       expect(res[0]).to.equal(2);
       expect(res[1]).to.equal(undefined);
     });
+    it("Should return correct object values #4", () => {
+      const res = map([{ moi: 2 }, { ok: 3, jou: 4 }], ["moi", "jou"]);
+      expect(res.length).to.equal(4);
+      expect(res[0]).to.equal(2);
+      expect(res[1]).to.equal(undefined);
+      expect(res[2]).to.equal(undefined);
+      expect(res[3]).to.equal(4);
+    });
   });
   describe("max()", () => {
     it("Should return correct maximum value #1", () => {
