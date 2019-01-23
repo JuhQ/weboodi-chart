@@ -5,7 +5,6 @@ import {
   Course,
   CourseArrToObjParams,
   DOMParams,
-  PreCourse,
 } from "./interfaces/Interfaces";
 import { map, max, notEmpty, notEmptyList } from "./utils/listUtils";
 import {
@@ -1634,6 +1633,7 @@ const start = () => {
     hyvMaara: map(stuff, "arvosana").filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), "op").reduce(
       sum,
+      0,
     ),
     maxKuukausi,
     keskiarvo,
