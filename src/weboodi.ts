@@ -1,3 +1,4 @@
+import Chart from "chart.js";
 import { kurssitietokanta } from "./data/courses";
 import {
   ConvertedCourse,
@@ -12,8 +13,8 @@ import {
   setLocalStorage,
 } from "./utils/localStorage";
 import { average, sum } from "./utils/numberUtils";
+import { toLowerCase } from "./utils/stringUtils";
 import { isArray, isFloat, isString, isTruthy } from "./utils/validators";
-import Chart from "chart.js";
 
 const setDuplikaattiKurssit = setLocalStorage<string[]>("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage<string[]>("perusOpinnot");
@@ -37,8 +38,6 @@ interface Paivays {
 
 const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
   list.find((val) => val.pvm === key);
-
-const toLowerCase = (str: string) => str.toLowerCase();
 
 const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
 
@@ -84,7 +83,7 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
       !acc.length &&
       isArray(db[key]) &&
       db[key].find(({ keys }) =>
-        keys.map(toLowerCase).includes(lyhenne.toLowerCase()),
+        keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
       );
     return (
       acc ||
@@ -1630,10 +1629,10 @@ const start = () => {
     luennoitsijamaara: luennoitsijat.length,
     op: map(stuff, "op").reduce(sum, 0),
     openUniMaara: map(stuff, "kurssi")
-      .map((name) => name.toLowerCase())
+      .map(toLowerCase)
       .filter(nameIncludesAvoinYo).length,
     openUniOp: stuff
-      .filter(({ kurssi }) => nameIncludesAvoinYo(kurssi.toLowerCase()))
+      .filter(({ kurssi }) => nameIncludesAvoinYo(toLowerCase(kurssi)))
       .map(({ op }) => op)
       // @ts-ignore
       .reduce(sum, 0),
