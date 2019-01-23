@@ -12,7 +12,8 @@ import {
   setLocalStorage,
 } from "./utils/localStorage";
 import { average, sum } from "./utils/numberUtils";
-import { isArray, isString, isTruthy } from "./utils/validators";
+import { isArray, isFloat, isString, isTruthy } from "./utils/validators";
+import Chart from "chart.js";
 
 const setDuplikaattiKurssit = setLocalStorage<string[]>("duplikaattiKurssit");
 const setPerusOpinnot = setLocalStorage<string[]>("perusOpinnot");
@@ -98,9 +99,6 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
 const findFromKurssiTietokanta = (lyhenne) =>
   findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
 
-// TODO: Check n's typedef with use cases
-const isFloat = (n: string | number) => Number(n) === n && n % 1 !== 0;
-
 const teeHienoTooltip = () => ({
   tooltips: {
     callbacks: {
@@ -145,8 +143,7 @@ const draw = ({
     throw new Error("draw(): Element with id " + id + "is null");
   }
 
-  // @ts-ignore
-  new Chart(elem, {
+  new Chart(elem as HTMLCanvasElement, {
     type,
     data: { labels, datasets },
     options: {
@@ -184,19 +181,17 @@ interface DrawPieParams {
 const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
   const elem = document.getElementById(`${id}-container`);
   if (elem === null) {
-    throw new Error("drawPie(): Element with id " + id + "-container is null");
+    throw new Error(`drawPie(): Element with id ${id}-container is null`);
   }
   elem.style.display = "block";
 
   const elem2 = document.getElementById(id);
 
   if (elem2 === null) {
-    throw new Error("drawPie(): Element with id " + id + " is null");
+    throw new Error(`drawPie(): Element with id ${id} is null`);
   }
 
-  // FIXME: Typings
-  // @ts-ignore
-  new Chart(elem2, {
+  new Chart(elem2 as HTMLCanvasElement, {
     type: "pie",
     data: {
       datasets: [{ data: datasets, backgroundColor }],
