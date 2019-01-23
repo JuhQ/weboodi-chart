@@ -2,11 +2,12 @@ import Chart from "chart.js";
 import { kurssitietokanta } from "./data/courses";
 import {
   ConvertedCourse,
+  Course,
   CourseArrToObjParams,
   DOMParams,
   PreCourse,
 } from "./interfaces/Interfaces";
-import { notEmpty, notEmptyList } from "./utils/listUtils";
+import { map, notEmpty, notEmptyList } from "./utils/listUtils";
 import {
   getListFromLocalStorage,
   getLocalStorage,
@@ -41,23 +42,13 @@ const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
 
 const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
 
-// TODO: Remove any
-const map = (list: any[], keys: string | string[]) =>
-  list.reduce(
-    (acc, item) => [
-      ...acc,
-      ...(isString(keys) ? [keys] : keys).map((key) => item[key]),
-    ],
-    [],
-  );
-
 const mapInvoke = (list, method) => list.map((item) => item[method](item));
 
 // TODO: Remove any
 const sort = (list: any, key: number) =>
   list.sort((a: any, b: any) => b[key] - a[key]);
 
-const setHtmlContent = ({ id, content }: { id: string; content: any }) => {
+const setHtmlContent = ({ id, content }: { id: string; content: string }) => {
   const element = document.getElementById(id);
   if (element !== null) {
     element.innerHTML = content;
@@ -118,10 +109,10 @@ const teeHienoTooltip = () => ({
 interface DrawParams {
   id: string;
   labels: any;
-  datasets: any;
+  datasets: any[];
   type: string;
-  customTooltip: boolean;
-  customTicks: boolean;
+  customTooltip?: boolean;
+  customTicks?: boolean;
 }
 
 const draw = ({
@@ -427,7 +418,6 @@ const createCoursesArray = (target) => {
     .filter(notEmpty);
 };
 
-// TODO: Remove "any"
 const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({
   name,
   callback,
@@ -508,6 +498,7 @@ const kuunteleppaNapinpainalluksiaJuu = () => {
 };
 
 const luoKurssiAvainListaTietokannasta = (opinnot) =>
+  // @ts-ignore
   map(kurssitietokanta.tkt[opinnot], "keys").reduce((a, b) => [...a, ...b], []);
 
 const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
@@ -518,7 +509,9 @@ const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
     );
   }
   input.addEventListener("click", () => {
+    // @ts-ignore
     setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnot"));
+    // @ts-ignore
     setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnot"));
     start();
   });
@@ -534,7 +527,9 @@ const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
     );
   }
   input.addEventListener("click", () => {
+    // @ts-ignore
     setPerusOpinnot(luoKurssiAvainListaTietokannasta("perusopinnotPre2017"));
+    // @ts-ignore
     setAineOpinnot(luoKurssiAvainListaTietokannasta("aineopinnotPre2017"));
     start();
   });
@@ -583,7 +578,12 @@ const groupThemCourses = (stuff) =>
       realOp: item.op,
     }));
 
-const putsaaTeksti = (str: string) => str.replace(/&nbsp;/g, " ").trim();
+const putsaaTeksti = (str: unknown) => {
+  if (typeof str === "string") {
+    return str.replace(/&nbsp;/g, " ").trim();
+  }
+  return "";
+};
 
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
@@ -627,6 +627,7 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
     .map((item) => map(item, "textContent").map(putsaaTeksti))
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
+    // @ts-ignore
     .filter((item: PreCourse) => item.length > 3)
     .map(muutaArrayKivaksiObjektiksi)
     .filter(({ op }) => !isNaN(op))
@@ -720,6 +721,7 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (stuff) =
   map(stuff, "kurssi")
     .map(poistaAvoinKurssiNimestä)
     .map(poistaSulut)
+    // @ts-ignore
     .reduce((list, kurssi) => [...list, ...kurssi.split(" ")], [])
     .filter(poistaLiianLyhyetNimet)
     .map(poistaPilkut)
@@ -941,12 +943,11 @@ const drawGraphs = ({
 
 // Returns the semester's precise starting and ending dates.
 // TODO: Replace with Moment.js
-const getLukuvuosi = (vuosi) => [
+const getLukuvuosi = (vuosi): [Date, Date] => [
   new Date(vuosi, 7, 1),
   new Date(vuosi + 1, 6, 31, 23, 59, 59),
 ];
 
-// TODO: Typings
 const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]: [
   number,
   number,
@@ -962,16 +963,17 @@ const getPvmArray = (pvm: string) => {
   throw new Error("getPvmArray(): Parsing date failed");
 };
 
-// TODO: Typings
-// FIXME: Course type is interfering with PreCourse
 const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
   a.pvmDate.getTime() - b.pvmDate.getTime();
 
-// TODO: Typings
-const isInBetween = ({ value, values: [start, end] }) =>
-  value >= start && value <= end;
+const isInBetween = ({
+  value,
+  values: [start, end],
+}: {
+  value: Date;
+  values: [Date, Date];
+}) => value.getTime() >= start.getTime() && value.getTime() <= end.getTime();
 
-// TODO: Typings
 const luoLukuvuodelleKivaAvain = ({
   vuosi,
   pvmIsCurrentSemester,
@@ -993,19 +995,19 @@ const luoLukuvuodelleKivaAvain = ({
   return vuosiJuttu;
 };
 
-// TODO: Typings
-const laskeLukukausienNopat = (prev, { pvmDate, op }) => {
+const laskeLukukausienNopat = (
+  prev,
+  { pvmDate, op }: { pvmDate: Date; op: number },
+) => {
   const vuosi = pvmDate.getFullYear();
 
   const pvmIsCurrentSemester = isInBetween({
     value: pvmDate,
-    // @ts-ignore
     values: getLukuvuosi(vuosi),
   });
 
   const pvmIsNextSemester = isInBetween({
     value: pvmDate,
-    // @ts-ignore
     values: getLukuvuosi(vuosi + 1),
   });
 
@@ -1060,9 +1062,22 @@ const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
     secondDataSet && { ...secondDataSet, type: "line", ...styleGreen },
   ].filter(isTruthy);
 
-// TODO: Typings
-const piirräPerusGraafiNopille = ({ id, label, labels, data, secondDataSet }) =>
-  // @ts-ignore
+const piirräPerusGraafiNopille = ({
+  id,
+  label,
+  labels,
+  data,
+  secondDataSet,
+}: {
+  id: string;
+  label: string;
+  labels: string[];
+  data: any[]; // TODO: Remove any[]
+  secondDataSet: {
+    label: string;
+    data: any[]; // TODO: Remove any[]
+  };
+}) =>
   draw({
     id,
     type: secondDataSet ? "bar" : "line",
@@ -1112,11 +1127,9 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
     id: "chart-nopat-kuukaudet",
     label: "Noppia per kuukausi",
     labels: Object.keys(kuukausiGroups),
-    // @ts-ignore
     data: Object.values(kuukausiGroups),
     secondDataSet: {
       label: "Kumulatiiviset nopat",
-      // @ts-ignore
       data: Object.values(kumulatiivisetKuukaudetGroups),
     },
   });
@@ -1492,22 +1505,6 @@ const piirräLaitosGraafit = (data) => {
     ],
   });
 };
-
-/**
- * Course interface that is returned by makeSomeStuff();
- *
- * @interface Course
- */
-interface Course {
-  arvosana: number;
-  cumulativeOp: number;
-  kurssi: string;
-  luennoitsija?: string;
-  lyhenne: string;
-  op: string;
-  pvm: string;
-  pvmDate: Date;
-}
 
 // tästä tää lähtee!
 const start = () => {

@@ -37,3 +37,14 @@ export interface DOMParams {
   pääaine: string | null;
   sivuaineet: string[];
 }
+
+export interface Course {
+  arvosana: number;
+  cumulativeOp: number;
+  kurssi: string;
+  luennoitsija?: string;
+  lyhenne: string;
+  op: string;
+  pvm: string;
+  pvmDate: Date;
+}
