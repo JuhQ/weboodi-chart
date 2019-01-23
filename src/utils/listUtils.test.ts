@@ -26,29 +26,19 @@ describe("List utils", () => {
   describe("map()", () => {
     it("Should return correct object values #1", () => {
       const res = map([{ moi: 1 }, { moi: 2 }], "moi");
-      expect(res.length).to.equal(2);
-      expect(res[0]).to.equal(1);
-      expect(res[1]).to.equal(2);
+      expect(res).to.eql([1, 2]);
     });
     it("Should return correct object values #2", () => {
       const res = map([{ moi: 1 }, { moi: "2" }], "moi");
-      expect(res.length).to.equal(2);
-      expect(res[0]).to.equal(1);
-      expect(res[1]).to.equal("2");
+      expect(res).to.eql([1, "2"]);
     });
     it("Should return correct object values #3", () => {
       const res = map([{ moi: 2 }, { ok: 3, jou: 4 }], "moi");
-      expect(res.length).to.equal(2);
-      expect(res[0]).to.equal(2);
-      expect(res[1]).to.equal(undefined);
+      expect(res).to.eql([2, undefined]);
     });
     it("Should return correct object values #4", () => {
       const res = map([{ moi: 2 }, { ok: 3, jou: 4 }], ["moi", "jou"]);
-      expect(res.length).to.equal(4);
-      expect(res[0]).to.equal(2);
-      expect(res[1]).to.equal(undefined);
-      expect(res[2]).to.equal(undefined);
-      expect(res[3]).to.equal(4);
+      expect(res).to.eql([2, undefined, undefined, 4]);
     });
   });
   describe("max()", () => {

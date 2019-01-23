@@ -5,11 +5,12 @@ const map = <T>(
   list: T[],
   keys: keyof T | Array<keyof T>,
 ): Array<T[keyof T] | undefined> =>
-  list.reduce<Array<T[keyof T]>>((acc, item) => {
-    return [
+  list.reduce<Array<T[keyof T]>>(
+    (acc, item) => [
       ...acc,
       ...(Array.isArray(keys) ? keys : [keys]).map((key) => item[key]),
-    ];
-  }, []);
+    ],
+    [],
+  );
 
 export { notEmpty, notEmptyList, map, max };
