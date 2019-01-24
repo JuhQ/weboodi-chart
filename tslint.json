@@ -11,8 +11,9 @@
     "interface-name": false,
     "object-literal-sort-keys": false,
     "no-console": false,
-    "prefer-const": 1,
-    "align": false
+    "prefer-const": true,
+    "align": false,
+    "import-name": false
   },
   "rulesDirectory": []
 }

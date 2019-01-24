@@ -1,4 +1,4 @@
-import chartJs from 'chart.js';
+import Chart from 'chart.js';
 
 import { kurssitietokanta } from './data/courses';
 import {
@@ -16,9 +16,6 @@ import {
 import { average, sum } from './utils/numberUtils';
 import { toLowerCase } from './utils/stringUtils';
 import { isArray, isFloat, isTruthy } from './utils/validators';
-
-// STOP SEIS MAYDAY SOS
-const Chart = chartJs;
 
 const setDuplikaattiKurssit = setLocalStorage<string[]>('duplikaattiKurssit');
 const setPerusOpinnot = setLocalStorage<string[]>('perusOpinnot');
@@ -77,6 +74,7 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
       db[key].find(({ keys }) =>
         keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
       );
+
     return (
       acc ||
       (isArray(db[key])
@@ -131,7 +129,7 @@ const draw = ({
   const elem = document.getElementById(id);
 
   if (elem === null) {
-    throw new Error('draw(): Element with id ' + id + 'is null');
+    throw new Error(`draw(): Element with id ${id} is null`);
   }
 
   new Chart(elem as HTMLCanvasElement, {
@@ -412,12 +410,11 @@ const createDom = ({
   return true;
 };
 
-const createCoursesArray = target => {
-  return target.value
+const createCoursesArray = target =>
+  target.value
     .split(',')
     .map(putsaaTeksti)
     .filter(notEmpty);
-};
 
 const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({
   name,
@@ -1081,16 +1078,16 @@ const piirräPerusGraafiNopille = ({
 }) =>
   draw({
     id,
-    type: secondDataSet ? 'bar' : 'line',
     labels,
+    type: secondDataSet ? 'bar' : 'line',
     datasets: hemmettiSentäänTeeDataSetti({ label, data, secondDataSet }),
   });
 
 // TODO: Typings
 const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
   const lukukausiGroups = ryhmitteleStuffKivasti({
-    fn: laskeLukukausienNopat,
     stuff,
+    fn: laskeLukukausienNopat,
   });
   const lukukausiKeys = Object.keys(lukukausiGroups);
   // @ts-ignore
@@ -1112,10 +1109,10 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
 
   // @ts-ignore
   piirräPerusGraafiNopille({
-    id: 'chart-nopat-vuosi',
-    label: 'Noppia per lukuvuosi',
     labels,
     data,
+    id: 'chart-nopat-vuosi',
+    label: 'Noppia per lukuvuosi',
   });
 };
 
@@ -1156,14 +1153,16 @@ const piirräLuennoitsijaListat = luennoitsijat => {
   luennoitsijatElement.innerHTML = '';
 
   drawLuennoitsijat({
+    // @ts-ignore
+    luennoitsijatElement,
     title: 'Luennoitsijoiden top lista by kurssimaara',
     // @ts-ignore
     lista: sort(luennoitsijat, 'kurssimaara'),
-    // @ts-ignore
-    luennoitsijatElement,
   });
 
   drawLuennoitsijat({
+    // @ts-ignore
+    luennoitsijatElement,
     title: 'Luennoitsijoiden top lista by keskiarvo',
     lista: [
       ...luennoitsijat
@@ -1171,15 +1170,13 @@ const piirräLuennoitsijaListat = luennoitsijat => {
         .sort(sorttaaLuennoitsijatKeskiarvonMukaan),
       ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === 'hyv'),
     ],
-    // @ts-ignore
-    luennoitsijatElement,
   });
 
   drawLuennoitsijat({
-    title: 'Luennoitsijoiden top lista by nopat',
-    lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
     // @ts-ignore
     luennoitsijatElement,
+    title: 'Luennoitsijoiden top lista by nopat',
+    lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
   });
 };
 
@@ -1351,7 +1348,7 @@ const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
   const content = Object.keys(words)
     .map(key => ({
       key,
-      fontSize: countFontSize({ val: words[key], minValue, maxValue }),
+      fontSize: countFontSize({ minValue, maxValue, val: words[key] }),
       count: words[key],
     }))
     .map(
@@ -1361,8 +1358,8 @@ const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
     .join(' ');
 
   setHtmlContent({
-    id: 'tagipilvi',
     content,
+    id: 'tagipilvi',
   });
 };
 
@@ -1449,13 +1446,13 @@ const grouppaaEriLaitostenKurssit = stuff =>
     );
 
     const dataJeejee = {
-      courseCount: 1,
       op,
-      kurssit: [kurssi],
       arvosanat,
       keskiarvo,
       painotettuKeskiarvo,
       laitos,
+      courseCount: 1,
+      kurssit: [kurssi],
     };
 
     return {
@@ -1552,13 +1549,13 @@ const start = () => {
   );
 
   const kuukausiGroups = ryhmitteleStuffKivasti({
-    fn: laskeKuukausienNopat,
     stuff,
+    fn: laskeKuukausienNopat,
   });
 
   const kumulatiivisetKuukaudetGroups = ryhmitteleStuffKivasti({
-    fn: laskeKumulatiivisetKuukausienNopat,
     stuff,
+    fn: laskeKumulatiivisetKuukausienNopat,
   });
 
   // @ts-ignore
@@ -1623,7 +1620,12 @@ const start = () => {
   });
 
   piirraRandomStatistiikkaa({
+    maxKuukausi,
+    keskiarvo,
+    painotettuKeskiarvo,
     kurssimaara: stuff.length,
+    pääaine: pääaineenMenestys,
+    sivuaineet: sivuaineidenMenestys,
     luennoitsijamaara: luennoitsijat.length,
     op: map(stuff, 'op').reduce(sum, 0),
     openUniMaara: map(stuff, 'kurssi')
@@ -1639,11 +1641,6 @@ const start = () => {
       sum,
       0,
     ),
-    maxKuukausi,
-    keskiarvo,
-    painotettuKeskiarvo,
-    pääaine: pääaineenMenestys,
-    sivuaineet: sivuaineidenMenestys,
   });
 
   kuunteleAsijoita(); // 👂
