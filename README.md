@@ -1,5 +1,9 @@
 # weboodi-chart
 
+Prefer functional programming style
+
+Avoid `let`, prefer `const`. Try to avoid variables completely but it's impossible.
+
 ## How to develop
 
 1. Clone the repo
