@@ -3,7 +3,9 @@
 Prefer functional programming style
 
 Avoid `let`, prefer `const`. Try to avoid variables completely but it's impossible.
-Avoid return when possible.
+
+Avoid `return` when possible.
+
 Have fun. Be goofy. If the feature you're building is not fun to build, don't build it.
 
 ## How to develop
