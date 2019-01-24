@@ -1,4 +1,4 @@
-import Chart from 'chart.js';
+import chartJs from 'chart.js';
 
 import { kurssitietokanta } from './data/courses';
 import {
@@ -82,7 +82,7 @@ const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
           : acc
         : findFromKurssiTietokantaRecurse({ db: db[key], lyhenne }))
     );
-  },                     '');
+  }, '');
 
 const findFromKurssiTietokanta = lyhenne =>
   findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
@@ -863,7 +863,7 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
     const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
 
     return [...initial, { ...mitäs, arvosana: 0 } || item];
-  },                       []);
+  }, []);
 };
 
 // TODO: Typings
@@ -1467,7 +1467,7 @@ const grouppaaEriLaitostenKurssit = stuff =>
         }
         : dataJeejee,
     };
-  },           {});
+  }, {});
 
 // TODO: Typings
 const piirräLaitosGraafit = data => {

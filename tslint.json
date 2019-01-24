@@ -10,7 +10,9 @@
     "no-any": { "severity": "warn" },
     "interface-name": false,
     "object-literal-sort-keys": false,
-    "no-console": false
+    "no-console": false,
+    "prefer-const": 1,
+    "align": false
   },
   "rulesDirectory": []
 }
