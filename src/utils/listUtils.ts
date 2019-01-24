@@ -8,7 +8,7 @@ const map = <T>(
   list.reduce<Array<T[keyof T]>>(
     (acc, item) => [
       ...acc,
-      ...(Array.isArray(keys) ? keys : [keys]).map((key) => item[key]),
+      ...(Array.isArray(keys) ? keys : [keys]).map(key => item[key]),
     ],
     [],
   );

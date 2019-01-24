@@ -1,6 +1,10 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:recommended"],
+  "extends": [
+    "tslint:latest",
+    "tslint-config-prettier",
+    "tslint-config-airbnb"
+  ],
   "jsRules": {},
   "rules": {
     "no-any": { "severity": "warn" },

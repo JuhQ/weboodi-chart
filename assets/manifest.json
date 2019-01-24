@@ -1,0 +1,22 @@
+{
+  "name": "weboodi charts",
+  "version": "1.0.20",
+  "manifest_version": 2,
+  "description": "op chart for weboodi",
+  "permissions": ["tabs"],
+  "content_scripts": [
+    {
+      "js": ["weboodi.js"],
+      "run_at": "document_end",
+      "matches": [
+        "https://weboodi.helsinki.fi/hy/omatopinn.jsp?NaytSuor=1",
+        "https://weboodi.helsinki.fi/hy/opisluehak.jsp*"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
