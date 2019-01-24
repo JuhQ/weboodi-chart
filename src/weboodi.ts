@@ -17,6 +17,9 @@ import { average, sum } from './utils/numberUtils';
 import { toLowerCase } from './utils/stringUtils';
 import { isArray, isFloat, isTruthy } from './utils/validators';
 
+// STOP SEIS MAYDAY SOS
+const Chart = chartJs;
+
 const setDuplikaattiKurssit = setLocalStorage<string[]>('duplikaattiKurssit');
 const setPerusOpinnot = setLocalStorage<string[]>('perusOpinnot');
 const setAineOpinnot = setLocalStorage<string[]>('aineOpinnot');
@@ -1618,7 +1621,7 @@ const start = () => {
     kuukausiGroups,
     kumulatiivisetKuukaudetGroups,
   });
-  console.log('moi');
+
   piirraRandomStatistiikkaa({
     kurssimaara: stuff.length,
     luennoitsijamaara: luennoitsijat.length,
