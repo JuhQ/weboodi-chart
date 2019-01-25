@@ -499,37 +499,35 @@ const luoKurssiAvainListaTietokannasta = opinnot =>
   // @ts-ignore
   map(kurssitietokanta.tkt[opinnot], 'keys').reduce((a, b) => [...a, ...b], []);
 
-const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
-  const input = document.querySelector('button#kliketi-klik-esitäyttö-2017');
+const kuunteleJaEsitäytäAsijoitamme = ({ name, perusopinnot, aineopinnot }) => {
+  const input = document.querySelector(`button#${name}`);
   if (input === null) {
     throw new Error(
-      'kuunteleEsitäyttönapinKliksutteluja2017(): Input with id `button#kliketi-klik-esitäyttö-2017` is null',
+      `kuunteleJaEsitäytäAsijoitamme(): Input with id "button#${name}" is null`,
     );
   }
   input.addEventListener('click', () => {
     // @ts-ignore
-    setPerusOpinnot(luoKurssiAvainListaTietokannasta('perusopinnot'));
+    setPerusOpinnot(luoKurssiAvainListaTietokannasta(perusopinnot));
     // @ts-ignore
-    setAineOpinnot(luoKurssiAvainListaTietokannasta('aineopinnot'));
+    setAineOpinnot(luoKurssiAvainListaTietokannasta(aineopinnot));
     start();
   });
 };
 
+const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
+  kuunteleJaEsitäytäAsijoitamme({
+    name: 'kliketi-klik-esitäyttö-2017',
+    perusopinnot: 'perusopinnot',
+    aineopinnot: 'aineopinnot',
+  });
+};
+
 const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
-  const input = document.querySelector(
-    'button#kliketi-klik-esitäyttö-pre-2017',
-  );
-  if (input === null) {
-    throw new Error(
-      'kuunteleEsitäyttönapinKliksutteluja2016(): Input with id `button#kliketi-klik-esitäyttö-pre-2017` is null',
-    );
-  }
-  input.addEventListener('click', () => {
-    // @ts-ignore
-    setPerusOpinnot(luoKurssiAvainListaTietokannasta('perusopinnotPre2017'));
-    // @ts-ignore
-    setAineOpinnot(luoKurssiAvainListaTietokannasta('aineopinnotPre2017'));
-    start();
+  kuunteleJaEsitäytäAsijoitamme({
+    name: 'kliketi-klik-esitäyttö-pre-2017',
+    perusopinnot: 'perusopinnotPre2017',
+    aineopinnot: 'aineopinnotPre2017',
   });
 };
 
