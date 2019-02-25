@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "npm run copy-assets && webpack",
-    "build-watch": "npm run copy-assets && webpack --watch --mode=development",
+    "build-watch": "npm run build -- --watch --mode=development",
     "copy-assets": "cp assets/* dist",
     "test": "nyc mocha -r ts-node/register src/**/*.test.ts",
     "remove-zip": "rm -f weboodi-chart.zip",

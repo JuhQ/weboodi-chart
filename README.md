@@ -1,6 +1,6 @@
 # weboodi-chart
 
-Prefer functional programming style
+Prefer functional programming style, avoid mutation.
 
 Avoid `let`, prefer `const`. Try to avoid variables completely but it's impossible.
 
@@ -11,18 +11,17 @@ Have fun. Be goofy. If the feature you're building is not fun to build, don't bu
 ## How to develop
 
 1. Clone the repo
-2. Run `yarn install` or `npm i` to install development dependencies
-3. Run `yarn test` or `npm test` to run tests
-4. Run `yarn build` or `npm run build` to build the extension
+2. Run `npm i` to install development dependencies
+3. Run `npm test` to run tests
+4. Run `npm run build-watch` to build the extension
 5. Open `chrome://extensions` and click "Load unpacked" to install the dev extension
 
 ## How to build
 
 1. Clone the repo
-2. Run `yarn install` or `npm i` to install development dependencies
-3. Run `yarn test` or `npm test` to run tests
-4. Run `yarn build` or `npm run build` to build the extension
-5. Run `zip -r weboodi-chart.zip manifest.json dist/weboodi.js chart.js icon16.png icon48.png icon128.png`
+2. Run `npm i` to install development dependencies
+3. Bump version in `package.json` and `manifest.json`. Make sure these match
+4. Run `npm run release`
 
 ## Visual Studio code stuff
 
