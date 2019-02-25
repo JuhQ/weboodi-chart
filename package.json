@@ -1,6 +1,6 @@
 {
   "name": "weboodi-chart",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "op chart for weboodi",
   "main": "index.js",
   "license": "MIT",
@@ -9,7 +9,10 @@
     "build": "npm run copy-assets && webpack",
     "build-watch": "npm run copy-assets && webpack --watch --mode=development",
     "copy-assets": "cp assets/* dist",
-    "test": "nyc mocha -r ts-node/register src/**/*.test.ts"
+    "test": "nyc mocha -r ts-node/register src/**/*.test.ts",
+    "remove-zip": "rm -f weboodi-chart.zip",
+    "zip": "zip -jr weboodi-chart.zip dist/",
+    "release": "npm run remove-zip && npm test && npm run build && npm run zip"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
