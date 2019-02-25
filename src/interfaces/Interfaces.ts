@@ -48,3 +48,38 @@ export interface Course {
   pvm: string;
   pvmDate: Date;
 }
+
+export interface Paivays {
+  pvm: string;
+}
+
+export interface DrawParams {
+  id: string;
+  labels: any;
+  datasets: any[];
+  type: string;
+  customTooltip?: boolean;
+  customTicks?: boolean;
+}
+
+export interface DrawPieParams {
+  id: string;
+  labels: any;
+  datasets: any;
+  backgroundColor: string;
+}
+
+export interface LecturerRowParams {
+  luennoitsija: string;
+  kurssimaara: number;
+  luennot: {
+    keskiarvo: number;
+    totalOp: number;
+  };
+}
+
+export interface DrawLuennoitsijatParams {
+  title: string;
+  lista: any[];
+  luennoitsijatElement?: HTMLElement;
+}

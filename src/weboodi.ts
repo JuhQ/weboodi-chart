@@ -1,11 +1,18 @@
 import Chart from 'chart.js';
 
+import css from './css';
 import { kurssitietokanta } from './data/courses';
+import yolohtml from './html';
 import {
   ConvertedCourse,
   Course,
   CourseArrToObjParams,
   DOMParams,
+  DrawLuennoitsijatParams,
+  DrawParams,
+  DrawPieParams,
+  LecturerRowParams,
+  Paivays,
 } from './interfaces/Interfaces';
 import { map, max, notEmpty, notEmptyList } from './utils/listUtils';
 import {
@@ -31,10 +38,6 @@ const getPääaineFromLokaali = () =>
   getLocalStorage<string | null>('pääaine', 'null');
 const getSivuaineetFromLokaali = () => getListFromLocalStorage('sivuaineet');
 
-interface Paivays {
-  pvm: string;
-}
-
 const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
   list.find(val => val.pvm === key);
 
@@ -44,7 +47,7 @@ const mapInvoke = (list, method) => list.map(item => item[method](item));
 
 // TODO: Remove any
 const sort = (list: any, key: number) =>
-  list.sort((a: any, b: any) => b[key] - a[key]);
+  [...list].sort((a: any, b: any) => b[key] - a[key]);
 
 const setHtmlContent = ({ id, content }: { id: string; content: string }) => {
   const element = document.getElementById(id);
@@ -105,15 +108,6 @@ const teeHienoTooltip = () => ({
   },
 });
 
-interface DrawParams {
-  id: string;
-  labels: any;
-  datasets: any[];
-  type: string;
-  customTooltip?: boolean;
-  customTicks?: boolean;
-}
-
 const draw = ({
   id,
   labels,
@@ -160,13 +154,6 @@ const draw = ({
   });
 };
 
-interface DrawPieParams {
-  id: string;
-  labels: any;
-  datasets: any;
-  backgroundColor: string;
-}
-
 const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
   const elem = document.getElementById(`${id}-container`);
   if (elem === null) {
@@ -207,175 +194,6 @@ const styleGreen = {
   borderWidth: 1,
 };
 
-const doCss = () => `
-  <style>
-    #luennoitsijat {
-      clear: both;
-      display: inline-block;
-      margin-bottom: 100px;
-    }
-
-    .luennoitsijat {
-      margin-right: 10px;
-    }
-
-    .clear {
-      clear: both;
-      display: table;
-      width: 100%;
-    }
-
-    @media only screen and (min-width: 900px) {
-      .jeejee-pull-left {
-        float: left;
-      }
-
-      .half {
-        width: 50%;
-      }
-    }
-
-    .margin-bottom-large {
-      margin-bottom: 100px;
-    }
-
-    .margin-bottom-small {
-      margin-bottom: 20px;
-    }
-
-    #nuggets input {
-      width: 100%;
-    }
-  </style>
-  `;
-
-const yolohtml = ({
-  duplikaattiKurssit,
-  perusOpinnot,
-  aineOpinnot,
-  pääaine,
-  sivuaineet,
-}: DOMParams) => `
-  <div id="nuggets" class="margin-bottom-large">
-    <div class="clear margin-bottom-small">
-      <div id="perusopinnot-container" class="jeejee-pull-left" style="display:none;">
-        Perusopinnot <span id="perusopinnot-progress"></span>
-        <canvas id="perusopinnot" width="500" height="200"></canvas>
-      </div>
-      <div id="aineopinnot-container" class="jeejee-pull-left" style="display:none;">
-        Aineopinnot <span id="aineopinnot-progress"></span>
-        <canvas id="aineopinnot" width="500" height="200"></canvas>
-      </div>
-    </div>
-    <div class="clear">
-      <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat" width="500" height="200"></canvas>
-      </div>
-      <div class="jeejee-pull-left half">
-        <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
-      </div>
-    </div>
-    <div class="clear">
-      <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
-      </div>
-      <div class="jeejee-pull-left half">
-        <div id="opintojen-maara"></div>
-        <div id="keskiarvo-op-maara"></div>
-        <div id="luennoitsijoiden-maara"></div>
-        <div id="open-uni-maara"></div>
-        <div id="hyv-maara"></div>
-        <div id="vuodet-arvio"></div>
-        <div id="tunnit-arvio"></div>
-        <div id="max-kuukausi-nopat"></div>
-        <div id="keskiarvo"></div>
-        <div id="pääaine-data"></div>
-        <div id="sivuaineet-data"></div>
-        <div id="tagipilvi"></div>
-      </div>
-    </div>
-    <div class="clear">
-      <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
-        <canvas id="chart-laitos-graafit" width="500" height="200"></canvas>
-      </div>
-      <div class="jeejee-pull-left half">
-        <canvas id="chart-arvosanat-groupattuna" width="500" height="200"></canvas>
-        <canvas id="chart-nopat-groupattuna" width="500" height="200"></canvas>
-      </div>
-    </div>
-
-    <div id="luennoitsijat"></div>
-    <div id="tools" class="margin-bottom-large">
-      <p>
-        <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen mahdolliset duplikaattikurssit, kas näin: A582103,A581325<br/>
-          <input type="text" name="duplikaattiKurssit" value="${duplikaattiKurssit}" />
-        </label>
-      </p>
-
-      <p>
-        <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen perusopintokurssisi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
-          <input type="text" name="perusOpinnot" value="${perusOpinnot}" />
-        </label>
-      </p>
-
-      <p>
-        <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
-          <input type="text" name="aineOpinnot" value="${aineOpinnot}" />
-        </label>
-      </p>
-
-      <p>
-        <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pääaineesi tunnus, vaikka näin: TKT<br/>
-          <input type="text" name="pääaine" value="${pääaine}" />
-        </label>
-      </p>
-
-      <p>
-        <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen sivuaineesi tunnukset, vaikka näin: TKT,MAT<br/>
-          <input type="text" name="sivuaineet" value="${sivuaineet.join(
-            ',',
-          )}" />
-        </label>
-      </p>
-
-      <p>
-        <button id="kliketi-klik">
-          Päivitä chartit, esimerkiksi duplikaattikurssien lisäämisen jälkeen
-        </button>
-      </p>
-
-      <p>
-        <button id="kliketi-klik-esitäyttö-2017">
-          Esitäytä perus- ja aineopinnot tkt kandi opinnoilla (2017 &ge; ) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
-        </button>
-      </p>
-
-      <p>
-        <button id="kliketi-klik-esitäyttö-pre-2017">
-          Esitäytä perus- ja aineopinnot tkt kandi opinnoilla (&le; 2016) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
-        </button>
-      </p>
-    </div>
-
-    <p>
-      Haluatko lisätoiminnallisuutta tähän plugariin? Löysitkö virheen?<br>
-      Mikäli olet tkt opiskelija, <a href="https://github.com/JuhQ/weboodi-chart">tee pull request</a>.<br>
-      Mikäli opiskelet jotain muuta, laita mailia juha.tauriainen@helsinki.fi
-    </p>
-
-    <p>
-      Plugin löytyy googlen webstoresta <a href="https://chrome.google.com/webstore/detail/weboodi-charts/mmjejalobgipeicnedjpcnjkeamamlnd">https://chrome.google.com/webstore/detail/weboodi-charts/mmjejalobgipeicnedjpcnjkeamamlnd</a><br>
-      Lyhytosoite <a href="https://goo.gl/TrpRJr">https://goo.gl/TrpRJr</a>
-    </p>
-  </div>
-  `;
-
 const suoritusTableSelector = '[name=suoritus] + table + table';
 
 const pitäisköDomRakentaa = () =>
@@ -405,7 +223,7 @@ const createDom = ({
   if (nuggetsExist) {
     nuggetsExist.outerHTML = yolo;
   } else {
-    listaTaulukko.outerHTML = listaTaulukko.outerHTML + doCss() + yolo;
+    listaTaulukko.outerHTML = listaTaulukko.outerHTML + css + yolo;
   }
 
   return true;
@@ -730,15 +548,6 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
       {},
     );
 
-interface LecturerRowParams {
-  luennoitsija: string;
-  kurssimaara: number;
-  luennot: {
-    keskiarvo: number;
-    totalOp: number;
-  };
-}
-
 const createLuennoitsijaRivi = ({
   luennoitsija,
   kurssimaara,
@@ -749,12 +558,6 @@ const createLuennoitsijaRivi = ({
     keskiarvo: ${luennot.keskiarvo},
     noppia: ${luennot.totalOp}
   </p>`;
-
-interface DrawLuennoitsijatParams {
-  title: string;
-  lista: any[];
-  luennoitsijatElement?: HTMLElement;
-}
 
 const drawLuennoitsijat = ({
   title,
