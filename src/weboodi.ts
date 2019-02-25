@@ -286,6 +286,7 @@ const yolohtml = ({
         <div id="open-uni-maara"></div>
         <div id="hyv-maara"></div>
         <div id="vuodet-arvio"></div>
+        <div id="tunnit-arvio"></div>
         <div id="max-kuukausi-nopat"></div>
         <div id="keskiarvo"></div>
         <div id="pääaine-data"></div>
@@ -1233,6 +1234,16 @@ const arvioidaanOpintoVuodetDomiin = op => {
     content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.`,
   });
 };
+
+// TODO: Typings
+const arvioidaanKäytetytOpiskelutunnit = op => {
+  const tunnit = (op * 27).toFixed(2);
+  setHtmlContent({
+    id: 'tunnit-arvio',
+    content: `Opintopistemäärän mukaan arvioin sinun käyttäneen ${tunnit} tehokasta opiskelutuntia. Laskukaava = <span title="Opintopistemäärä * 27 tuntia per opintopiste">${op} * 27</span>.`,
+  });
+};
+
 // TODO: Typings
 const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
   `${key} ${data.laitos} keskiarvo on ${
@@ -1317,6 +1328,7 @@ const piirraRandomStatistiikkaa = ({
   }
 
   arvioidaanOpintoVuodetDomiin(op);
+  arvioidaanKäytetytOpiskelutunnit(op);
 };
 
 const minFontSize = 7;
