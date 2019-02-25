@@ -12,9 +12,18 @@ import {
   DrawParams,
   DrawPieParams,
   LecturerRowParams,
-  Paivays,
 } from './interfaces/Interfaces';
-import { map, max, notEmpty, notEmptyList } from './utils/listUtils';
+import chartColors from './utils/chartColors';
+import {
+  contains,
+  findPvm,
+  map,
+  mapInvoke,
+  max,
+  notEmpty,
+  notEmptyList,
+  sort,
+} from './utils/listUtils';
 import {
   getListFromLocalStorage,
   getLocalStorage,
@@ -38,17 +47,6 @@ const getPääaineFromLokaali = () =>
   getLocalStorage<string | null>('pääaine', 'null');
 const getSivuaineetFromLokaali = () => getListFromLocalStorage('sivuaineet');
 
-const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
-  list.find(val => val.pvm === key);
-
-const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
-
-const mapInvoke = (list, method) => list.map(item => item[method](item));
-
-// TODO: Remove any
-const sort = (list: any, key: number) =>
-  [...list].sort((a: any, b: any) => b[key] - a[key]);
-
 const setHtmlContent = ({ id, content }: { id: string; content: string }) => {
   const element = document.getElementById(id);
   if (element !== null) {
@@ -57,17 +55,6 @@ const setHtmlContent = ({ id, content }: { id: string; content: string }) => {
     console.error('setHtmlContent(): Element with id %s is null', id);
   }
 };
-
-const chartColors = [
-  'pink',
-  'red',
-  'orange',
-  'yellow',
-  'green',
-  'blue',
-  'indigo',
-  'purple',
-];
 
 const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
   Object.keys(db).reduce((acc, key) => {
