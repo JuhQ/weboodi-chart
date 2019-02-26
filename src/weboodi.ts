@@ -96,11 +96,15 @@ const muutaArrayKivaksiObjektiksi = ([
 });
 
 // TODO: Fix typings
-const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
+const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i, list) => [
   ...initial,
   {
     ...item,
     cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp),
+    keskiarvo: average(
+      takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
+    ).toFixed(2),
+    painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
   },
 ];
 
@@ -300,7 +304,7 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
   drawPie({
     id,
     labels: map(opintoData, 'kurssi'),
-    datasets: opintoData.map(() => (1 / opintoData.length) * 100),
+    datasets: opintoData.map(() => ((1 / opintoData.length) * 100).toFixed(2)),
     backgroundColor: opintoData.map(({ done }) =>
       done ? 'lightgreen' : 'lightgray',
     ),
@@ -1053,6 +1057,8 @@ const start = () => {
       0,
     ),
   });
+
+  console.log('stuff', stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };
