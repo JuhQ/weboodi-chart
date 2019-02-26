@@ -123,7 +123,8 @@ const html = ({
     <p>
       Plugin löytyy googlen webstoresta <a href="https://chrome.google.com/webstore/detail/weboodi-charts/mmjejalobgipeicnedjpcnjkeamamlnd">https://chrome.google.com/webstore/detail/weboodi-charts/mmjejalobgipeicnedjpcnjkeamamlnd</a><br>
       Lyhytosoite <a href="https://goo.gl/TrpRJr">https://goo.gl/TrpRJr</a><br>
-      <a href="https://github.com/JuhQ/weboodi-chart">GitHub repositorio</a>
+      <a href="https://github.com/JuhQ/weboodi-chart">GitHub repositorio</a><br>
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/weboodi-charts/">Firefox plugin</a>
     </p>
   </div>
   `;
