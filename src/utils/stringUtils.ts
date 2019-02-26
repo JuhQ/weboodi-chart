@@ -1,3 +1,6 @@
+import { kurssitietokanta } from '../data/courses';
+import { isArray } from './validators';
+
 const toLowerCase = (str: string) => str.toLowerCase();
 
 // TODO: add tests
@@ -8,12 +11,52 @@ const putsaaTeksti = (str: unknown) => {
   return '';
 };
 
+export const searchForCourseFromList = ({ acc, db, key, lyhenne }) =>
+  !acc.length &&
+  isArray(db[key]) &&
+  db[key].find(({ keys }) =>
+    keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
+  );
+
+const findLaitos = ({ db, lyhenne, initial = '', parentKey = '' }) =>
+  Object.keys(db).reduce((acc, key) => {
+    const courseFound = searchForCourseFromList({ acc, db, key, lyhenne });
+
+    return (
+      acc ||
+      (courseFound || isArray(db[key])
+        ? courseFound
+          ? parentKey
+          : acc
+        : findLaitos({
+          db: db[key],
+          lyhenne,
+          initial: acc,
+          parentKey: key,
+        }))
+    );
+  }, initial);
+
 // TODO: add tests
-const parsiLaitoksenKoodi = (lyhenne: string) =>
-  lyhenne
+const parsiLaitoksenKoodi = (lyhenne: string) => {
+  const lyhennettyLyhenne = lyhenne
     .replace(/^(ay|a)/i, '')
     .replace(/(-|_)[\d\D]+/i, '')
     .replace(/[\d]+/, '');
+
+  if (!lyhennettyLyhenne.length) {
+    const hakutulos = findLaitos({
+      db: kurssitietokanta,
+      lyhenne,
+    });
+    if (!hakutulos) {
+      console.info('ei hakutulosta lyhenteelle', lyhenne);
+    }
+    return hakutulos || '';
+  }
+
+  return lyhennettyLyhenne;
+};
 
 // TODO: add tests
 const luoKivaAvainReducelle = (pvmDate: Date) => {

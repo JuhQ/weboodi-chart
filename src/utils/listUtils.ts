@@ -1,6 +1,6 @@
 import { Course, Paivays } from '../interfaces/Interfaces';
 import { negate } from './helpers';
-import { putsaaTeksti, toLowerCase } from './stringUtils';
+import { putsaaTeksti, searchForCourseFromList } from './stringUtils';
 import { isArray } from './validators';
 
 const notEmpty = (data: string) => data.length > 0;
@@ -33,16 +33,11 @@ const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
 // TODO: add test
 const findFromKurssiTietokanta = ({ db, lyhenne }) =>
   Object.keys(db).reduce((acc, key) => {
-    const courseFound =
-      !acc.length &&
-      isArray(db[key]) &&
-      db[key].find(({ keys }) =>
-        keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
-      );
+    const courseFound = searchForCourseFromList({ acc, db, key, lyhenne });
 
     return (
       acc ||
-      (isArray(db[key])
+      (courseFound || isArray(db[key])
         ? courseFound
           ? courseFound.name
           : acc
