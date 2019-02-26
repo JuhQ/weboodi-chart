@@ -1,5 +1,5 @@
+import { setHtmlContent } from './dom';
 import { max, min } from './listUtils';
-import { setHtmlContent } from './setHtmlContent';
 
 const minFontSize = 7;
 const maxFontSize = 28;

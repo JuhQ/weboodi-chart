@@ -4,15 +4,17 @@ import {
   ConvertedCourse,
   Course,
   CourseArrToObjParams,
-  DrawLuennoitsijatParams,
-  LecturerRowParams,
 } from './interfaces/Interfaces';
 import {
   createDom,
+  drawLuennoitsijat,
   hommaaMeilleListaAsijoistaDommista,
+  piirraRandomStatistiikkaa,
   pitäisköDomRakentaa,
+  setHtmlContent,
 } from './utils/dom';
 import { draw, drawPie } from './utils/draw';
+import { negate } from './utils/helpers';
 import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
@@ -24,13 +26,13 @@ import {
   max,
   notEmpty,
   notEmptyList,
+  partition,
   sort,
   sorttaaStuffLukukausienMukaan,
   takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
 import { average, sum } from './utils/numberUtils';
-import { setHtmlContent } from './utils/setHtmlContent';
 import {
   luoKivaAvainReducelle,
   parsiLaitoksenKoodi,
@@ -127,10 +129,7 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
     // @ts-ignore
     .map(muutaArrayKivaksiObjektiksi)
     .filter(({ op }) => !isNaN(op))
-    .sort((a, b) => {
-      // TODO: Replace with filtering function
-      return a.pvmDate.getTime() - b.pvmDate.getTime();
-    })
+    .sort((a, b) => a.pvmDate.getTime() - b.pvmDate.getTime())
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
 // TODO: Typings
@@ -162,8 +161,8 @@ const rakennaListaLuennoitsijoista = (initial, item) => [
 const haluaisinTietääLuennoitsijoista = stuff =>
   stuff
     .reduce(rakennaListaLuennoitsijoista, [])
-    .map((item, i, arr) => {
-      const luennot = arr.filter(
+    .map(item => {
+      const luennot = stuff.filter(
         ({ luennoitsija }) => luennoitsija === item.luennoitsija,
       );
 
@@ -211,34 +210,6 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
       {},
     );
 
-const createLuennoitsijaRivi = ({
-  luennoitsija,
-  kurssimaara,
-  luennot,
-}: LecturerRowParams) => `<p>
-    ${luennoitsija},
-    kursseja ${kurssimaara},
-    keskiarvo: ${luennot.keskiarvo},
-    noppia: ${luennot.totalOp}
-  </p>`;
-
-const drawLuennoitsijat = ({
-  title,
-  lista,
-  luennoitsijatElement,
-}: DrawLuennoitsijatParams) => {
-  if (luennoitsijatElement !== undefined) {
-    const html = `
-      <div class="luennoitsijat pull-left">
-        <p><strong>${title}</strong></p>
-        ${lista.map(createLuennoitsijaRivi).join('')}
-      </div>
-    `;
-
-    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
-  }
-};
-
 // TODO: Typings
 const courseNamesMatch = kurssi => row => row.kurssi === kurssi;
 
@@ -254,15 +225,6 @@ const removeAvoinFromKurssiNimi = item => ({
   ...item,
   kurssi: item.kurssi.replace('Avoin yo: ', '').replace('Open uni: ', ''),
 });
-
-// TODO: Typings
-const negate = callback => item => !callback(item);
-
-// TODO: Typings
-const partition = (list, predicate) => [
-  list.filter(negate(predicate)),
-  list.filter(predicate),
-];
 
 // TODO: Typings
 const drawOpintoDonitsi = ({ id, stuff, data }) => {
@@ -622,7 +584,6 @@ const piirräLuennoitsijaListat = luennoitsijat => {
     // @ts-ignore
     luennoitsijatElement,
     title: 'Luennoitsijoiden top lista by kurssimaara',
-    // @ts-ignore
     lista: sort(luennoitsijat, 'kurssimaara'),
   });
 
@@ -675,133 +636,6 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
-// TODO: Typings
-const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
-  const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
-  setHtmlContent({
-    id: 'open-uni-maara',
-    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi. Yhteensä ${openUniOp} op.`,
-  });
-};
-
-// TODO: Typings
-const laitaHyvaksytytSuorituksetDomiinJeps = ({
-  kurssimaara,
-  hyvMaara,
-  hyvOp,
-}) => {
-  const hyvPercentage = ((hyvMaara / kurssimaara) * 100).toFixed(2);
-  setHtmlContent({
-    id: 'hyv-maara',
-    content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% opinnoistasi. Yhteensä ${hyvOp} op.`,
-  });
-};
-
-// TODO: Typings
-const arvioidaanOpintoVuodetDomiin = op => {
-  const vuodet = (op / 60).toFixed(2);
-  setHtmlContent({
-    id: 'vuodet-arvio',
-    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.`,
-  });
-};
-
-// TODO: Typings
-const arvioidaanKäytetytOpiskelutunnit = op => {
-  const tunnit = (op * 27).toFixed(2);
-  setHtmlContent({
-    id: 'tunnit-arvio',
-    content: `Opintopistemäärän mukaan arvioin sinun käyttäneen ${tunnit} tehokasta opiskelutuntia. Laskukaava = <span title="Opintopistemäärä * 27 tuntia per opintopiste">${op} * 27</span>.`,
-  });
-};
-
-// TODO: Typings
-const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
-  `${key} ${data.laitos} keskiarvo on ${
-    isNaN(data.keskiarvo) ? 'hyv' : data.keskiarvo
-  } ja painotettu keskiarvo on ${
-    isNaN(data.painotettuKeskiarvo) ? 'hyv' : data.painotettuKeskiarvo
-  }`;
-
-// TODO: Typings
-const piirraRandomStatistiikkaa = ({
-  kurssimaara,
-  luennoitsijamaara,
-  op,
-  openUniMaara,
-  openUniOp,
-  hyvMaara,
-  hyvOp,
-  maxKuukausi,
-  keskiarvo,
-  painotettuKeskiarvo,
-  pääaine,
-  sivuaineet,
-}) => {
-  setHtmlContent({
-    id: 'opintojen-maara',
-    content: `Olet suorittanut huimat ${kurssimaara} erilaista kurssia! Good for you!`,
-  });
-
-  const [kuukausi, vuosi] = maxKuukausi[0].split(' ');
-
-  setHtmlContent({
-    id: 'max-kuukausi-nopat',
-    content: `Olit tulessa ${kuukausi}ssa ${vuosi}! Suoritit silloin ${
-      maxKuukausi[1]
-    } noppaa! Whoah!`,
-  });
-
-  setHtmlContent({
-    id: 'keskiarvo',
-    content: `Opintojen keskiarvo: ${keskiarvo}. Painotettu keskiarvo: ${painotettuKeskiarvo}.`,
-  });
-
-  setHtmlContent({
-    id: 'luennoitsijoiden-maara',
-    content: `Olet käynyt ${luennoitsijamaara} eri luennoitsijan kursseilla, ${(
-      kurssimaara / luennoitsijamaara
-    ).toFixed(2)} kurssia per luennoitsija, ${(op / luennoitsijamaara).toFixed(
-      2,
-    )} op per luennoitsija.`,
-  });
-  setHtmlContent({
-    id: 'keskiarvo-op-maara',
-    content: `Keskiarvolta ${(op / kurssimaara).toFixed(2)} noppaa per kurssi.`,
-  });
-  if (openUniMaara) {
-    piirraAvoimenSuorituksia({ kurssimaara, openUniMaara, openUniOp });
-  }
-
-  if (hyvMaara) {
-    laitaHyvaksytytSuorituksetDomiinJeps({ kurssimaara, hyvMaara, hyvOp });
-  }
-
-  if (pääaine) {
-    setHtmlContent({
-      id: 'pääaine-data',
-      content: luoTilastoaAineidenKeskiarvoista({
-        key: 'Pääaineesi',
-        data: pääaine,
-      }),
-    });
-  }
-
-  if (sivuaineet) {
-    setHtmlContent({
-      id: 'sivuaineet-data',
-      content: sivuaineet
-        .map(data =>
-          luoTilastoaAineidenKeskiarvoista({ key: 'Sivuaineesi', data }),
-        )
-        .join('<br>'),
-    });
-  }
-
-  arvioidaanOpintoVuodetDomiin(op);
-  arvioidaanKäytetytOpiskelutunnit(op);
-};
-
 const nameIncludesAvoinYo = (name: string) =>
   name.includes('avoin yo') || name.includes('open uni');
 
@@ -820,14 +654,6 @@ const laskePainotettuKeskiarvo = data => {
 };
 
 // TODO: Typings
-const laskeKuinkaMontaMitäkinNoppaaOnOlemassa = stuff =>
-  laskeStuffistaHalututJutut({ stuff, key: 'op' });
-
-// TODO: Typings
-const laskeKuinkaMontaMitäkinArvosanaaOnOlemassa = stuff =>
-  laskeStuffistaHalututJutut({ stuff, key: 'arvosana' });
-
-// TODO: Typings
 const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
   draw({
     id,
@@ -843,6 +669,39 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
       },
     ],
   });
+
+// TODO: Typings
+const piirräLaitosGraafit = data => {
+  const dataset = sort(Object.values(data), 'op');
+
+  draw({
+    id: 'chart-laitos-graafit',
+    type: 'bar',
+    labels: map(dataset, 'laitos'),
+    datasets: [
+      {
+        label: 'Kursseja',
+        data: map(dataset, 'courseCount'),
+        ...style,
+      },
+      {
+        label: 'Nopat',
+        data: map(dataset, 'op'),
+        ...styleBlue,
+      },
+      {
+        label: 'Keskiarvo',
+        data: map(dataset, 'keskiarvo'),
+        ...styleGreen,
+      },
+      {
+        label: 'Painotettu keskiarvo',
+        data: map(dataset, 'painotettuKeskiarvo'),
+        ...styleGreen,
+      },
+    ],
+  });
+};
 
 // TODO: Typings
 const grouppaaEriLaitostenKurssit = stuff =>
@@ -885,39 +744,6 @@ const grouppaaEriLaitostenKurssit = stuff =>
         : dataJeejee,
     };
   }, {});
-
-// TODO: Typings
-const piirräLaitosGraafit = data => {
-  const dataset = sort(Object.values(data), 'op');
-
-  draw({
-    id: 'chart-laitos-graafit',
-    type: 'bar',
-    labels: map(dataset, 'laitos'),
-    datasets: [
-      {
-        label: 'Kursseja',
-        data: map(dataset, 'courseCount'),
-        ...style,
-      },
-      {
-        label: 'Nopat',
-        data: map(dataset, 'op'),
-        ...styleBlue,
-      },
-      {
-        label: 'Keskiarvo',
-        data: map(dataset, 'keskiarvo'),
-        ...styleGreen,
-      },
-      {
-        label: 'Painotettu keskiarvo',
-        data: map(dataset, 'painotettuKeskiarvo'),
-        ...styleGreen,
-      },
-    ],
-  });
-};
 
 // tästä tää lähtee!
 const start = () => {
@@ -983,10 +809,11 @@ const start = () => {
   const { keskiarvo } = [...keskiarvot].pop();
   const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
 
-  const arvosanatGroupattuna = laskeKuinkaMontaMitäkinArvosanaaOnOlemassa(
+  const arvosanatGroupattuna = laskeStuffistaHalututJutut({
     stuff,
-  );
-  const nopatGroupattuna = laskeKuinkaMontaMitäkinNoppaaOnOlemassa(stuff);
+    key: 'arvosana',
+  });
+  const nopatGroupattuna = laskeStuffistaHalututJutut({ stuff, key: 'op' });
 
   const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
 

@@ -1,4 +1,5 @@
 import { Course, Paivays } from '../interfaces/Interfaces';
+import { negate } from './helpers';
 import { putsaaTeksti, toLowerCase } from './stringUtils';
 import { isArray } from './validators';
 
@@ -75,8 +76,16 @@ const laskeStuffistaHalututJutut = ({ stuff, key }) =>
     {},
   );
 
+// TODO: Typings
+// TODO: add test
+const partition = (list, predicate) => [
+  list.filter(negate(predicate)),
+  list.filter(predicate),
+];
+
 export {
   notEmpty,
+  partition,
   notEmptyList,
   map,
   min,
