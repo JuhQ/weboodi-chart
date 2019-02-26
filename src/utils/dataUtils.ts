@@ -7,4 +7,4 @@
 export const getOpiskelijanumero = (): string | null =>
   (((document.querySelector('script') || { innerText: '' }).innerText.match(
     /"studentNumber":"\d+"/,
-  ) || [''])[0].match(/\d+/) || ['0'])[0];
+  ) || [''])[0].match(/\d+/) || [null])[0];
