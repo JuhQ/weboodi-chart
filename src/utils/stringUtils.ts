@@ -23,9 +23,35 @@ const luoKivaAvainReducelle = (pvmDate: Date) => {
   return `${kuukausi} ${vuosi}`;
 };
 
+// TODO: add tests
+const poistaAvoinKurssiNimestä = (kurssi: string) =>
+  kurssi
+    .replace('Avoin yo:', '')
+    .replace('Open uni:', '')
+    .trim();
+
+// TODO: add tests
+const poistaSulut = (str: string) => str.replace(/\(|\)/g, '').trim();
+
+// TODO: add tests
+const poistaPilkut = (str: string) => str.replace(',', '').trim();
+// TODO: add tests
+const poistaKaksoispisteet = (str: string) => str.replace(':', '').trim();
+
+const liianLyhytNimiSanaPilveen = 2;
+
+// TODO: add tests
+const poistaLiianLyhyetNimet = (str: string) =>
+  str.length > liianLyhytNimiSanaPilveen;
+
 export {
   toLowerCase,
   putsaaTeksti,
   parsiLaitoksenKoodi,
+  poistaAvoinKurssiNimestä,
+  poistaSulut,
+  poistaPilkut,
+  poistaKaksoispisteet,
+  poistaLiianLyhyetNimet,
   luoKivaAvainReducelle,
 };

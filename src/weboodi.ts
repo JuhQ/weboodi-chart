@@ -32,6 +32,11 @@ import { setHtmlContent } from './utils/setHtmlContent';
 import {
   luoKivaAvainReducelle,
   parsiLaitoksenKoodi,
+  poistaAvoinKurssiNimestä,
+  poistaKaksoispisteet,
+  poistaLiianLyhyetNimet,
+  poistaPilkut,
+  poistaSulut,
   putsaaTeksti,
   toLowerCase,
 } from './utils/stringUtils';
@@ -190,21 +195,6 @@ const haluaisinTietääLuennoitsijoista = stuff =>
       [],
     );
 
-const poistaAvoinKurssiNimestä = (kurssi: string) =>
-  kurssi
-    .replace('Avoin yo:', '')
-    .replace('Open uni:', '')
-    .trim();
-
-const poistaSulut = (str: string) => str.replace(/\(|\)/g, '').trim();
-
-const poistaPilkut = (str: string) => str.replace(',', '').trim();
-
-const liianLyhytNimiSanaPilveen = 2;
-
-const poistaLiianLyhyetNimet = (str: string) =>
-  str.length > liianLyhytNimiSanaPilveen;
-
 // TODO: Typings
 const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
   map(stuff, 'kurssi')
@@ -214,10 +204,11 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
     .reduce((list, kurssi) => [...list, ...kurssi.split(' ')], [])
     .filter(poistaLiianLyhyetNimet)
     .map(poistaPilkut)
+    .map(poistaKaksoispisteet)
     .reduce(
       (list, kurssi) => ({
         ...list,
-        [kurssi]: list[kurssi] ? list[kurssi] + 1 : 1,
+        [kurssi]: (list[kurssi] || 1) + 1,
       }),
       {},
     );
@@ -238,13 +229,14 @@ const drawLuennoitsijat = ({
   lista,
   luennoitsijatElement,
 }: DrawLuennoitsijatParams) => {
-  const html = `
-    <div class="luennoitsijat pull-left">
-      <p><strong>${title}</strong></p>
-      ${lista.map(createLuennoitsijaRivi).join('')}
-    </div>
-  `;
   if (luennoitsijatElement !== undefined) {
+    const html = `
+      <div class="luennoitsijat pull-left">
+        <p><strong>${title}</strong></p>
+        ${lista.map(createLuennoitsijaRivi).join('')}
+      </div>
+    `;
+
     luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
   }
 };
@@ -463,16 +455,16 @@ const luoLukuvuodelleKivaAvain = ({
   pvmIsCurrentSemester: boolean;
   pvmIsNextSemester: boolean;
 }) => {
-  let vuosiJuttu = 0;
   if (pvmIsCurrentSemester) {
-    vuosiJuttu = vuosi;
-  } else if (pvmIsNextSemester) {
-    // If it's not between the current semester, it must be the next one
-    vuosiJuttu = vuosi + 1;
-  } else {
-    vuosiJuttu = vuosi - 1;
+    return vuosi;
   }
-  return vuosiJuttu;
+
+  if (pvmIsNextSemester) {
+    // If it's not between the current semester, it must be the next one
+    return vuosi + 1;
+  }
+
+  return vuosi - 1;
 };
 
 const laskeLukukausienNopat = (
