@@ -1,6 +1,6 @@
 import Chart from 'chart.js';
 
-import css from './css';
+import { css, style, styleBlue, styleGreen } from './css';
 import { kurssitietokanta } from './data/courses';
 import yolohtml from './html';
 import {
@@ -161,24 +161,6 @@ const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
       labels,
     },
   });
-};
-
-const style = {
-  backgroundColor: 'rgba(255, 99, 132, 0.2)',
-  borderColor: 'rgba(255,99,132,1)',
-  borderWidth: 1,
-};
-
-const styleBlue = {
-  backgroundColor: 'rgba(118, 99, 255, 0.2)',
-  borderColor: 'rgba(118,99,132,1)',
-  borderWidth: 1,
-};
-
-const styleGreen = {
-  backgroundColor: 'rgba(99, 255, 157, 0.2)',
-  borderColor: 'rgba(99,99,132,1)',
-  borderWidth: 1,
 };
 
 const suoritusTableSelector = '[name=suoritus] + table + table';

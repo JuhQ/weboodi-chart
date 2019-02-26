@@ -1,4 +1,4 @@
-const css = `
+export const css = `
   <style>
     #luennoitsijat {
       clear: both;
@@ -38,6 +38,22 @@ const css = `
       width: 100%;
     }
   </style>
-  `;
+`;
 
-export default css;
+export const style = {
+  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+  borderColor: 'rgba(255,99,132,1)',
+  borderWidth: 1,
+};
+
+export const styleBlue = {
+  backgroundColor: 'rgba(118, 99, 255, 0.2)',
+  borderColor: 'rgba(118,99,132,1)',
+  borderWidth: 1,
+};
+
+export const styleGreen = {
+  backgroundColor: 'rgba(99, 255, 157, 0.2)',
+  borderColor: 'rgba(99,99,132,1)',
+  borderWidth: 1,
+};
