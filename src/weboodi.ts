@@ -351,7 +351,7 @@ const rakenteleDataSetitKeskiarvoChartille = ({
 }) =>
   [
     notEmpty(keskiarvot) && {
-      label: 'Kurssien keskiarvo',
+      label: 'Keskiarvo',
       data: map(keskiarvot, 'keskiarvo'),
       ...style,
     },
@@ -371,11 +371,11 @@ const rakenteleDataSetitKeskiarvoChartille = ({
 const rakenteleDataSetitNoppaChartille = grouped =>
   [
     {
-      label: 'Päivän opintopisteet',
+      label: 'Päivittäiset nopat',
       data: map(grouped, 'op'),
     },
     {
-      label: 'Suoritukset',
+      label: 'Kumulatiiviset nopat',
       data: map(grouped, 'cumulativeOp'),
       ...style,
       type: 'line',
@@ -410,6 +410,25 @@ const drawGraphs = ({
         keskiarvotPerusopinnoista,
         keskiarvotAineopinnoista,
       }),
+    });
+
+  notEmpty(stuff) &&
+    draw({
+      id: 'chart-keskiarvo-vertailu',
+      labels: map(stuff, 'pvm'),
+      type: 'line',
+      datasets: [
+        {
+          label: 'Keskiarvo',
+          data: map(stuff, 'keskiarvo'),
+          ...style,
+        },
+        {
+          label: 'Painotettu keskiarvo',
+          data: map(stuff, 'painotettuKeskiarvo'),
+          ...styleBlue,
+        },
+      ],
     });
 };
 
@@ -1057,8 +1076,6 @@ const start = () => {
       0,
     ),
   });
-
-  console.log('stuff', stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };
