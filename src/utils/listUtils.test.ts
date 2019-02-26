@@ -8,6 +8,7 @@ import {
   map,
   mapInvoke,
   max,
+  min,
   notEmpty,
   notEmptyList,
   sort,
@@ -75,6 +76,31 @@ describe('List utils', () => {
 
     it('Should return correct maximum value #3', () => {
       expect(max([999, 0, -100])).to.equal(999);
+    });
+    it('Should return correct maximum value #4', () => {
+      expect(max([1, 2, 3.2])).to.equal(3.2);
+    });
+  });
+
+  describe('min()', () => {
+    it('Should return correct minimum value #1', () => {
+      expect(min([1, 2, 3])).to.equal(1);
+    });
+
+    it('Should return correct minimum value #2', () => {
+      expect(min([-1, 20, 3])).to.equal(-1);
+    });
+
+    it('Should return correct minimum value #3', () => {
+      expect(min([0, 0, 0])).to.equal(0);
+    });
+
+    it('Should return correct minimum value #3', () => {
+      expect(min([999, 0, -100])).to.equal(-100);
+    });
+
+    it('Should return correct minimum value #4', () => {
+      expect(min([1, 2, 0.2])).to.equal(0.2);
     });
   });
 

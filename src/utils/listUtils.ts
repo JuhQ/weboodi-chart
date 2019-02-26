@@ -2,6 +2,7 @@ import { Paivays } from '../interfaces/Interfaces';
 
 const notEmpty = (data: string) => data.length > 0;
 const notEmptyList = <T>(data: T[]) => data.length > 0;
+const min = (lista: number[]) => Math.min(...lista);
 const max = (lista: number[]) => Math.max(...lista);
 const map = <T>(
   list: T[],
@@ -26,4 +27,14 @@ const sort = (list: any, key: string) =>
 const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
   list.find(val => val.pvm === key);
 
-export { notEmpty, notEmptyList, map, max, contains, mapInvoke, sort, findPvm };
+export {
+  notEmpty,
+  notEmptyList,
+  map,
+  min,
+  max,
+  contains,
+  mapInvoke,
+  sort,
+  findPvm,
+};
