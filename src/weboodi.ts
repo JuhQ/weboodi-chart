@@ -297,6 +297,7 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
 
 // TODO: Typings
 const rakenteleDataSetitKeskiarvoChartille = ({
+  arvosanallisetMerkinnät,
   keskiarvot,
   keskiarvotPerusopinnoista,
   keskiarvotAineopinnoista,
@@ -306,6 +307,11 @@ const rakenteleDataSetitKeskiarvoChartille = ({
       label: 'Keskiarvo',
       data: map(keskiarvot, 'keskiarvo'),
       ...style,
+    },
+    notEmpty(arvosanallisetMerkinnät) && {
+      label: 'Painotettu keskiarvo',
+      data: map(arvosanallisetMerkinnät, 'painotettuKeskiarvo'),
+      ...styleBlue,
     },
     notEmpty(keskiarvotPerusopinnoista) && {
       label: 'Perusopintojen keskiarvo',
@@ -342,6 +348,8 @@ const drawGraphs = ({
   keskiarvotAineopinnoista,
 }) => {
   const grouped = groupThemCourses(stuff);
+  const arvosanallisetMerkinnät = stuff.filter(({ arvosana }) => arvosana);
+
   notEmpty(grouped) &&
     draw({
       id: 'chart-nopat',
@@ -358,29 +366,11 @@ const drawGraphs = ({
       labels: map(keskiarvot, 'pvm'),
       type: 'line',
       datasets: rakenteleDataSetitKeskiarvoChartille({
+        arvosanallisetMerkinnät,
         keskiarvot,
         keskiarvotPerusopinnoista,
         keskiarvotAineopinnoista,
       }),
-    });
-
-  notEmpty(stuff) &&
-    draw({
-      id: 'chart-keskiarvo-vertailu',
-      labels: map(stuff, 'pvm'),
-      type: 'line',
-      datasets: [
-        {
-          label: 'Keskiarvo',
-          data: map(stuff, 'keskiarvo'),
-          ...style,
-        },
-        {
-          label: 'Painotettu keskiarvo',
-          data: map(stuff, 'painotettuKeskiarvo'),
-          ...styleBlue,
-        },
-      ],
     });
 };
 

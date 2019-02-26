@@ -21,17 +21,14 @@ const html = ({
     <div class="clear">
       <div class="jeejee-pull-left half">
         <canvas id="chart-nopat" width="500" height="200"></canvas>
-        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
         <canvas id="chart-keskiarvo" width="500" height="200"></canvas>
-        <canvas id="chart-keskiarvo-vertailu" width="500" height="200"></canvas>
       </div>
     </div>
     <div class="clear">
       <div class="jeejee-pull-left half">
-        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
-        <canvas id="chart-laitos-graafit" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-kuukaudet" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
         <div id="opintojen-maara"></div>
@@ -50,9 +47,11 @@ const html = ({
     </div>
     <div class="clear">
       <div class="jeejee-pull-left half">
-        <canvas id="chart-arvosanat-groupattuna" width="500" height="200"></canvas>
+        <canvas id="chart-nopat-vuosi" width="500" height="200"></canvas>
+        <canvas id="chart-laitos-graafit" width="500" height="200"></canvas>
       </div>
       <div class="jeejee-pull-left half">
+        <canvas id="chart-arvosanat-groupattuna" width="500" height="200"></canvas>
         <canvas id="chart-nopat-groupattuna" width="500" height="200"></canvas>
       </div>
     </div>
