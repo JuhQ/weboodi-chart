@@ -1,4 +1,11 @@
-import { style, styleBlue, styleGreen } from './css';
+import {
+  style,
+  style2,
+  styleBlue,
+  styleBlue2,
+  styleGreen,
+  styleGreen2,
+} from './css';
 import { kurssitietokanta } from './data/courses';
 import {
   ConvertedCourse,
@@ -138,7 +145,10 @@ const annaMulleKeskiarvotKursseista = stuff =>
     .filter(item => !isNaN(item.arvosana))
     .map((item, i, list) => ({
       ...item,
-      keskiarvo: average(takeUntil(map(list, 'arvosana'), i + 1)).toFixed(2),
+      keskiarvo: average(
+        takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
+      ).toFixed(2),
+      painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
     }));
 
 // TODO: Typings
@@ -311,7 +321,7 @@ const rakenteleDataSetitKeskiarvoChartille = ({
     notEmpty(arvosanallisetMerkinnät) && {
       label: 'Painotettu keskiarvo',
       data: map(arvosanallisetMerkinnät, 'painotettuKeskiarvo'),
-      ...styleBlue,
+      ...style2,
     },
     notEmpty(keskiarvotPerusopinnoista) && {
       label: 'Perusopintojen keskiarvo',
@@ -322,6 +332,16 @@ const rakenteleDataSetitKeskiarvoChartille = ({
       label: 'Aineopintojen keskiarvo',
       data: map(keskiarvotAineopinnoista, 'keskiarvo'),
       ...styleGreen,
+    },
+    notEmpty(keskiarvotPerusopinnoista) && {
+      label: 'Perusopintojen painotettu keskiarvo',
+      data: map(keskiarvotPerusopinnoista, 'painotettuKeskiarvo'),
+      ...styleBlue2,
+    },
+    notEmpty(keskiarvotAineopinnoista) && {
+      label: 'Aineopintojen painotettu keskiarvo',
+      data: map(keskiarvotAineopinnoista, 'painotettuKeskiarvo'),
+      ...styleGreen2,
     },
   ].filter(isTruthy);
 
@@ -687,7 +707,7 @@ const piirräLaitosGraafit = data => {
       {
         label: 'Painotettu keskiarvo',
         data: map(dataset, 'painotettuKeskiarvo'),
-        ...styleGreen,
+        ...styleGreen2,
       },
     ],
   });

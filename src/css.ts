@@ -46,18 +46,36 @@ export const css = `
 
 export const style = {
   backgroundColor: 'rgba(255, 99, 132, 0.2)',
-  borderColor: 'rgba(255,99,132,1)',
+  borderColor: 'rgb(224, 87, 116)',
   borderWidth: 1,
 };
 
 export const styleBlue = {
   backgroundColor: 'rgba(118, 99, 255, 0.2)',
-  borderColor: 'rgba(118,99,132,1)',
+  borderColor: 'rgb(88, 76, 173)',
   borderWidth: 1,
 };
 
 export const styleGreen = {
   backgroundColor: 'rgba(99, 255, 157, 0.2)',
-  borderColor: 'rgba(99,99,132,1)',
+  borderColor: 'rgb(46, 228, 114)',
+  borderWidth: 1,
+};
+
+export const style2 = {
+  backgroundColor: 'rgba(255, 22, 148, 0.2)',
+  borderColor: 'rgb(255, 22, 148)',
+  borderWidth: 1,
+};
+
+export const styleBlue2 = {
+  backgroundColor: 'rgba(139, 145, 249, 0.2)',
+  borderColor: 'rgb(139, 145, 249)',
+  borderWidth: 1,
+};
+
+export const styleGreen2 = {
+  backgroundColor: 'rgba(63, 255, 134, 0.2)',
+  borderColor: 'rgb(63, 255, 134)',
   borderWidth: 1,
 };
