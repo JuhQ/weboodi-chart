@@ -37,6 +37,10 @@ export const css = `
     #nuggets input {
       width: 100%;
     }
+
+    #tagipilvi {
+      margin-top: 1.5rem;
+    }
   </style>
 `;
 
