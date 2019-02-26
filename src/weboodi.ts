@@ -25,6 +25,7 @@ import {
   notEmptyList,
   sort,
   sorttaaStuffLukukausienMukaan,
+  takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
 import { average, sum } from './utils/numberUtils';
@@ -130,10 +131,6 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
       return a.pvmDate.getTime() - b.pvmDate.getTime();
     })
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
-
-// TODO: Typings
-const takeUntil = (list, n) =>
-  list.reduce((initial, item, i) => (i < n ? [...initial, item] : initial), []);
 
 // TODO: Typings
 const annaMulleKeskiarvotKursseista = stuff =>

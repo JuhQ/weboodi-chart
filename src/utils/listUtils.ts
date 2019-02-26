@@ -60,11 +60,16 @@ const createCoursesArray = target =>
 const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
   a.pvmDate.getTime() - b.pvmDate.getTime();
 
+// TODO: Typings
+// TODO: add test
+const takeUntil = (list, n) => list.slice(0, n);
+
 export {
   notEmpty,
   notEmptyList,
   map,
   min,
+  takeUntil,
   max,
   contains,
   mapInvoke,
