@@ -20,6 +20,7 @@ import {
   map,
   mapInvoke,
   max,
+  min,
   notEmpty,
   notEmptyList,
   sort,
@@ -685,19 +686,16 @@ const drawGraphs = ({
 }) => {
   const grouped = groupThemCourses(stuff);
   notEmpty(grouped) &&
-    // FIXME: ts-ignore
-    // @ts-ignore
     draw({
       id: 'chart-nopat',
       customTooltip: true,
       customTicks: true,
+      type: 'bar',
       labels: map(grouped, 'pvm'),
       datasets: rakenteleDataSetitNoppaChartille(grouped),
     });
 
   notEmpty(keskiarvot) &&
-    // FIXME: ts-ignore
-    //  @ts-ignore
     draw({
       id: 'chart-keskiarvo',
       labels: map(keskiarvot, 'pvm'),
@@ -861,7 +859,6 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
     fn: laskeLukukausienNopat,
   });
   const lukukausiKeys = Object.keys(lukukausiGroups);
-  // @ts-ignore
   const lukukausiData = Object.values(lukukausiGroups);
   const ekaLukukausi = parseInt(lukukausiKeys[0], 10);
   const vainYksiLukukausiSuoritettu = lukukausiKeys.length === 1;
@@ -912,9 +909,11 @@ const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
   notEmpty(perusOpinnot) &&
     drawOpintoDonitsi({ id: 'perusopinnot', stuff, data: perusOpinnot });
 };
+
 // TODO: Typings
 const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
   b.luennot.keskiarvo - a.luennot.keskiarvo || b.kurssimaara - a.kurssimaara;
+
 // TODO: Typings
 const piirräLuennoitsijaListat = luennoitsijat => {
   const luennoitsijatElement = document.querySelector('#luennoitsijat');
@@ -958,6 +957,7 @@ const hommaaMatskutLocalStoragesta = () => ({
   pääaine: getPääaineFromLokaali(),
   sivuaineet: getSivuaineetFromLokaali(),
 });
+
 // TODO: Typings
 const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
@@ -978,6 +978,7 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
 
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
+
 // TODO: Typings
 const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
   const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
@@ -986,6 +987,7 @@ const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
     content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi. Yhteensä ${openUniOp} op.`,
   });
 };
+
 // TODO: Typings
 const laitaHyvaksytytSuorituksetDomiinJeps = ({
   kurssimaara,
@@ -998,6 +1000,7 @@ const laitaHyvaksytytSuorituksetDomiinJeps = ({
     content: `Olet saanut ${hyvMaara} hyv merkintää, joka on ${hyvPercentage}% opinnoistasi. Yhteensä ${hyvOp} op.`,
   });
 };
+
 // TODO: Typings
 const arvioidaanOpintoVuodetDomiin = op => {
   const vuodet = (op / 60).toFixed(2);
@@ -1121,11 +1124,8 @@ const countFontSize = ({
 
 // TODO: Typings
 const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
-  // FIXME: Incorrect Object type assign
-  // @ts-ignore
-  const minValue = Math.min(...Object.values(words));
-  // @ts-ignore
-  const maxValue = Math.max(...Object.values(words));
+  const minValue = min(Object.values(words));
+  const maxValue = max(Object.values(words));
 
   const content = Object.keys(words)
     .map(key => ({
@@ -1185,18 +1185,15 @@ const laskeKuinkaMontaMitäkinArvosanaaOnOlemassa = stuff =>
 
 // TODO: Typings
 const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
-  // @ts-ignore
   draw({
     id,
     type: 'bar',
     labels: Object.keys(data).map(
-      // @ts-ignore
-      key => `${label} ${isNaN(key) ? 'hyv' : key}`,
+      key => `${label} ${isNaN(parseInt(key)) ? 'hyv' : key}`,
     ),
     datasets: [
       {
         label: 'Suorituksia',
-        // @ts-ignore
         data: Object.values(data),
         ...styleBlue,
       },
@@ -1253,10 +1250,8 @@ const grouppaaEriLaitostenKurssit = stuff =>
 
 // TODO: Typings
 const piirräLaitosGraafit = data => {
-  // @ts-ignore
   const dataset = sort(Object.values(data), 'op');
 
-  // @ts-ignore
   draw({
     id: 'chart-laitos-graafit',
     type: 'bar',
@@ -1340,9 +1335,7 @@ const start = () => {
     fn: laskeKumulatiivisetKuukausienNopat,
   });
 
-  // @ts-ignore
   const maxKuukausiNopat = max(Object.values(kuukausiGroups));
-  // @ts-ignore
   const maxKuukausi = Object.entries(kuukausiGroups).find(
     ([_, op]) => op === maxKuukausiNopat,
   );
@@ -1357,7 +1350,6 @@ const start = () => {
 
   const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
 
-  // @ts-ignore
   const sivuaineidenMenestys = Object.values(laitostenKurssit).filter(
     // @ts-ignore
     ({ laitos }) =>
@@ -1416,7 +1408,6 @@ const start = () => {
     openUniOp: stuff
       .filter(({ kurssi }) => nameIncludesAvoinYo(toLowerCase(kurssi)))
       .map(({ op }) => op)
-      // @ts-ignore
       .reduce(sum, 0),
     hyvMaara: map(stuff, 'arvosana').filter(isNaN).length,
     hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), 'op').reduce(
