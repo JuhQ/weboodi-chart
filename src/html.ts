@@ -4,7 +4,7 @@ const html = ({
   duplikaattiKurssit,
   perusOpinnot,
   aineOpinnot,
-  pääaine,
+  pääaine = '',
   sivuaineet,
 }: DOMParams) => `
   <div id="nuggets" class="margin-bottom-large">
