@@ -18,6 +18,7 @@ import {
   contains,
   findFromKurssiTietokanta,
   findPvm,
+  laskeStuffistaHalututJutut,
   map,
   mapInvoke,
   max,
@@ -205,7 +206,7 @@ const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
     .reduce(
       (list, kurssi) => ({
         ...list,
-        [kurssi]: (list[kurssi] || 1) + 1,
+        [kurssi]: (list[kurssi] || 0) + 1,
       }),
       {},
     );
@@ -801,9 +802,6 @@ const piirraRandomStatistiikkaa = ({
   arvioidaanKäytetytOpiskelutunnit(op);
 };
 
-// TODO: Typings
-const undefinedStuffFilter = (item: Course) => item.luennoitsija !== undefined;
-
 const nameIncludesAvoinYo = (name: string) =>
   name.includes('avoin yo') || name.includes('open uni');
 
@@ -820,16 +818,6 @@ const laskePainotettuKeskiarvo = data => {
     ) / map(arvosanallisetOpintosuoritukset, 'op').reduce(sum, 0)
   ).toFixed(2);
 };
-
-// TODO: Typings
-const laskeStuffistaHalututJutut = ({ stuff, key }) =>
-  stuff.reduce(
-    (acc, item) => ({
-      ...acc,
-      [item[key]]: acc[item[key]] ? acc[item[key]] + 1 : 1,
-    }),
-    {},
-  );
 
 // TODO: Typings
 const laskeKuinkaMontaMitäkinNoppaaOnOlemassa = stuff =>
@@ -955,7 +943,9 @@ const start = () => {
 
   // Make stuff & filter out undefined things
   // TODO: makeSomeStuff needs typings finished
-  const stuff = makeSomeStuff(duplikaattiKurssit).filter(undefinedStuffFilter);
+  const stuff = makeSomeStuff(duplikaattiKurssit).filter(
+    (item: Course) => item.luennoitsija !== undefined,
+  );
 
   // prevent division with 0
   if (!stuff.length) {

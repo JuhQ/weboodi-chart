@@ -64,6 +64,17 @@ const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
 // TODO: add test
 const takeUntil = (list, n) => list.slice(0, n);
 
+// TODO: Typings
+// TODO: add test
+const laskeStuffistaHalututJutut = ({ stuff, key }) =>
+  stuff.reduce(
+    (acc, item) => ({
+      ...acc,
+      [item[key]]: (acc[item[key]] || 0) + 1,
+    }),
+    {},
+  );
+
 export {
   notEmpty,
   notEmptyList,
@@ -71,6 +82,7 @@ export {
   min,
   takeUntil,
   max,
+  laskeStuffistaHalututJutut,
   contains,
   mapInvoke,
   sort,
