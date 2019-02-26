@@ -1,44 +1,42 @@
-import Chart from 'chart.js';
-
-import { css, style, styleBlue, styleGreen } from './css';
+import { style, styleBlue, styleGreen } from './css';
 import { kurssitietokanta } from './data/courses';
-import yolohtml from './html';
 import {
   ConvertedCourse,
   Course,
   CourseArrToObjParams,
-  DOMParams,
   DrawLuennoitsijatParams,
-  DrawParams,
-  DrawPieParams,
   LecturerRowParams,
 } from './interfaces/Interfaces';
-import chartColors from './utils/chartColors';
+import {
+  createDom,
+  hommaaMeilleListaAsijoistaDommista,
+  pitäisköDomRakentaa,
+} from './utils/dom';
+import { draw, drawPie } from './utils/draw';
+import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
+  findFromKurssiTietokanta,
   findPvm,
   map,
   mapInvoke,
   max,
-  min,
   notEmpty,
   notEmptyList,
   sort,
+  sorttaaStuffLukukausienMukaan,
 } from './utils/listUtils';
-import {
-  getListFromLocalStorage,
-  getLocalStorage,
-  setLocalStorage,
-} from './utils/localStorage';
+import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
 import { average, sum } from './utils/numberUtils';
-import { toLowerCase } from './utils/stringUtils';
-import { isArray, isFloat, isTruthy } from './utils/validators';
-
-const setDuplikaattiKurssit = setLocalStorage<string[]>('duplikaattiKurssit');
-const setPerusOpinnot = setLocalStorage<string[]>('perusOpinnot');
-const setAineOpinnot = setLocalStorage<string[]>('aineOpinnot');
-const setPääaine = setLocalStorage<string>('pääaine');
-const setSivuaineet = setLocalStorage<string[]>('sivuaineet');
+import { setHtmlContent } from './utils/setHtmlContent';
+import {
+  luoKivaAvainReducelle,
+  parsiLaitoksenKoodi,
+  putsaaTeksti,
+  toLowerCase,
+} from './utils/stringUtils';
+import { piirraRumaTagipilvi } from './utils/tagcloud';
+import { isInBetween, isTruthy } from './utils/validators';
 
 const getDuplikaattiKurssit = () =>
   getListFromLocalStorage('duplikaattiKurssit');
@@ -47,289 +45,6 @@ const getAineOpinnot = () => getListFromLocalStorage('aineOpinnot');
 const getPääaineFromLokaali = () =>
   getLocalStorage<string | null>('pääaine', 'null');
 const getSivuaineetFromLokaali = () => getListFromLocalStorage('sivuaineet');
-
-const setHtmlContent = ({ id, content }: { id: string; content: string }) => {
-  const element = document.getElementById(id);
-  if (element !== null) {
-    element.innerHTML = content;
-  } else {
-    console.error('setHtmlContent(): Element with id %s is null', id);
-  }
-};
-
-const findFromKurssiTietokantaRecurse = ({ db, lyhenne }) =>
-  Object.keys(db).reduce((acc, key) => {
-    const courseFound =
-      !acc.length &&
-      isArray(db[key]) &&
-      db[key].find(({ keys }) =>
-        keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
-      );
-
-    return (
-      acc ||
-      (isArray(db[key])
-        ? courseFound
-          ? courseFound.name
-          : acc
-        : findFromKurssiTietokantaRecurse({ db: db[key], lyhenne }))
-    );
-  }, '');
-
-const findFromKurssiTietokanta = lyhenne =>
-  findFromKurssiTietokantaRecurse({ db: kurssitietokanta, lyhenne });
-
-const teeHienoTooltip = () => ({
-  tooltips: {
-    callbacks: {
-      label: (tooltipItem, data) => {
-        const label = data.datasets[tooltipItem.datasetIndex].label || '';
-        const value = Math.round(tooltipItem.yLabel * 100) / 100;
-
-        // datasetIndex = bar chart, values are multiplied by ten to show larger bars
-        const labelValue =
-          tooltipItem.datasetIndex || isFloat(value / 10) ? value : value / 10;
-
-        return `${label}: ${labelValue}`;
-      },
-    },
-  },
-});
-
-const draw = ({
-  id,
-  labels,
-  datasets,
-  type = 'bar',
-  customTooltip = false,
-  customTicks = false,
-}: DrawParams) => {
-  const stepSize = 55;
-  const maxValue =
-    Math.ceil(max(map(datasets, 'data').map(max)) / stepSize) * stepSize;
-
-  const elem = document.getElementById(id);
-
-  if (elem === null) {
-    throw new Error(`draw(): Element with id ${id} is null`);
-  }
-
-  new Chart(elem as HTMLCanvasElement, {
-    type,
-    data: { labels, datasets },
-    options: {
-      ...(customTooltip && teeHienoTooltip()),
-      scales: {
-        yAxes: [
-          {
-            ...(customTicks && {
-              gridLines: {
-                drawBorder: false,
-                color: chartColors,
-              },
-            }),
-            ticks: {
-              beginAtZero: true,
-              ...(customTicks && {
-                max: maxValue,
-                stepSize,
-              }),
-            },
-          },
-        ],
-      },
-    },
-  });
-};
-
-const drawPie = ({ id, labels, datasets, backgroundColor }: DrawPieParams) => {
-  const elem = document.getElementById(`${id}-container`);
-  if (elem === null) {
-    throw new Error(`drawPie(): Element with id ${id}-container is null`);
-  }
-  elem.style.display = 'block';
-
-  const elem2 = document.getElementById(id);
-
-  if (elem2 === null) {
-    throw new Error(`drawPie(): Element with id ${id} is null`);
-  }
-
-  new Chart(elem2 as HTMLCanvasElement, {
-    type: 'pie',
-    data: {
-      datasets: [{ data: datasets, backgroundColor }],
-      labels,
-    },
-  });
-};
-
-const suoritusTableSelector = '[name=suoritus] + table + table';
-
-const pitäisköDomRakentaa = () =>
-  !!document.querySelector(suoritusTableSelector);
-
-const createDom = ({
-  duplikaattiKurssit,
-  aineOpinnot,
-  perusOpinnot,
-  pääaine,
-  sivuaineet,
-}: DOMParams) => {
-  const listaTaulukko = document.querySelector(suoritusTableSelector);
-  const nuggetsExist = document.querySelector('#nuggets');
-  const yolo = yolohtml({
-    duplikaattiKurssit,
-    aineOpinnot,
-    perusOpinnot,
-    pääaine,
-    sivuaineet,
-  });
-
-  if (!listaTaulukko) {
-    return false;
-  }
-
-  if (nuggetsExist) {
-    nuggetsExist.outerHTML = yolo;
-  } else {
-    listaTaulukko.outerHTML = listaTaulukko.outerHTML + css + yolo;
-  }
-
-  return true;
-};
-
-const createCoursesArray = target =>
-  target.value
-    .split(',')
-    .map(putsaaTeksti)
-    .filter(notEmpty);
-
-const luoInputKuuntelijaJokaAsettaaArraynCallbackiin = ({
-  name,
-  callback,
-}: {
-  name: string;
-  callback: (params: string[]) => void;
-}) => {
-  const input = document.querySelector(`input[name='${name}']`);
-
-  if (input === null) {
-    throw new Error(
-      'luoInputKuuntelijaJokaAsettaaArraynCallbackiin(): Input is null',
-    );
-  }
-
-  input.addEventListener('input', ({ target }) => {
-    if (target !== null) {
-      callback(createCoursesArray(target));
-    } else {
-      throw new Error(
-        'createCoursesArray(): Cannot create a course array if the target is null',
-      );
-    }
-  });
-};
-
-const kuunteleDuplikaattiInputtia = () => {
-  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
-    name: 'duplikaattiKurssit',
-    callback: setDuplikaattiKurssit,
-  });
-};
-
-const kuunteleppaNiitäPerusopintoja = () => {
-  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
-    name: 'perusOpinnot',
-    callback: setPerusOpinnot,
-  });
-};
-
-const tahtoisinVaanKuunnellaAineopintoja = () => {
-  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
-    name: 'aineOpinnot',
-    callback: setAineOpinnot,
-  });
-};
-
-const jepulisKuuntelePääaineenMuutoksia = () => {
-  const input = document.querySelector("input[name='pääaine']");
-
-  if (input === null) {
-    throw new Error('jepulisKuuntelePääaineenMuutoksia(): Input is null');
-  }
-
-  input.addEventListener('input', ({ target }) => {
-    if (target === null) {
-      throw new Error('jepulisKuuntelePääaineenMuutoksia(): Target is null');
-    }
-    // TODO: Fix typing
-    // @ts-ignore
-    setPääaine(target.value.trim());
-  });
-};
-
-const kuunteleSivuaineListanMuutoksia = () => {
-  luoInputKuuntelijaJokaAsettaaArraynCallbackiin({
-    name: 'sivuaineet',
-    callback: setSivuaineet,
-  });
-};
-
-const kuunteleppaNapinpainalluksiaJuu = () => {
-  const input = document.querySelector('button#kliketi-klik');
-  if (input === null) {
-    throw new Error('kuunteleppaNapinpainalluksiaJuu(): Input is null');
-  }
-  input.addEventListener('click', start);
-};
-
-const luoKurssiAvainListaTietokannasta = opinnot =>
-  // @ts-ignore
-  map(kurssitietokanta.tkt[opinnot], 'keys').reduce((a, b) => [...a, ...b], []);
-
-const kuunteleJaEsitäytäAsijoitamme = ({ name, perusopinnot, aineopinnot }) => {
-  const input = document.querySelector(`button#${name}`);
-  if (input === null) {
-    throw new Error(
-      `kuunteleJaEsitäytäAsijoitamme(): Input with id "button#${name}" is null`,
-    );
-  }
-  input.addEventListener('click', () => {
-    // @ts-ignore
-    setPerusOpinnot(luoKurssiAvainListaTietokannasta(perusopinnot));
-    // @ts-ignore
-    setAineOpinnot(luoKurssiAvainListaTietokannasta(aineopinnot));
-    start();
-  });
-};
-
-const kuunteleEsitäyttönapinKliksutteluja2017 = () => {
-  kuunteleJaEsitäytäAsijoitamme({
-    name: 'kliketi-klik-esitäyttö-2017',
-    perusopinnot: 'perusopinnot',
-    aineopinnot: 'aineopinnot',
-  });
-};
-
-const kuunteleEsitäyttönapinKliksutteluja2016 = () => {
-  kuunteleJaEsitäytäAsijoitamme({
-    name: 'kliketi-klik-esitäyttö-pre-2017',
-    perusopinnot: 'perusopinnotPre2017',
-    aineopinnot: 'aineopinnotPre2017',
-  });
-};
-
-const kuunteleAsijoita = () => {
-  kuunteleDuplikaattiInputtia();
-  kuunteleppaNiitäPerusopintoja();
-  tahtoisinVaanKuunnellaAineopintoja();
-  jepulisKuuntelePääaineenMuutoksia();
-  kuunteleSivuaineListanMuutoksia();
-  kuunteleppaNapinpainalluksiaJuu();
-  kuunteleEsitäyttönapinKliksutteluja2017();
-  kuunteleEsitäyttönapinKliksutteluja2016();
-};
 
 // TODO: Proper param names and typing
 const setDailyCumulativeNoppas = ({ pvm, op }) => jee => {
@@ -363,13 +78,6 @@ const groupThemCourses = stuff =>
       realOp: item.op,
     }));
 
-const putsaaTeksti = (str: unknown) => {
-  if (typeof str === 'string') {
-    return str.replace(/&nbsp;/g, ' ').trim();
-  }
-  return '';
-};
-
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
   kurssi,
@@ -394,14 +102,6 @@ const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i) => [
     ...item,
     cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp),
   },
-];
-
-const hommaaMeilleListaAsijoistaDommista = () => [
-  ...Array.from(
-    document.querySelectorAll(
-      '[name=suoritus] + table + table:not(.eisei) table.eisei tbody tr',
-    ),
-  ),
 ];
 
 // TODO: Typings
@@ -582,7 +282,8 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
     ...coursesNotDone.map(lyhenne => ({ lyhenne, done: false })),
   ]
     .map(({ lyhenne, done }) => ({
-      kurssi: findFromKurssiTietokanta(lyhenne) || lyhenne,
+      kurssi:
+        findFromKurssiTietokanta({ db: kurssitietokanta, lyhenne }) || lyhenne,
       done,
     }))
     .reduce(removeDuplicateCourses(coursesDone), [])
@@ -730,17 +431,6 @@ const getPvmArray = (pvm: string) => {
   throw new Error('getPvmArray(): Parsing date failed');
 };
 
-const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
-  a.pvmDate.getTime() - b.pvmDate.getTime();
-
-const isInBetween = ({
-  value,
-  values: [start, end],
-}: {
-  value: Date;
-  values: [Date, Date];
-}) => value.getTime() >= start.getTime() && value.getTime() <= end.getTime();
-
 const luoLukuvuodelleKivaAvain = ({
   vuosi,
   pvmIsCurrentSemester,
@@ -785,13 +475,6 @@ const laskeLukukausienNopat = (
   });
 
   return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
-};
-
-const luoKivaAvainReducelle = (pvmDate: Date) => {
-  const vuosi = pvmDate.getFullYear();
-  const kuukausi = pvmDate.toLocaleString('fi', { month: 'long' });
-
-  return `${kuukausi} ${vuosi}`;
 };
 
 // TODO: Remove any & extract interface
@@ -1106,45 +789,6 @@ const piirraRandomStatistiikkaa = ({
   arvioidaanKäytetytOpiskelutunnit(op);
 };
 
-const minFontSize = 7;
-const maxFontSize = 28;
-
-const countFontSize = ({
-  val,
-  minValue,
-  maxValue,
-}: {
-  val: number;
-  minValue: number;
-  maxValue: number;
-}) =>
-  val > minValue
-    ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
-    : 1;
-
-// TODO: Typings
-const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
-  const minValue = min(Object.values(words));
-  const maxValue = max(Object.values(words));
-
-  const content = Object.keys(words)
-    .map(key => ({
-      key,
-      fontSize: countFontSize({ minValue, maxValue, val: words[key] }),
-      count: words[key],
-    }))
-    .map(
-      ({ fontSize, key, count }) =>
-        `<span style="font-size: ${fontSize}px;" title="${key} on mainittu ${count} kertaa suorituksissasi">${key}</span>`,
-    )
-    .join(' ');
-
-  setHtmlContent({
-    content,
-    id: 'tagipilvi',
-  });
-};
-
 // TODO: Typings
 const undefinedStuffFilter = (item: Course) => item.luennoitsija !== undefined;
 
@@ -1199,12 +843,6 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
       },
     ],
   });
-
-const parsiLaitoksenKoodi = (lyhenne: string) =>
-  lyhenne
-    .replace(/^(ay|a)/i, '')
-    .replace(/(-|_)[\d\D]+/i, '')
-    .replace(/[\d]+/, '');
 
 // TODO: Typings
 const grouppaaEriLaitostenKurssit = stuff =>
@@ -1416,7 +1054,7 @@ const start = () => {
     ),
   });
 
-  kuunteleAsijoita(); // 👂
+  kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };
 
 start();

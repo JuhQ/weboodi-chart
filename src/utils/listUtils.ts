@@ -1,4 +1,6 @@
-import { Paivays } from '../interfaces/Interfaces';
+import { Course, Paivays } from '../interfaces/Interfaces';
+import { putsaaTeksti, toLowerCase } from './stringUtils';
+import { isArray } from './validators';
 
 const notEmpty = (data: string) => data.length > 0;
 const notEmptyList = <T>(data: T[]) => data.length > 0;
@@ -27,6 +29,37 @@ const sort = (list: any, key: string) =>
 const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
   list.find(val => val.pvm === key);
 
+// TODO: add test
+const findFromKurssiTietokanta = ({ db, lyhenne }) =>
+  Object.keys(db).reduce((acc, key) => {
+    const courseFound =
+      !acc.length &&
+      isArray(db[key]) &&
+      db[key].find(({ keys }) =>
+        keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
+      );
+
+    return (
+      acc ||
+      (isArray(db[key])
+        ? courseFound
+          ? courseFound.name
+          : acc
+        : findFromKurssiTietokanta({ db: db[key], lyhenne }))
+    );
+  }, '');
+
+// TODO: add test
+const createCoursesArray = target =>
+  target.value
+    .split(',')
+    .map(putsaaTeksti)
+    .filter(notEmpty);
+
+// TODO: add test
+const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
+  a.pvmDate.getTime() - b.pvmDate.getTime();
+
 export {
   notEmpty,
   notEmptyList,
@@ -37,4 +70,7 @@ export {
   mapInvoke,
   sort,
   findPvm,
+  sorttaaStuffLukukausienMukaan,
+  findFromKurssiTietokanta,
+  createCoursesArray,
 };
