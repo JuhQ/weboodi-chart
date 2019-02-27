@@ -2,7 +2,7 @@ import 'mocha';
 
 import { expect } from 'chai';
 
-import { add, average, sum } from './numberUtils';
+import { add, average, laskePainotettuKeskiarvo, sum } from './numberUtils';
 
 describe('Number utils', () => {
   describe('add()', () => {
@@ -33,6 +33,56 @@ describe('Number utils', () => {
 
     it('Should return correct average #2', () => {
       expect(average([1, 0, 0])).to.equal(1 / 3);
+    });
+  });
+
+  describe('laskePainotettuKeskiarvo()', () => {
+    it('Should count painotettu keskiarvo when every entry has a grade', () => {
+      expect(
+        laskePainotettuKeskiarvo([
+          { arvosana: 1, op: 5 },
+          { arvosana: 2, op: 5 },
+          { arvosana: 3, op: 5 },
+          { arvosana: 4, op: 5 },
+          { arvosana: 3, op: 5 },
+        ]),
+      ).to.equal('2.60');
+    });
+
+    it('Should count painotettu keskiarvo when every entry has a grade and one entry has 10 op', () => {
+      expect(
+        laskePainotettuKeskiarvo([
+          { arvosana: 1, op: 5 },
+          { arvosana: 2, op: 5 },
+          { arvosana: 3, op: 5 },
+          { arvosana: 4, op: 5 },
+          { arvosana: 3, op: 10 },
+        ]),
+      ).to.equal('2.67');
+    });
+
+    it('Should count painotettu keskiarvo when one of the entries has hyv grade', () => {
+      expect(
+        laskePainotettuKeskiarvo([
+          { arvosana: 1, op: 5 },
+          { arvosana: 2, op: 5 },
+          { arvosana: 'hyv', op: 5 },
+          { arvosana: 4, op: 5 },
+          { arvosana: 3, op: 5 },
+        ]),
+      ).to.equal('2.50');
+    });
+
+    it('Should return NaN when every grade is hyv', () => {
+      expect(
+        laskePainotettuKeskiarvo([
+          { arvosana: 'hyv', op: 5 },
+          { arvosana: 'hyv', op: 5 },
+          { arvosana: 'hyv', op: 5 },
+          { arvosana: 'hyv', op: 5 },
+          { arvosana: 'hyv', op: 5 },
+        ]),
+      ).to.eql(NaN);
     });
   });
 });
