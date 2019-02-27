@@ -1,8 +1,10 @@
-const sum = (a: number, b: number): number => a + b;
+const add = (a: number, b: number): number => a + b;
 
-const average = (list: number[]): number => list.reduce(sum, 0) / list.length;
+const sum = (list: number[]): number => list.reduce(add, 0);
+
+const average = (list: number[]): number => sum(list) / list.length;
 
 const nameIncludesAvoinYo = (name: string) =>
   name.includes('avoin yo') || name.includes('open uni');
 
-export { sum, average, nameIncludesAvoinYo };
+export { add, average, sum, nameIncludesAvoinYo };

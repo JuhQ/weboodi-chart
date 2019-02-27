@@ -2,20 +2,27 @@ import 'mocha';
 
 import { expect } from 'chai';
 
-import { average, sum } from './numberUtils';
+import { add, average, sum } from './numberUtils';
 
 describe('Number utils', () => {
+  describe('add()', () => {
+    it('Should return correct add #1', () => {
+      expect(add(1, 2)).to.equal(3);
+    });
+
+    it('Should return correct add #2', () => {
+      expect(add(0, 2)).to.equal(2);
+    });
+
+    it('Should return correct add #2', () => {
+      expect(add(2, 0)).to.equal(2);
+    });
+  });
+
   describe('sum()', () => {
-    it('Should return correct sum #1', () => {
-      expect(sum(1, 2)).to.equal(3);
-    });
-
-    it('Should return correct sum #2', () => {
-      expect(sum(0, 2)).to.equal(2);
-    });
-
-    it('Should return correct sum #2', () => {
-      expect(sum(2, 0)).to.equal(2);
+    it('Should sum values together', () => {
+      expect(sum([1, 2])).to.equal(3);
+      expect(sum([1, 2, 3])).to.equal(6);
     });
   });
 

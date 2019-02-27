@@ -39,7 +39,7 @@ import {
   takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
-import { average, nameIncludesAvoinYo, sum } from './utils/numberUtils';
+import { add, average, nameIncludesAvoinYo, sum } from './utils/numberUtils';
 import {
   getLaitos,
   luoKivaAvainReducelle,
@@ -190,7 +190,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
           arvosanat,
           keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : 'hyv',
           op: map(luennot, 'op'),
-          totalOp: map(luennot, 'op').reduce(sum, 0),
+          totalOp: sum(map(luennot, 'op')),
         },
       };
     })
@@ -654,7 +654,7 @@ const laskePainotettuKeskiarvo = data => {
     arvosanallisetOpintosuoritukset.reduce(
       (acc, { op, arvosana }) => acc + arvosana * op,
       0,
-    ) / map(arvosanallisetOpintosuoritukset, 'op').reduce(sum, 0)
+    ) / sum(map(arvosanallisetOpintosuoritukset, 'op'))
   ).toFixed(2);
 };
 
@@ -869,19 +869,16 @@ const start = () => {
     pääaine: pääaineenMenestys,
     sivuaineet: sivuaineidenMenestys,
     luennoitsijamaara: luennoitsijat.length,
-    op: map(stuff, 'op').reduce(sum, 0),
+    op: sum(map(stuff, 'op')),
     openUniMaara: map(stuff, 'kurssi')
       .map(toLowerCase)
       .filter(nameIncludesAvoinYo).length,
     openUniOp: stuff
       .filter(({ kurssi }) => nameIncludesAvoinYo(toLowerCase(kurssi)))
       .map(({ op }) => op)
-      .reduce(sum, 0),
+      .reduce(add, 0),
     hyvMaara: map(stuff, 'arvosana').filter(isNaN).length,
-    hyvOp: map(stuff.filter(({ arvosana }) => isNaN(arvosana)), 'op').reduce(
-      sum,
-      0,
-    ),
+    hyvOp: sum(map(stuff.filter(({ arvosana }) => isNaN(arvosana)), 'op')),
   });
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
