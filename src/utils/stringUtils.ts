@@ -3,7 +3,6 @@ import { isArray } from './validators';
 
 const toLowerCase = (str: string) => str.toLowerCase();
 
-// TODO: add tests
 const putsaaTeksti = (str: unknown) =>
   typeof str === 'string' ? str.replace(/&nbsp;/g, ' ').trim() : '';
 
@@ -33,7 +32,6 @@ const findLaitos = ({ db, lyhenne, initial = '', parentKey = '' }) =>
     );
   }, initial);
 
-// TODO: add tests
 const parsiLaitoksenKoodi = (lyhenne: string) => {
   const lyhennettyLyhenne = lyhenne
     .replace(/^(ay|a)/i, '')
@@ -54,14 +52,12 @@ const parsiLaitoksenKoodi = (lyhenne: string) => {
   return lyhennettyLyhenne;
 };
 
-// TODO: add tests
 const getLaitos = lyhenne => {
   const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
 
   return (laitoksenKoodi.length ? laitoksenKoodi : 'emt').toUpperCase();
 };
 
-// TODO: add tests
 const luoKivaAvainReducelle = (pvmDate: Date) => {
   const vuosi = pvmDate.getFullYear();
   const kuukausi = pvmDate.toLocaleString('fi', { month: 'long' });
@@ -69,30 +65,26 @@ const luoKivaAvainReducelle = (pvmDate: Date) => {
   return `${kuukausi} ${vuosi}`;
 };
 
-// TODO: add tests
 const poistaAvoinKurssiNimestä = (kurssi: string) =>
   kurssi
     .replace('Avoin yo:', '')
     .replace('Open uni:', '')
     .trim();
 
-// TODO: add tests
 const poistaSulut = (str: string) => str.replace(/\(|\)/g, '').trim();
 
-// TODO: add tests
 const poistaPilkut = (str: string) => str.replace(',', '').trim();
-// TODO: add tests
+
 const poistaKaksoispisteet = (str: string) => str.replace(':', '').trim();
 
 const liianLyhytNimiSanaPilveen = 2;
 
-// TODO: add tests
 const poistaLiianLyhyetNimet = (str: string) =>
   str.length > liianLyhytNimiSanaPilveen;
 
-// TODO: add tests
 const nameIncludesAvoinYo = (name: string) =>
-  name.includes('avoin yo') || name.includes('open uni');
+  name.toLowerCase().includes('avoin yo') ||
+  name.toLowerCase().includes('open uni');
 
 export {
   toLowerCase,
