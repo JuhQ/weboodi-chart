@@ -24,6 +24,7 @@ import { draw, drawPie } from './utils/draw';
 import { negate } from './utils/helpers';
 import { kuunteleAsijoita } from './utils/listeners';
 import {
+  atleastThreeItemsInList,
   contains,
   findFromKurssiTietokanta,
   findOpintoByLyhenne,
@@ -39,10 +40,16 @@ import {
   takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
-import { add, average, nameIncludesAvoinYo, sum } from './utils/numberUtils';
+import {
+  add,
+  average,
+  laskePainotettuKeskiarvo,
+  sum,
+} from './utils/numberUtils';
 import {
   getLaitos,
   luoKivaAvainReducelle,
+  nameIncludesAvoinYo,
   poistaAvoinKurssiNimestä,
   poistaKaksoispisteet,
   poistaLiianLyhyetNimet,
@@ -132,7 +139,7 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
     .map(item => map(item, 'textContent').map(putsaaTeksti)) // Return type is string[]
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
-    .filter(item => item.length > 3)
+    .filter(atleastThreeItemsInList)
     // @ts-ignore
     .map(muutaArrayKivaksiObjektiksi)
     .filter(({ op }) => !isNaN(op))
@@ -642,20 +649,6 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   );
 
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
-};
-
-// TODO: Typings
-const laskePainotettuKeskiarvo = data => {
-  const arvosanallisetOpintosuoritukset = data.filter(
-    ({ arvosana }) => !isNaN(arvosana),
-  );
-
-  return (
-    arvosanallisetOpintosuoritukset.reduce(
-      (acc, { op, arvosana }) => acc + arvosana * op,
-      0,
-    ) / sum(map(arvosanallisetOpintosuoritukset, 'op'))
-  ).toFixed(2);
 };
 
 // TODO: Typings

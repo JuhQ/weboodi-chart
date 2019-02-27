@@ -4,12 +4,8 @@ import { isArray } from './validators';
 const toLowerCase = (str: string) => str.toLowerCase();
 
 // TODO: add tests
-const putsaaTeksti = (str: unknown) => {
-  if (typeof str === 'string') {
-    return str.replace(/&nbsp;/g, ' ').trim();
-  }
-  return '';
-};
+const putsaaTeksti = (str: unknown) =>
+  typeof str === 'string' ? str.replace(/&nbsp;/g, ' ').trim() : '';
 
 export const searchForCourseFromList = ({ acc, db, key, lyhenne }) =>
   !acc.length &&
@@ -94,11 +90,16 @@ const liianLyhytNimiSanaPilveen = 2;
 const poistaLiianLyhyetNimet = (str: string) =>
   str.length > liianLyhytNimiSanaPilveen;
 
+// TODO: add tests
+const nameIncludesAvoinYo = (name: string) =>
+  name.includes('avoin yo') || name.includes('open uni');
+
 export {
   toLowerCase,
   putsaaTeksti,
   poistaAvoinKurssiNimestä,
   poistaSulut,
+  nameIncludesAvoinYo,
   getLaitos,
   poistaPilkut,
   poistaKaksoispisteet,

@@ -67,28 +67,28 @@ const html = ({
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen perusopintokurssisi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
+          Merkitse tähän listaan pilkulla erottaen pääaineesi perusopinnot. Esimerkki: A582103,A581325<br/>
           <input type="text" name="perusOpinnot" value="${perusOpinnot}" />
         </label>
       </p>
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen aineopintokurssi pääaineesta, kas näin vaikkapa: A582103,A581325<br/>
+          Merkitse tähän listaan pilkulla erottaen pääaineesi aineopinnot. Esimerkki: A582103,A581325<br/>
           <input type="text" name="aineOpinnot" value="${aineOpinnot}" />
         </label>
       </p>
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pääaineesi tunnus, vaikka näin: TKT<br/>
+          Merkitse tähän pääaineesi lyhenne. Esimerkki: TKT<br/>
           <input type="text" name="pääaine" value="${pääaine}" />
         </label>
       </p>
 
       <p>
         <label style="margin-bottom:30px;">
-          Merkkaa tähän inputtiin pilkulla erottaen sivuaineesi tunnukset, vaikka näin: TKT,MAT<br/>
+          Merkitse tähän listaan pilkulla erottaen sivuaineesi lyhenteet. Esimerkki: TKT,MAT<br/>
           <input type="text" name="sivuaineet" value="${sivuaineet.join(
             ',',
           )}" />

@@ -82,6 +82,10 @@ const partition = (list, predicate) => [
 const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
   opinnot.find(item => lyhenne === item.lyhenne);
 
+// TODO: Typings
+// TODO: add test
+const atleastThreeItemsInList = list => list.length > 3;
+
 export {
   notEmpty,
   partition,
@@ -90,6 +94,7 @@ export {
   min,
   takeUntil,
   max,
+  atleastThreeItemsInList,
   laskeStuffistaHalututJutut,
   contains,
   mapInvoke,
