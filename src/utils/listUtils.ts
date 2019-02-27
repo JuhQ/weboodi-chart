@@ -22,14 +22,12 @@ const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
 
 const mapInvoke = (list, method) => list.map(item => item[method](item));
 
-// TODO: Remove any
-const sort = (list: any, key: string) =>
+const sort = (list: any[], key: string) =>
   [...list].sort((a: any, b: any) => b[key] - a[key]);
 
 const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
   list.find(val => val.pvm === key);
 
-// TODO: add test
 const findFromKurssiTietokanta = ({ db, lyhenne }) =>
   Object.keys(db).reduce((acc, key) => {
     const courseFound = searchForCourseFromList({ acc, db, key, lyhenne });
@@ -44,23 +42,19 @@ const findFromKurssiTietokanta = ({ db, lyhenne }) =>
     );
   }, '');
 
-// TODO: add test
 const createCoursesArray = target =>
   target.value
     .split(',')
     .map(putsaaTeksti)
     .filter(notEmpty);
 
-// TODO: add test
 const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
   a.pvmDate.getTime() - b.pvmDate.getTime();
 
 // TODO: Typings
-// TODO: add test
 const takeUntil = (list, n) => list.slice(0, n);
 
 // TODO: Typings
-// TODO: add test
 const laskeStuffistaHalututJutut = ({ stuff, key }) =>
   stuff.reduce(
     (acc, item) => ({
@@ -71,19 +65,16 @@ const laskeStuffistaHalututJutut = ({ stuff, key }) =>
   );
 
 // TODO: Typings
-// TODO: add test
 const partition = (list, predicate) => [
   list.filter(negate(predicate)),
   list.filter(predicate),
 ];
 
 // TODO: Typings
-// TODO: add test
 const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
   opinnot.find(item => lyhenne === item.lyhenne);
 
 // TODO: Typings
-// TODO: add test
 const atleastThreeItemsInList = list => list.length > 3;
 
 export {

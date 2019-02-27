@@ -3,15 +3,24 @@ import 'mocha';
 import { expect } from 'chai';
 
 import {
+  atleastThreeItemsInList,
   contains,
+  createCoursesArray,
+  findFromKurssiTietokanta,
+  findOpintoByLyhenne,
   findPvm,
+  laskeStuffistaHalututJutut,
   map,
   mapInvoke,
   max,
   min,
   notEmpty,
+  partition,
   sort,
+  sorttaaStuffLukukausienMukaan,
+  takeUntil,
 } from './listUtils';
+import { isTruthy } from './validators';
 
 describe('List utils', () => {
   describe('notEmpty()', () => {
@@ -152,6 +161,141 @@ describe('List utils', () => {
 
     it('Should not find a value', () => {
       expect(findPvm([{ pvm: '2019' }], '2020')).to.eql(undefined);
+    });
+  });
+
+  describe('atleastThreeItemsInList()', () => {
+    it('Should return true when there are more than three items in list', () => {
+      expect(atleastThreeItemsInList([1, 2, 3, 4])).to.equal(true);
+    });
+
+    it('Should return false when there are three items in list', () => {
+      expect(atleastThreeItemsInList([1, 2, 3])).to.equal(false);
+    });
+
+    it('Should return false when there are less than three items in list', () => {
+      expect(atleastThreeItemsInList([1, 2])).to.equal(false);
+    });
+
+    it('Should return false when the list is empty', () => {
+      expect(atleastThreeItemsInList([])).to.equal(false);
+    });
+  });
+
+  describe('findOpintoByLyhenne()', () => {
+    it('Should find a row', () => {
+      expect(
+        findOpintoByLyhenne({ opinnot: [{ lyhenne: 'jep' }], lyhenne: 'jep' }),
+      ).to.eql({ lyhenne: 'jep' });
+    });
+
+    it('Should not find a row', () => {
+      expect(
+        findOpintoByLyhenne({ opinnot: [{ lyhenne: 'juu' }], lyhenne: 'jep' }),
+      ).to.equal(undefined);
+    });
+
+    it('Should not find anything from an empty list', () => {
+      expect(findOpintoByLyhenne({ opinnot: [], lyhenne: 'jep' })).to.equal(
+        undefined,
+      );
+    });
+  });
+
+  describe('partition()', () => {
+    it('Should partion a list with isTruthy', () => {
+      expect(partition([true, false], isTruthy)).to.eql([[false], [true]]);
+    });
+  });
+
+  describe('takeUntil()', () => {
+    it('Should return first three items from list', () => {
+      expect(takeUntil([1, 2, 3, 4, 5], 3)).to.eql([1, 2, 3]);
+    });
+  });
+
+  describe('sorttaaStuffLukukausienMukaan()', () => {
+    it('Should do something here', () => {
+      expect(
+        sorttaaStuffLukukausienMukaan(
+          {
+            arvosana: 0,
+            op: '0',
+            cumulativeOp: 0,
+            kurssi: '',
+            lyhenne: '',
+            pvm: '',
+            pvmDate: new Date(1551294958470),
+          },
+          {
+            arvosana: 0,
+            op: '0',
+            cumulativeOp: 0,
+            kurssi: '',
+            lyhenne: '',
+            pvm: '',
+            pvmDate: new Date(1551294933470),
+          },
+        ),
+      ).to.equal(25000);
+    });
+  });
+
+  describe('laskeStuffistaHalututJutut()', () => {
+    it('Should do something with this too', () => {
+      expect(
+        laskeStuffistaHalututJutut({
+          stuff: [{ op: 1 }, { op: 2 }, { op: 2 }],
+          key: 'op',
+        }),
+      ).to.eql({ 1: 1, 2: 2 });
+    });
+  });
+
+  describe('createCoursesArray()', () => {
+    it('Should create a list based on given values separated by a comma', () => {
+      expect(createCoursesArray({ value: 'jepa, jee' })).to.eql([
+        'jepa',
+        'jee',
+      ]);
+    });
+  });
+
+  describe('findFromKurssiTietokanta()', () => {
+    it('Should find a course name based on the code', () => {
+      expect(
+        findFromKurssiTietokanta({
+          db: {
+            tkt: {
+              perusopinnot: [
+                {
+                  name: 'Johdatus tietojenkäsittelytieteeseen',
+                  keys: ['TKT10001', 'AYTKT10001', '582102', 'A582102'],
+                },
+              ],
+            },
+          },
+          lyhenne: 'TKT10001',
+        }),
+      ).to.equal('Johdatus tietojenkäsittelytieteeseen');
+    });
+
+    it('Should not find a course name based on the code that does not exist', () => {
+      expect(
+        findFromKurssiTietokanta({
+          db: {
+            tkt: {
+              perusopinnot: [
+                {
+                  name: 'Johdatus tietojenkäsittelytieteeseen',
+                  keys: ['TKT10001', 'AYTKT10001', '582102', 'A582102'],
+                },
+              ],
+            },
+          },
+          lyhenne: 'SOMETHING_ELSE',
+        }),
+      ).to.equal('');
     });
   });
 });
