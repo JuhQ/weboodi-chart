@@ -83,3 +83,16 @@ export interface DrawLuennoitsijatParams {
   lista: any[];
   luennoitsijatElement?: HTMLElement;
 }
+
+interface SingleCourse {
+  name: string;
+  keys: string[];
+}
+
+interface StudyType {
+  [studyType: string]: SingleCourse[];
+}
+
+export interface CourseDb {
+  [aine: string]: StudyType;
+}

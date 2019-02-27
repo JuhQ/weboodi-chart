@@ -1,15 +1,4 @@
-export interface SingleCourse {
-  name: string;
-  keys: string[];
-}
-
-export interface CourseDb {
-  [aine: string]: StudyType;
-}
-
-export interface StudyType {
-  [studyType: string]: SingleCourse[];
-}
+import { CourseDb } from '../interfaces/Interfaces';
 
 const kurssitietokanta: CourseDb = {
   tkt: {
@@ -313,6 +302,10 @@ const kurssitietokanta: CourseDb = {
         keys: ['MAT21014', 'AYMAT21014'],
       },
       {
+        name: 'Johdatus logiikkaan II',
+        keys: ['MAT21015', 'AYMAT21015'],
+      },
+      {
         name: 'Differentiaalilaskenta',
         keys: ['MAT11004', 'AYMAT11004', '57117', 'A57117'],
       },
@@ -352,6 +345,114 @@ const kurssitietokanta: CourseDb = {
         name: 'Tilastotiede ja R tutuksi II',
         keys: ['MAT12002', 'AYMAT12002'],
       },
+      {
+        name: 'Sarjat',
+        keys: ['MAT21002', 'AYMAT21002'],
+      },
+      {
+        name: 'Tilastollinen päättely II',
+        keys: ['MAT22003', 'AYMAT22003'],
+      },
+      {
+        name: 'Tilastotieteen juuret',
+        keys: ['MAT22010', 'AYMAT22010'],
+      },
+      {
+        name: 'Todennäköisyyslaskenta IIa',
+        keys: ['MAT22001', 'AYMAT22001'],
+      },
+      {
+        name: 'Todennäköisyyslaskenta IIb',
+        keys: ['MAT22002', 'AYMAT22002'],
+      },
+      {
+        name: 'Topologia IA',
+        keys: ['MAT21005', 'AYMAT21005'],
+      },
+      {
+        name: 'Topologia IB',
+        keys: ['MAT21006', 'AYMAT21006'],
+      },
+      {
+        name: 'Vektorianalyysi I',
+        keys: ['MAT21003', 'AYMAT21003'],
+      },
+      {
+        name: 'Vektorianalyysi II',
+        keys: ['MAT21020', 'AYMAT21020'],
+      },
+      {
+        name: 'Yleistetyt lineaariset mallit I',
+        keys: ['MAT22006', 'AYMAT22006'],
+      },
+      {
+        name: 'Matriisilaskennan sovelluksia',
+        keys: ['MAT21019', 'AYMAT21019'],
+      },
+      {
+        name: 'Mitta ja integraali',
+        keys: ['MAT21007', 'AYMAT21007'],
+      },
+      {
+        name: 'Johdatus lukuteoriaan',
+        keys: ['MAT21016', 'AYMAT21016'],
+      },
+      {
+        name: 'Kombinatoriikka',
+        keys: ['MAT21018', 'AYMAT21018'],
+      },
+      {
+        name: 'Lineaarialgebra ja matriisilaskenta II',
+        keys: ['MAT21001', 'AYMAT21001'],
+      },
+      {
+        name: 'Lineaarialgebra ja matriisilaskenta III',
+        keys: ['MAT22011', 'AYMAT22011'],
+      },
+      {
+        name: 'Lineaariset mallit I',
+        keys: ['MAT22004', 'AYMAT22004'],
+      },
+      {
+        name: 'Lineaariset mallit II',
+        keys: ['MAT22009', 'AYMAT22009'],
+      },
+      {
+        name: 'Bayesian inference',
+        keys: ['MAT22005', 'AYMAT22005'],
+      },
+      {
+        name: 'Differentiaaliyhtälöt I',
+        keys: ['MAT21012', 'AYMAT21012'],
+      },
+      {
+        name: 'Differentiaaliyhtälöt II',
+        keys: ['MAT21013', 'AYMAT21013'],
+      },
+      {
+        name: 'Elements of set theory/Joukko-opin alkeet',
+        keys: ['MAT21017', 'AYMAT21017'],
+      },
+      {
+        name: 'Algebralliset rakenteet I',
+        keys: ['MAT21010', 'AYMAT21010'],
+      },
+      {
+        name: 'Algebralliset rakenteet II',
+        keys: ['MAT21011', 'AYMAT21011'],
+      },
+    ],
+  },
+  eduk: {
+    perusopinnot: [
+      {
+        name: 'Oppimisen ja opetuksen perusteet',
+        keys: ['EDUK303', 'AYEDUK303'],
+      },
+      { name: 'Johdatus kasvatustieteisiin', keys: ['EDUK301', 'AYEDUK301'] },
+    ],
+    vapaavalintaisia: [
+      { name: 'Johdatus mediakasvatukseen', keys: ['610046', 'A610046'] },
     ],
   },
 };
@@ -360,5 +461,5 @@ export { kurssitietokanta };
 
 // {
 //   name: '',
-//   keys: ['', ''],
+//   keys: ['', 'AY'],
 // },
