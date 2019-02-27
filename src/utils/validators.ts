@@ -1,4 +1,4 @@
-const isTruthy = v => v;
+const isTruthy = v => !!v;
 
 const isString = (val: unknown): val is string => typeof val === 'string';
 
