@@ -10,28 +10,29 @@ import {
   max,
   min,
   notEmpty,
-  notEmptyList,
   sort,
 } from './listUtils';
 
 describe('List utils', () => {
   describe('notEmpty()', () => {
-    it('Should return false if a string is empty', () => {
-      expect(notEmpty('')).to.equal(false);
+    describe('String', () => {
+      it('Should return false if a string is empty', () => {
+        expect(notEmpty('')).to.equal(false);
+      });
+
+      it('Should return true if a string is not empty', () => {
+        expect(notEmpty('Hello')).to.equal(true);
+      });
     });
 
-    it('Should return true if a string is not empty', () => {
-      expect(notEmpty('Hello')).to.equal(true);
-    });
-  });
+    describe('List', () => {
+      it('Should return false if a list is empty', () => {
+        expect(notEmpty([])).to.equal(false);
+      });
 
-  describe('notEmptyList()', () => {
-    it('Should return false if a list is empty', () => {
-      expect(notEmptyList([])).to.equal(false);
-    });
-
-    it('Should return true if a list is not empty', () => {
-      expect(notEmptyList(['a'])).to.equal(true);
+      it('Should return true if a list is not empty', () => {
+        expect(notEmpty(['a'])).to.equal(true);
+      });
     });
   });
 

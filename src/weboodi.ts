@@ -26,23 +26,23 @@ import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
   findFromKurssiTietokanta,
+  findOpintoByLyhenne,
   findPvm,
   laskeStuffistaHalututJutut,
   map,
   mapInvoke,
   max,
   notEmpty,
-  notEmptyList,
   partition,
   sort,
   sorttaaStuffLukukausienMukaan,
   takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
-import { average, sum } from './utils/numberUtils';
+import { average, nameIncludesAvoinYo, sum } from './utils/numberUtils';
 import {
+  getLaitos,
   luoKivaAvainReducelle,
-  parsiLaitoksenKoodi,
   poistaAvoinKurssiNimestä,
   poistaKaksoispisteet,
   poistaLiianLyhyetNimet,
@@ -128,7 +128,7 @@ const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i, list) => [
 const makeSomeStuff = (duplikaattiKurssit: string[]) =>
   hommaaMeilleListaAsijoistaDommista()
     .map(item => [...Array.from(item.querySelectorAll('td'))])
-    .filter(elementArray => notEmptyList(elementArray)) // Filter empty lists
+    .filter(notEmpty)
     .map(item => map(item, 'textContent').map(putsaaTeksti)) // Return type is string[]
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
@@ -233,7 +233,7 @@ const removeDuplicateCourses = coursesDone => (acc, item) =>
 // TODO: Typings
 const removeAvoinFromKurssiNimi = item => ({
   ...item,
-  kurssi: item.kurssi.replace('Avoin yo: ', '').replace('Open uni: ', ''),
+  kurssi: poistaAvoinKurssiNimestä(item.kurssi),
 });
 
 // TODO: Typings
@@ -256,26 +256,24 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
     .map(removeAvoinFromKurssiNimi);
 
   const greatSuccess =
-    coursesDone.length === opintoData.length ? 'All done, nice!' : '';
+    coursesDone.length >= opintoData.length ? 'All done, nice!' : '';
 
   setHtmlContent({
     id: `${id}-progress`,
     content: `${coursesDone.length}/${opintoData.length} ${greatSuccess}`,
   });
 
+  const percentage = ((1 / opintoData.length) * 100).toFixed(2);
+
   drawPie({
     id,
     labels: map(opintoData, 'kurssi'),
-    datasets: opintoData.map(() => ((1 / opintoData.length) * 100).toFixed(2)),
+    datasets: opintoData.map(() => percentage),
     backgroundColor: opintoData.map(({ done }) =>
       done ? 'lightgreen' : 'lightgray',
     ),
   });
 };
-
-// TODO: Typings
-const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
-  opinnot.find(item => lyhenne === item.lyhenne);
 
 // TODO: Typings
 const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
@@ -646,9 +644,6 @@ const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
   return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
 };
 
-const nameIncludesAvoinYo = (name: string) =>
-  name.includes('avoin yo') || name.includes('open uni');
-
 // TODO: Typings
 const laskePainotettuKeskiarvo = data => {
   const arvosanallisetOpintosuoritukset = data.filter(
@@ -717,11 +712,7 @@ const piirräLaitosGraafit = data => {
 const grouppaaEriLaitostenKurssit = stuff =>
   stuff.reduce((acc, kurssi) => {
     const { lyhenne, op, arvosana } = kurssi;
-    const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
-    const laitos = (laitoksenKoodi.length
-      ? laitoksenKoodi
-      : 'emt'
-    ).toUpperCase();
+    const laitos = getLaitos(lyhenne);
     const edellisenKierroksenData = acc[laitos];
     const arvosanat = edellisenKierroksenData
       ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))

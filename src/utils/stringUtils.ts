@@ -59,6 +59,13 @@ const parsiLaitoksenKoodi = (lyhenne: string) => {
 };
 
 // TODO: add tests
+const getLaitos = lyhenne => {
+  const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
+
+  return (laitoksenKoodi.length ? laitoksenKoodi : 'emt').toUpperCase();
+};
+
+// TODO: add tests
 const luoKivaAvainReducelle = (pvmDate: Date) => {
   const vuosi = pvmDate.getFullYear();
   const kuukausi = pvmDate.toLocaleString('fi', { month: 'long' });
@@ -90,9 +97,9 @@ const poistaLiianLyhyetNimet = (str: string) =>
 export {
   toLowerCase,
   putsaaTeksti,
-  parsiLaitoksenKoodi,
   poistaAvoinKurssiNimestä,
   poistaSulut,
+  getLaitos,
   poistaPilkut,
   poistaKaksoispisteet,
   poistaLiianLyhyetNimet,

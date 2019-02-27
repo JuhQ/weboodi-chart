@@ -3,10 +3,9 @@ import { negate } from './helpers';
 import { putsaaTeksti, searchForCourseFromList } from './stringUtils';
 import { isArray } from './validators';
 
-const notEmpty = (data: string) => data.length > 0;
-const notEmptyList = <T>(data: T[]) => data.length > 0;
-const min = (lista: number[]) => Math.min(...lista);
-const max = (lista: number[]) => Math.max(...lista);
+const notEmpty = <T>(data: T[] | string) => data.length > 0;
+const min = (list: number[]) => Math.min(...list);
+const max = (list: number[]) => Math.max(...list);
 const map = <T>(
   list: T[],
   keys: keyof T | Array<keyof T>,
@@ -78,10 +77,15 @@ const partition = (list, predicate) => [
   list.filter(predicate),
 ];
 
+// TODO: Typings
+// TODO: add test
+const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
+  opinnot.find(item => lyhenne === item.lyhenne);
+
 export {
   notEmpty,
   partition,
-  notEmptyList,
+  findOpintoByLyhenne,
   map,
   min,
   takeUntil,
