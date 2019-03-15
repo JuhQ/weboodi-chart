@@ -35,6 +35,7 @@ const html = ({
         <div id="keskiarvo-op-maara"></div>
         <div id="luennoitsijoiden-maara"></div>
         <div id="open-uni-maara"></div>
+        <div id="ainejaperusopintoja"></div>
         <div id="hyv-maara"></div>
         <div id="vuodet-arvio"></div>
         <div id="tunnit-arvio"></div>

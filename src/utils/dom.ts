@@ -145,6 +145,7 @@ export const piirraRandomStatistiikkaa = ({
   kurssimaara,
   luennoitsijamaara,
   op,
+  aineJaPerusopintojenSuoritukset,
   openUniMaara,
   openUniOp,
   hyvMaara,
@@ -186,6 +187,11 @@ export const piirraRandomStatistiikkaa = ({
     id: 'keskiarvo-op-maara',
     content: `Keskiarvolta ${(op / kurssimaara).toFixed(2)} noppaa per kurssi.`,
   });
+  setHtmlContent({
+    id: 'ainejaperusopintoja',
+    content: `Olet suorittanut aine- ja perusopintoja ${aineJaPerusopintojenSuoritukset} noppaa.`,
+  });
+
   if (openUniMaara) {
     piirraAvoimenSuorituksia({ kurssimaara, openUniMaara, openUniOp });
   }

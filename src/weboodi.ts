@@ -779,6 +779,11 @@ const start = () => {
     keskiarvotAineopinnoista,
   } = laskeKeskiarvot({ stuff, keskiarvot, perusOpinnot, aineOpinnot });
 
+  const aineJaPerusopintojenSuoritukset = stuff.filter(
+    ({ lyhenne }) =>
+      perusOpinnot.includes(lyhenne) || aineOpinnot.includes(lyhenne),
+  );
+
   const luennoitsijat = haluaisinTietääLuennoitsijoista(stuff);
 
   const suositutSanat = haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin(
@@ -858,6 +863,9 @@ const start = () => {
     maxKuukausi,
     keskiarvo,
     painotettuKeskiarvo,
+    aineJaPerusopintojenSuoritukset: sum(
+      map(aineJaPerusopintojenSuoritukset, 'op'),
+    ),
     kurssimaara: stuff.length,
     pääaine: pääaineenMenestys,
     sivuaineet: sivuaineidenMenestys,
