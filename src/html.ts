@@ -39,6 +39,7 @@ const html = ({
         <div id="hyv-maara"></div>
         <div id="vuodet-arvio"></div>
         <div id="tunnit-arvio"></div>
+        <div id="kandi-gradu-prosentit"></div>
         <div id="max-kuukausi-nopat"></div>
         <div id="keskiarvo"></div>
         <div id="pääaine-data"></div>

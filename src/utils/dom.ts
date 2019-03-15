@@ -123,6 +123,15 @@ const arvioidaanOpintoVuodetDomiin = op => {
   });
 };
 
+const prosentitKandilleTaiGradulle = op => {
+  const kandi = ((op / 180) * 100).toFixed(2);
+  const gradu = (((op - 180) / 120) * 100).toFixed(2);
+  setHtmlContent({
+    id: 'kandi-gradu-prosentit',
+    content: `Jos opiskelet kandia, arvioin sinun suorittaneen ${kandi}% opinnoistasi. <span title="((nopat - 180 op kandista) / 120) * 100">Jos opiskelet gradua, arvioin sinun suorittaneen ${gradu}% opinnoistasi.</span>`,
+  });
+};
+
 // TODO: Typings
 const arvioidaanKäytetytOpiskelutunnit = op => {
   const tunnit = (op * 27).toFixed(2);
@@ -223,4 +232,5 @@ export const piirraRandomStatistiikkaa = ({
 
   arvioidaanOpintoVuodetDomiin(op);
   arvioidaanKäytetytOpiskelutunnit(op);
+  prosentitKandilleTaiGradulle(op);
 };
