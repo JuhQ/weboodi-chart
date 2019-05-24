@@ -105,7 +105,7 @@ const html = ({
 
       <p>
         <button id="kliketi-klik-esitäyttö-2017">
-          Esitäytä perus- ja aineopinnot tkt kandiopinnoilla (2017 &ge; ) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
+          Esitäytä perus- ja aineopinnot tkt kandiopinnoilla (2017 &le; ) huom: sisältää myös avoimen ja vanhan malliset lyhenteet
         </button>
       </p>
 
