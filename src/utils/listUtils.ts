@@ -1,4 +1,4 @@
-import { Course, Paivays } from '../interfaces/Interfaces';
+import { ConvertedCourse, Course, Paivays } from '../interfaces/Interfaces';
 import { negate } from './helpers';
 import { putsaaTeksti, searchForCourseFromList } from './stringUtils';
 import { isArray } from './validators';
@@ -25,8 +25,10 @@ const mapInvoke = (list, method) => list.map(item => item[method](item));
 const sort = (list: any[], key: string) =>
   [...list].sort((a: any, b: any) => b[key] - a[key]);
 
-const findPvm = <T>(list: Array<T & Paivays>, key: string) =>
-  list.find(val => val.pvm === key);
+const findPvm = <T>(
+  list: ConvertedCourse[],
+  key: string,
+): ConvertedCourse | undefined => list.find(val => val.pvm === key);
 
 const findFromKurssiTietokanta = ({ db, lyhenne }) =>
   Object.keys(db).reduce((acc, key) => {
@@ -75,7 +77,7 @@ const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
   opinnot.find(item => lyhenne === item.lyhenne);
 
 // TODO: Typings
-const atleastThreeItemsInList = list => list.length > 3;
+const atleastThreeItemsInList = list => list && list.length > 3;
 
 export {
   notEmpty,

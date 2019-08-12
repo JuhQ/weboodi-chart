@@ -65,7 +65,7 @@ const luoKivaAvainReducelle = (pvmDate: Date) => {
   return `${kuukausi} ${vuosi}`;
 };
 
-const poistaAvoinKurssiNimestä = (kurssi: string) =>
+const poistaAvoinKurssiNimestä = (kurssi: string): string =>
   kurssi
     .replace('Avoin yo:', '')
     .replace('Open uni:', '')

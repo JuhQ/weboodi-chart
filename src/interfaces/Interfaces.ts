@@ -21,10 +21,10 @@ export type CourseArrToObjParams = [
  * @interface ConvertedCourse
  */
 export interface ConvertedCourse {
-  pvm: string;
+  pvm: Paivays['pvm'];
   kurssi: string;
   lyhenne: string;
-  luennoitsija: string;
+  luennoitsija?: string;
   op: number;
   arvosana: number;
   pvmDate: Date;
@@ -38,15 +38,8 @@ export interface DOMParams {
   sivuaineet: string[];
 }
 
-export interface Course {
-  arvosana: number;
+export interface Course extends ConvertedCourse {
   cumulativeOp: number;
-  kurssi: string;
-  luennoitsija?: string;
-  lyhenne: string;
-  op: string;
-  pvm: string;
-  pvmDate: Date;
 }
 
 export interface Paivays {

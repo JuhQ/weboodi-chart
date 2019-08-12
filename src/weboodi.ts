@@ -86,20 +86,23 @@ const setDailyCumulativeNoppas = ({ pvm, op }) => jee => {
 };
 
 // TODO: Param typings
-const groupThemCourses = stuff =>
+const groupThemCourses = (stuff: ConvertedCourse[]) =>
   stuff
     .reduce(
       (initial, item) =>
         findPvm(initial, item.pvm)
           ? initial.map(setDailyCumulativeNoppas(item))
           : [...initial, item],
-      [],
+      [] as ConvertedCourse[],
     )
     .map(item => ({
       ...item,
       op: item.op <= 10 ? item.op * 10 : item.op,
       realOp: item.op,
     }));
+
+const hanskaaAvatutPaketit = (row: CourseArrToObjParams): boolean =>
+  !row[0].includes('   ');
 
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
@@ -139,6 +142,8 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
     .map(item => map(item, 'textContent').map(putsaaTeksti)) // Return type is string[]
     .filter(([lyhenne]) => !duplikaattiKurssit.includes(lyhenne))
     .reverse()
+    // @ts-ignore
+    .filter(hanskaaAvatutPaketit)
     .filter(atleastThreeItemsInList)
     // @ts-ignore
     .map(muutaArrayKivaksiObjektiksi)
@@ -147,7 +152,7 @@ const makeSomeStuff = (duplikaattiKurssit: string[]) =>
     .reduce(lasketaanpaLopuksiKumulatiivisetNopat, []);
 
 // TODO: Typings
-const annaMulleKeskiarvotKursseista = stuff =>
+const annaMulleKeskiarvotKursseista = (stuff: ConvertedCourse[]) =>
   stuff
     .filter(item => !isNaN(item.arvosana))
     .map((item, i, list) => ({
@@ -175,7 +180,7 @@ const rakennaListaLuennoitsijoista = (initial, item) => [
 ];
 
 // TODO: Typings
-const haluaisinTietääLuennoitsijoista = stuff =>
+const haluaisinTietääLuennoitsijoista = (stuff: ConvertedCourse[]) =>
   stuff
     .reduce(rakennaListaLuennoitsijoista, [])
     .map(item => {
@@ -186,7 +191,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
       const arvosanat = map(
         luennot.filter(item => !isNaN(item.arvosana)),
         'arvosana',
-      );
+      ) as number[];
 
       const keskiarvo = average(arvosanat);
 
@@ -197,7 +202,7 @@ const haluaisinTietääLuennoitsijoista = stuff =>
           arvosanat,
           keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : 'hyv',
           op: map(luennot, 'op'),
-          totalOp: sum(map(luennot, 'op')),
+          totalOp: sum(map(luennot, 'op') as number[]),
         },
       };
     })
@@ -210,8 +215,10 @@ const haluaisinTietääLuennoitsijoista = stuff =>
     );
 
 // TODO: Typings
-const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = stuff =>
-  map(stuff, 'kurssi')
+const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (
+  stuff: ConvertedCourse[],
+) =>
+  (map(stuff, 'kurssi') as string[])
     .map(poistaAvoinKurssiNimestä)
     .map(poistaSulut)
     // @ts-ignore
@@ -418,7 +425,7 @@ const getPvmArray = (pvm: string) => {
     return splitted.map(Number) as [number, number, number];
   }
   // Failsafe
-  throw new Error('getPvmArray(): Parsing date failed');
+  throw new Error(`getPvmArray(): Parsing date failed: ${JSON.stringify(pvm)}`);
 };
 
 const luoLukuvuodelleKivaAvain = ({
@@ -526,7 +533,7 @@ const piirräPerusGraafiNopille = ({
   });
 
 // TODO: Typings
-const piirteleVuosiJuttujaJookosKookosHaliPus = stuff => {
+const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff: Course[]) => {
   const lukukausiGroups = ryhmitteleStuffKivasti({
     stuff,
     fn: laskeLukukausienNopat,
@@ -702,7 +709,7 @@ const piirräLaitosGraafit = data => {
 };
 
 // TODO: Typings
-const grouppaaEriLaitostenKurssit = stuff =>
+const grouppaaEriLaitostenKurssit = (stuff: ConvertedCourse[]) =>
   stuff.reduce((acc, kurssi) => {
     const { lyhenne, op, arvosana } = kurssi;
     const laitos = getLaitos(lyhenne);
@@ -805,7 +812,7 @@ const start = () => {
     ([_, op]) => op === maxKuukausiNopat,
   );
 
-  const { keskiarvo } = [...keskiarvot].pop();
+  const { keskiarvo } = [...keskiarvot].pop() as { keskiarvo: string };
   const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
 
   const arvosanatGroupattuna = laskeStuffistaHalututJutut({

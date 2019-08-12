@@ -2,6 +2,7 @@ import 'mocha';
 
 import { expect } from 'chai';
 
+import { ConvertedCourse } from '../interfaces/Interfaces';
 import {
   atleastThreeItemsInList,
   contains,
@@ -154,13 +155,24 @@ describe('List utils', () => {
     });
   });
 
+  const pvmTestData = {
+    pvm: '2019',
+    kurssi: '',
+    op: 0,
+    lyhenne: '',
+    arvosana: 0,
+    pvmDate: new Date(),
+  };
+
   describe('findPvm()', () => {
     it('Should find a value', () => {
-      expect(findPvm([{ pvm: '2019' }], '2019')).to.eql({ pvm: '2019' });
+      expect(findPvm([pvmTestData], '2019')).to.eql({
+        pvm: '2019',
+      });
     });
 
     it('Should not find a value', () => {
-      expect(findPvm([{ pvm: '2019' }], '2020')).to.eql(undefined);
+      expect(findPvm([pvmTestData], '2020')).to.eql(undefined);
     });
   });
 
@@ -220,7 +232,7 @@ describe('List utils', () => {
         sorttaaStuffLukukausienMukaan(
           {
             arvosana: 0,
-            op: '0',
+            op: 0,
             cumulativeOp: 0,
             kurssi: '',
             lyhenne: '',
@@ -229,7 +241,7 @@ describe('List utils', () => {
           },
           {
             arvosana: 0,
-            op: '0',
+            op: 0,
             cumulativeOp: 0,
             kurssi: '',
             lyhenne: '',
