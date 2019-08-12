@@ -7,7 +7,7 @@ const sum = (list: number[]): number => list.reduce(add, 0);
 const average = (list: number[]): number => sum(list) / list.length;
 
 // TODO: Typings
-const laskePainotettuKeskiarvo = data => {
+const laskePainotettuKeskiarvo = (data: any[]) => {
   const arvosanallisetOpintosuoritukset = data.filter(
     ({ arvosana }) => !isNaN(arvosana),
   );

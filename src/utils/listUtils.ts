@@ -20,7 +20,8 @@ const map = <T>(
 
 const contains = <T>(list: T[], key: T) => list.indexOf(key) > -1;
 
-const mapInvoke = (list, method) => list.map(item => item[method](item));
+const mapInvoke = (list: any[], method: string) =>
+  list.map(item => item[method](item));
 
 const sort = (list: any[], key: string) =>
   [...list].sort((a: any, b: any) => b[key] - a[key]);
@@ -54,12 +55,12 @@ const sorttaaStuffLukukausienMukaan = (a: Course, b: Course) =>
   a.pvmDate.getTime() - b.pvmDate.getTime();
 
 // TODO: Typings
-const takeUntil = (list, n) => list.slice(0, n);
+const takeUntil = (list, n: number) => list.slice(0, n);
 
 // TODO: Typings
 const laskeStuffistaHalututJutut = ({ stuff, key }) =>
   stuff.reduce(
-    (acc, item) => ({
+    (acc, item: ConvertedCourse) => ({
       ...acc,
       [item[key]]: (acc[item[key]] || 0) + 1,
     }),

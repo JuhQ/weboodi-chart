@@ -4,23 +4,22 @@ import { max, min } from './listUtils';
 const minFontSize = 7;
 const maxFontSize = 28;
 
-const countFontSize = ({
-  val,
-  minValue,
-  maxValue,
-}: {
+interface Tags {
   val: number;
   minValue: number;
   maxValue: number;
-}) =>
+}
+
+const countFontSize = ({ val, minValue, maxValue }: Tags): number =>
   val > minValue
     ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
     : 1;
 
 // TODO: Typings
 export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
-  const minValue = min(Object.values(words));
-  const maxValue = max(Object.values(words));
+  const values = Object.values(words);
+  const minValue = min(values);
+  const maxValue = max(values);
 
   const content = Object.keys(words)
     .map(key => ({
@@ -30,7 +29,9 @@ export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
     }))
     .map(
       ({ fontSize, key, count }) =>
-        `<span style="font-size: ${fontSize}px;" title="${key} on mainittu ${count} kertaa suorituksissasi">${key}</span>`,
+        `<span style="font-size: ${fontSize}px;" title="${key} on mainittu ${count} kertaa suorituksissasi">
+          ${key}
+        </span>`,
     )
     .join(' ');
 

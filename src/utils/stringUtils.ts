@@ -1,4 +1,5 @@
 import { kurssitietokanta } from '../data/courses';
+import { ConvertedCourse } from '../interfaces/Interfaces';
 import { isArray } from './validators';
 
 const toLowerCase = (str: string) => str.toLowerCase();
@@ -13,7 +14,7 @@ export const searchForCourseFromList = ({ acc, db, key, lyhenne }) =>
     keys.map(toLowerCase).includes(toLowerCase(lyhenne)),
   );
 
-const findLaitos = ({ db, lyhenne, initial = '', parentKey = '' }) =>
+const findLaitos = ({ db, lyhenne, initial = '', parentKey = '' }): string =>
   Object.keys(db).reduce((acc, key) => {
     const courseFound = searchForCourseFromList({ acc, db, key, lyhenne });
 
@@ -32,7 +33,7 @@ const findLaitos = ({ db, lyhenne, initial = '', parentKey = '' }) =>
     );
   }, initial);
 
-const parsiLaitoksenKoodi = (lyhenne: string) => {
+const parsiLaitoksenKoodi = (lyhenne: string): string => {
   const lyhennettyLyhenne = lyhenne
     .replace(/^(ay|a)/i, '')
     .replace(/(-|_)[\d\D]+/i, '')
@@ -52,20 +53,20 @@ const parsiLaitoksenKoodi = (lyhenne: string) => {
   return lyhennettyLyhenne;
 };
 
-const getLaitos = lyhenne => {
+const getLaitos = (lyhenne: ConvertedCourse['lyhenne']): string => {
   const laitoksenKoodi = parsiLaitoksenKoodi(lyhenne);
 
   return (laitoksenKoodi.length ? laitoksenKoodi : 'emt').toUpperCase();
 };
 
-const luoKivaAvainReducelle = (pvmDate: Date) => {
+const luoKivaAvainReducelle = (pvmDate: ConvertedCourse['pvmDate']): string => {
   const vuosi = pvmDate.getFullYear();
   const kuukausi = pvmDate.toLocaleString('fi', { month: 'long' });
 
   return `${kuukausi} ${vuosi}`;
 };
 
-const poistaAvoinKurssiNimestä = (kurssi: string): string =>
+const poistaAvoinKurssiNimestä = (kurssi: ConvertedCourse['kurssi']): string =>
   kurssi
     .replace('Avoin yo:', '')
     .replace('Open uni:', '')

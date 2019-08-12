@@ -176,7 +176,7 @@ const rakennaListaLuennoitsijoista = (initial, item) => [
     .split(',')
     .map(putsaaTeksti)
     .filter(notEmpty)
-    .map(luennoitsija => ({ ...item, luennoitsija })),
+    .map((luennoitsija: string) => ({ ...item, luennoitsija })),
 ];
 
 // TODO: Typings

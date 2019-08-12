@@ -40,7 +40,7 @@ export const createDom = ({
   perusOpinnot,
   pääaine,
   sivuaineet,
-}: DOMParams) => {
+}: DOMParams): boolean => {
   const listaTaulukko = document.querySelector(suoritusTableSelector);
   const nuggetsExist = document.querySelector('#nuggets');
   const yolo = yolohtml({
@@ -68,7 +68,7 @@ const createLuennoitsijaRivi = ({
   luennoitsija,
   kurssimaara,
   luennot,
-}: LecturerRowParams) => `<p>
+}: LecturerRowParams): string => `<p>
     ${luennoitsija},
     kursseja ${kurssimaara},
     keskiarvo: ${luennot.keskiarvo},
@@ -115,7 +115,7 @@ const laitaHyvaksytytSuorituksetDomiinJeps = ({
 };
 
 // TODO: Typings
-const arvioidaanOpintoVuodetDomiin = op => {
+const arvioidaanOpintoVuodetDomiin = (op: number) => {
   const vuodet = (op / 60).toFixed(2);
   setHtmlContent({
     id: 'vuodet-arvio',
@@ -123,7 +123,7 @@ const arvioidaanOpintoVuodetDomiin = op => {
   });
 };
 
-const prosentitKandilleTaiGradulle = op => {
+const prosentitKandilleTaiGradulle = (op: number) => {
   const kandi = ((op / 180) * 100).toFixed(2);
   const gradu = (((op - 180) / 120) * 100).toFixed(2);
   setHtmlContent({
@@ -133,7 +133,7 @@ const prosentitKandilleTaiGradulle = op => {
 };
 
 // TODO: Typings
-const arvioidaanKäytetytOpiskelutunnit = op => {
+const arvioidaanKäytetytOpiskelutunnit = (op: number) => {
   const tunnit = (op * 27).toFixed(2);
   setHtmlContent({
     id: 'tunnit-arvio',
