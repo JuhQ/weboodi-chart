@@ -80,16 +80,18 @@ export const drawLuennoitsijat = ({
   lista,
   luennoitsijatElement,
 }: DrawLuennoitsijatParams) => {
-  if (luennoitsijatElement !== undefined) {
-    const html = `
-      <div class="luennoitsijat pull-left">
-        <p><strong>${title}</strong></p>
-        ${lista.map(createLuennoitsijaRivi).join('')}
-      </div>
-    `;
-
-    luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
+  if (!luennoitsijatElement) {
+    return;
   }
+
+  const html = `
+    <div class="luennoitsijat pull-left">
+      <p><strong>${title}</strong></p>
+      ${lista.map(createLuennoitsijaRivi).join('')}
+    </div>
+  `;
+
+  luennoitsijatElement.innerHTML = luennoitsijatElement.innerHTML + html;
 };
 
 // TODO: Typings

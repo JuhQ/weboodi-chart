@@ -1,3 +1,4 @@
+import { ConvertedCourse } from '../interfaces/Interfaces';
 import { map } from './listUtils';
 
 const add = (a: number, b: number): number => a + b;
@@ -6,19 +7,17 @@ const sum = (list: number[]): number => list.reduce(add, 0);
 
 const average = (list: number[]): number => sum(list) / list.length;
 
-// TODO: Typings
-const laskePainotettuKeskiarvo = (data: any[]) => {
+const wadap = list =>
+  list.reduce((acc, { op, arvosana }) => acc + arvosana * op, 0) /
+  sum(map(list, 'op') as number[]);
+
+const laskePainotettuKeskiarvo = (data: ConvertedCourse[]): number => {
   const arvosanallisetOpintosuoritukset = data.filter(
-    ({ arvosana }) => !isNaN(arvosana),
+    ({ arvosana }) => arvosana !== 'hyv' && !isNaN(arvosana),
   );
 
   return arvosanallisetOpintosuoritukset.length
-    ? (
-        arvosanallisetOpintosuoritukset.reduce(
-          (acc, { op, arvosana }) => acc + arvosana * op,
-          0,
-        ) / sum(map(arvosanallisetOpintosuoritukset, 'op'))
-      ).toFixed(2)
+    ? Number(wadap(arvosanallisetOpintosuoritukset).toFixed(2))
     : NaN;
 };
 

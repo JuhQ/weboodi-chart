@@ -1,17 +1,18 @@
 import {
-  style,
-  style2,
-  styleBlue,
-  styleBlue2,
-  styleGreen,
-  styleGreen2,
-} from './css';
+  annaMulleKeskiarvotKursseista,
+  laskeKeskiarvot,
+  rakenteleDataSetitKeskiarvoChartille,
+} from './averages';
+import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
 import { ConvertedCourse, Course } from './interfaces/Interfaces';
+import {
+  haluaisinTietääLuennoitsijoista,
+  piirräLuennoitsijaListat,
+} from './luennoitsijat';
 import makeSomeStuff from './parseRecords';
 import {
   createDom,
-  drawLuennoitsijat,
   piirraRandomStatistiikkaa,
   pitäisköDomRakentaa,
   setHtmlContent,
@@ -22,7 +23,6 @@ import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
   findFromKurssiTietokanta,
-  findOpintoByLyhenne,
   findPvm,
   laskeStuffistaHalututJutut,
   map,
@@ -32,7 +32,6 @@ import {
   partition,
   sort,
   sorttaaStuffLukukausienMukaan,
-  takeUntil,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
 import {
@@ -46,14 +45,12 @@ import {
   luoKivaAvainReducelle,
   nameIncludesAvoinYo,
   poistaAvoinKurssiNimestä,
-  poistaKaksoispisteet,
-  poistaLiianLyhyetNimet,
-  poistaPilkut,
-  poistaSulut,
-  putsaaTeksti,
   toLowerCase,
 } from './utils/stringUtils';
-import { piirraRumaTagipilvi } from './utils/tagcloud';
+import {
+  haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin,
+  piirraRumaTagipilvi,
+} from './utils/tagcloud';
 import { isInBetween, isTruthy } from './utils/validators';
 
 const getDuplikaattiKurssit = () =>
@@ -97,90 +94,7 @@ const groupThemCourses = (stuff: ConvertedCourse[]) =>
     }));
 
 // TODO: Typings
-const annaMulleKeskiarvotKursseista = (stuff: ConvertedCourse[]) =>
-  stuff
-    .filter(item => !isNaN(item.arvosana))
-    .map((item, i, list) => ({
-      ...item,
-      keskiarvo: average(
-        takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
-      ).toFixed(2),
-      painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
-    }));
-
-// TODO: Typings
-const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
-  annaMulleKeskiarvotKursseista(
-    stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne)),
-  );
-
-// TODO: Typings
-const rakennaListaLuennoitsijoista = (initial, item) => [
-  ...initial,
-  ...item.luennoitsija
-    .split(',')
-    .map(putsaaTeksti)
-    .filter(notEmpty)
-    .map((luennoitsija: string) => ({ ...item, luennoitsija })),
-];
-
-// TODO: Typings
-const haluaisinTietääLuennoitsijoista = (stuff: ConvertedCourse[]) =>
-  stuff
-    .reduce(rakennaListaLuennoitsijoista, [])
-    .map(item => {
-      const luennot = stuff.filter(
-        ({ luennoitsija }) => luennoitsija === item.luennoitsija,
-      );
-
-      const arvosanat = map(
-        luennot.filter(item => !isNaN(item.arvosana)),
-        'arvosana',
-      ) as number[];
-
-      const keskiarvo = average(arvosanat);
-
-      return {
-        ...item,
-        kurssimaara: luennot.length,
-        luennot: {
-          arvosanat,
-          keskiarvo: keskiarvo ? keskiarvo.toFixed(2) : 'hyv',
-          op: map(luennot, 'op'),
-          totalOp: sum(map(luennot, 'op') as number[]),
-        },
-      };
-    })
-    .reduce(
-      (initial, item) =>
-        initial.find(({ luennoitsija }) => luennoitsija === item.luennoitsija)
-          ? initial
-          : [...initial, item],
-      [],
-    );
-
-// TODO: Typings
-const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (
-  stuff: ConvertedCourse[],
-) =>
-  (map(stuff, 'kurssi') as string[])
-    .map(poistaAvoinKurssiNimestä)
-    .map(poistaSulut)
-    // @ts-ignore
-    .reduce((list, kurssi) => [...list, ...kurssi.split(' ')], [])
-    .filter(poistaLiianLyhyetNimet)
-    .map(poistaPilkut)
-    .map(poistaKaksoispisteet)
-    .reduce(
-      (list, kurssi) => ({
-        ...list,
-        [kurssi]: (list[kurssi] || 0) + 1,
-      }),
-      {},
-    );
-
-// TODO: Typings
-const courseNamesMatch = kurssi => row => row.kurssi === kurssi;
+const courseNamesMatch = (kurssi: string) => row => row.kurssi === kurssi;
 
 // TODO: Typings
 const removeDuplicateCourses = coursesDone => (acc, item) =>
@@ -195,11 +109,16 @@ const removeAvoinFromKurssiNimi = item => ({
   kurssi: poistaAvoinKurssiNimestä(item.kurssi),
 });
 
-// TODO: Typings
-const drawOpintoDonitsi = ({ id, stuff, data }) => {
-  const [coursesDone, coursesNotDone] = partition(
+interface CoolBeans {
+  id: string;
+  stuff: any[];
+  data: string[];
+}
+
+const drawOpintoDonitsi = ({ id, stuff, data }: CoolBeans) => {
+  const [coursesDone, coursesNotDone]: Array<CoolBeans['data']> = partition(
     data,
-    lyhenne => !stuff.find(course => lyhenne === course.lyhenne),
+    (lyhenne: string) => !stuff.find(course => lyhenne === course.lyhenne),
   );
 
   const opintoData = [
@@ -233,74 +152,6 @@ const drawOpintoDonitsi = ({ id, stuff, data }) => {
     ),
   });
 };
-
-// TODO: Typings
-const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
-  stuff,
-  keskiarvot,
-  kurssit,
-}) => {
-  if (!kurssit.length) {
-    return [];
-  }
-
-  const opinnot = annaMulleKeskiarvotTietyistäKursseista({
-    kurssit,
-    stuff,
-  });
-
-  return keskiarvot.reduce((initial, item) => {
-    const jeejee = findOpintoByLyhenne({ opinnot, lyhenne: item.lyhenne });
-
-    if (jeejee) {
-      return [...initial, { ...jeejee, fromOpinnot: true }];
-    }
-
-    const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
-
-    return [...initial, { ...mitäs, arvosana: 0 } || item];
-  }, []);
-};
-
-// TODO: Typings
-const rakenteleDataSetitKeskiarvoChartille = ({
-  arvosanallisetMerkinnät,
-  keskiarvot,
-  keskiarvotPerusopinnoista,
-  keskiarvotAineopinnoista,
-}) =>
-  [
-    notEmpty(keskiarvot) && {
-      label: 'Keskiarvo',
-      data: map(keskiarvot, 'keskiarvo'),
-      ...style,
-    },
-    notEmpty(arvosanallisetMerkinnät) && {
-      label: 'Painotettu keskiarvo',
-      data: map(arvosanallisetMerkinnät, 'painotettuKeskiarvo'),
-      ...style2,
-    },
-    notEmpty(keskiarvotPerusopinnoista) && {
-      label: 'Perusopintojen keskiarvo',
-      data: map(keskiarvotPerusopinnoista, 'keskiarvo'),
-      ...styleBlue,
-    },
-    notEmpty(keskiarvotAineopinnoista) && {
-      label: 'Aineopintojen keskiarvo',
-      data: map(keskiarvotAineopinnoista, 'keskiarvo'),
-      ...styleGreen,
-    },
-    notEmpty(keskiarvotPerusopinnoista) && {
-      label: 'Perusopintojen painotettu keskiarvo',
-      data: map(keskiarvotPerusopinnoista, 'painotettuKeskiarvo'),
-      ...styleBlue2,
-    },
-    notEmpty(keskiarvotAineopinnoista) && {
-      label: 'Aineopintojen painotettu keskiarvo',
-      data: map(keskiarvotAineopinnoista, 'painotettuKeskiarvo'),
-      ...styleGreen2,
-    },
-  ].filter(isTruthy);
 
 // TODO: Typings
 const rakenteleDataSetitNoppaChartille = grouped =>
@@ -357,31 +208,28 @@ const getLukuvuosi = (vuosi: number): [Date, Date] => [
   new Date(vuosi + 1, 6, 31, 23, 59, 59),
 ];
 
+interface LukuvuodenKivaAvainData {
+  vuosi: number;
+  pvmIsCurrentSemester: boolean;
+  pvmIsNextSemester: boolean;
+}
+
 const luoLukuvuodelleKivaAvain = ({
   vuosi,
   pvmIsCurrentSemester,
   pvmIsNextSemester,
-}: {
-  vuosi: number;
-  pvmIsCurrentSemester: boolean;
-  pvmIsNextSemester: boolean;
-}) => {
-  if (pvmIsCurrentSemester) {
-    return vuosi;
-  }
+}: LukuvuodenKivaAvainData): number =>
+  vuosi + (Number(pvmIsCurrentSemester) - Number(pvmIsNextSemester));
 
-  if (pvmIsNextSemester) {
-    // If it's not between the current semester, it must be the next one
-    return vuosi + 1;
-  }
-
-  return vuosi - 1;
-};
+interface LukukausiNopat {
+  pvmDate: Date;
+  op: number;
+}
 
 const laskeLukukausienNopat = (
-  prev,
-  { pvmDate, op }: { pvmDate: Date; op: number },
-) => {
+  prev: LukukausiNopat,
+  { pvmDate, op }: LukukausiNopat,
+): LukukausiNopat => {
   const vuosi = pvmDate.getFullYear();
 
   const pvmIsCurrentSemester = isInBetween({
@@ -416,10 +264,14 @@ const laskeKuukausienNopat = (
   return { ...prev, [avainOnneen]: op + (prev[avainOnneen] || 0) };
 };
 
-// TODO: Typings
+interface CumulativeNopat {
+  pvmDate: Date;
+  cumulativeOp: number;
+}
+
 const laskeKumulatiivisetKuukausienNopat = (
-  prev,
-  { pvmDate, cumulativeOp },
+  prev: CumulativeNopat,
+  { pvmDate, cumulativeOp }: CumulativeNopat,
 ) => ({ ...prev, [luoKivaAvainReducelle(pvmDate)]: cumulativeOp });
 
 const ryhmitteleStuffKivasti = ({ fn, stuff }: { fn: any; stuff: Course[] }) =>
@@ -436,14 +288,7 @@ const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
     secondDataSet && { ...secondDataSet, type: 'line', ...styleGreen },
   ].filter(isTruthy);
 
-const piirräPerusGraafiNopille = ({
-  id,
-  label,
-  labels,
-  data,
-  secondDataSet,
-  type = secondDataSet ? 'bar' : 'line',
-}: {
+interface PerusGraafiNopat {
   id: string;
   label: string;
   labels: string[];
@@ -453,7 +298,16 @@ const piirräPerusGraafiNopille = ({
     data: number[];
   };
   type?: string;
-}) =>
+}
+
+const piirräPerusGraafiNopille = ({
+  id,
+  label,
+  labels,
+  data,
+  secondDataSet,
+  type = secondDataSet ? 'bar' : 'line',
+}: PerusGraafiNopat) =>
   draw({
     id,
     labels,
@@ -513,52 +367,18 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
   });
 };
 
+interface Donitsi {
+  stuff: any[];
+  aineOpinnot: string[];
+  perusOpinnot: string[];
+}
 // TODO: Typings
-const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }) => {
+const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }: Donitsi) => {
   notEmpty(aineOpinnot) &&
     drawOpintoDonitsi({ id: 'aineopinnot', stuff, data: aineOpinnot });
 
   notEmpty(perusOpinnot) &&
     drawOpintoDonitsi({ id: 'perusopinnot', stuff, data: perusOpinnot });
-};
-
-// TODO: Typings
-const sorttaaLuennoitsijatKeskiarvonMukaan = (a, b) =>
-  b.luennot.keskiarvo - a.luennot.keskiarvo || b.kurssimaara - a.kurssimaara;
-
-// TODO: Typings
-const piirräLuennoitsijaListat = luennoitsijat => {
-  const luennoitsijatElement = document.querySelector('#luennoitsijat');
-  if (luennoitsijatElement === null) {
-    throw new Error('piirräLuennoitsijaListat(): Element is null');
-  }
-  luennoitsijatElement.innerHTML = '';
-
-  drawLuennoitsijat({
-    // @ts-ignore
-    luennoitsijatElement,
-    title: 'Luennoitsijoiden top lista by kurssimaara',
-    lista: sort(luennoitsijat, 'kurssimaara'),
-  });
-
-  drawLuennoitsijat({
-    // @ts-ignore
-    luennoitsijatElement,
-    title: 'Luennoitsijoiden top lista by keskiarvo',
-    lista: [
-      ...luennoitsijat
-        .filter(({ luennot }) => luennot.keskiarvo !== 'hyv')
-        .sort(sorttaaLuennoitsijatKeskiarvonMukaan),
-      ...luennoitsijat.filter(({ luennot }) => luennot.keskiarvo === 'hyv'),
-    ],
-  });
-
-  drawLuennoitsijat({
-    // @ts-ignore
-    luennoitsijatElement,
-    title: 'Luennoitsijoiden top lista by nopat',
-    lista: luennoitsijat.sort((a, b) => b.luennot.totalOp - a.luennot.totalOp),
-  });
 };
 
 const hommaaMatskutLocalStoragesta = () => ({
@@ -568,27 +388,6 @@ const hommaaMatskutLocalStoragesta = () => ({
   pääaine: getPääaineFromLokaali(),
   sivuaineet: getSivuaineetFromLokaali(),
 });
-
-// TODO: Typings
-const laskeKeskiarvot = ({ stuff, keskiarvot, perusOpinnot, aineOpinnot }) => {
-  const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
-    {
-      stuff,
-      keskiarvot,
-      kurssit: perusOpinnot,
-    },
-  );
-
-  const keskiarvotAineopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
-    {
-      stuff,
-      keskiarvot,
-      kurssit: aineOpinnot,
-    },
-  );
-
-  return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
-};
 
 // TODO: Typings
 const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>

@@ -161,6 +161,7 @@ describe('List utils', () => {
     op: 0,
     lyhenne: '',
     arvosana: 0,
+    luennoitsija: '',
     pvmDate: new Date(),
   };
 
@@ -236,6 +237,7 @@ describe('List utils', () => {
             cumulativeOp: 0,
             kurssi: '',
             lyhenne: '',
+            luennoitsija: '',
             pvm: '',
             pvmDate: new Date(1551294958470),
           },
@@ -245,6 +247,7 @@ describe('List utils', () => {
             cumulativeOp: 0,
             kurssi: '',
             lyhenne: '',
+            luennoitsija: '',
             pvm: '',
             pvmDate: new Date(1551294933470),
           },

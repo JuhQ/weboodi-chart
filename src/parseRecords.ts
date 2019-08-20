@@ -27,11 +27,9 @@ const muutaArrayKivaksiObjektiksi = ([
   pvmDate: rakenteleDateObjekti(getPvmArray(pvm)),
 });
 
-const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]: [
-  number,
-  number,
-  number
-]) => new Date(vuosi, kuukausi - 1, paiva);
+type DateArray = [number, number, number];
+const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]: DateArray): Date =>
+  new Date(vuosi, kuukausi - 1, paiva);
 
 // TODO: Fix typings
 const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i, list) => [

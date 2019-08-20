@@ -1,5 +1,13 @@
+import { ConvertedCourse } from '../interfaces/Interfaces';
 import { setHtmlContent } from './dom';
-import { max, min } from './listUtils';
+import { map, max, min } from './listUtils';
+import {
+  poistaAvoinKurssiNimestä,
+  poistaKaksoispisteet,
+  poistaLiianLyhyetNimet,
+  poistaPilkut,
+  poistaSulut,
+} from './stringUtils';
 
 const minFontSize = 7;
 const maxFontSize = 28;
@@ -11,9 +19,7 @@ interface Tags {
 }
 
 const countFontSize = ({ val, minValue, maxValue }: Tags): number =>
-  val > minValue
-    ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
-    : 1;
+  val > minValue ? (maxFontSize * (val - minValue)) / (maxValue - minValue) : 0;
 
 export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
   const values = Object.values(words);
@@ -23,7 +29,8 @@ export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
   const content = Object.keys(words)
     .map(key => ({
       key,
-      fontSize: countFontSize({ minValue, maxValue, val: words[key] }),
+      fontSize:
+        countFontSize({ minValue, maxValue, val: words[key] }) + minFontSize,
       count: words[key],
     }))
     .map(
@@ -39,3 +46,25 @@ export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
     id: 'tagipilvi',
   });
 };
+
+// TODO: Typings
+export const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (
+  stuff: ConvertedCourse[],
+) =>
+  (map(stuff, 'kurssi') as string[])
+    .map(poistaAvoinKurssiNimestä)
+    .map(poistaSulut)
+    .reduce(
+      (list: string[], kurssi: string) => [...list, ...kurssi.split(' ')],
+      [],
+    )
+    .filter(poistaLiianLyhyetNimet)
+    .map(poistaPilkut)
+    .map(poistaKaksoispisteet)
+    .reduce(
+      (list, kurssi) => ({
+        ...list,
+        [kurssi]: (list[kurssi] || 0) + 1,
+      }),
+      {},
+    );

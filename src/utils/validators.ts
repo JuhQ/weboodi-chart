@@ -6,12 +6,12 @@ const isArray = <T>(val: unknown): val is T[] => Array.isArray(val);
 
 const isFloat = (n: string | number) => Number(n) === n && n % 1 !== 0;
 
-const isInBetween = ({
-  value,
-  values: [start, end],
-}: {
+interface InBetween {
   value: Date;
   values: [Date, Date];
-}) => value.getTime() >= start.getTime() && value.getTime() <= end.getTime();
+}
+
+const isInBetween = ({ value, values: [start, end] }: InBetween): boolean =>
+  value.getTime() >= start.getTime() && value.getTime() <= end.getTime();
 
 export { isTruthy, isArray, isString, isFloat, isInBetween };

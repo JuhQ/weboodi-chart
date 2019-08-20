@@ -1,4 +1,5 @@
 // The precourse type is the first representation of the course.
+import { ConvertedCourse } from './Interfaces';
 // The size can be either 3 or 7 (depending if the WebOodi row is an additional info field.)
 export type PreCourse =
   | [string, string, string]
@@ -24,10 +25,15 @@ export interface ConvertedCourse {
   pvm: Paivays['pvm'];
   kurssi: string;
   lyhenne: string;
-  luennoitsija?: string;
+  luennoitsija: string;
   op: number;
-  arvosana: number;
+  arvosana: number | 'hyv';
   pvmDate: Date;
+}
+
+export interface ConvertedCourseWithKeskiarvo extends ConvertedCourse {
+  keskiarvo: number;
+  painotettuKeskiarvo: number;
 }
 
 export interface DOMParams {
@@ -74,7 +80,7 @@ export interface LecturerRowParams {
 export interface DrawLuennoitsijatParams {
   title: string;
   lista: any[];
-  luennoitsijatElement?: HTMLElement;
+  luennoitsijatElement?: Element;
 }
 
 interface SingleCourse {
@@ -82,10 +88,13 @@ interface SingleCourse {
   keys: string[];
 }
 
-interface StudyType {
-  [studyType: string]: SingleCourse[];
-}
+type StudyType = Record<string, SingleCourse[]>;
+export type CourseDb = Record<string, StudyType>;
 
-export interface CourseDb {
-  [aine: string]: StudyType;
-}
+// interface StudyType {
+//   [studyType: string]: SingleCourse[];
+// }
+
+// export interface CourseDb {
+//   [aine: string]: StudyType;
+// }
