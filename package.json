@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
-    "build": "npm run copy-assets && webpack",
+    "build": "npm run copy-assets && webpack --mode=production",
     "build-watch": "npm run build -- --watch --mode=development",
     "copy-assets": "cp assets/* dist",
     "test": "nyc mocha -r ts-node/register src/**/*.test.ts",
@@ -15,25 +15,25 @@
     "release": "npm run remove-zip && npm test && npm run build && npm run zip"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/chart.js": "^2.7.42",
-    "@types/mocha": "^5.2.5",
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.1.1",
-    "prettier": "^1.16.1",
-    "prettier-tslint": "^0.4.2",
-    "ts-loader": "^5.3.3",
-    "ts-node": "^8.0.1",
-    "tslint": "^5.12.1",
-    "tslint-config-airbnb": "^5.11.1",
-    "tslint-config-prettier": "^1.17.0",
-    "typescript": "^3.2.4",
-    "webpack": "^4.29.0",
-    "webpack-cli": "^3.2.1"
+    "@types/chai": "4.2.0",
+    "@types/chart.js": "2.8.1",
+    "@types/mocha": "5.2.7",
+    "chai": "4.2.0",
+    "mocha": "6.2.0",
+    "nyc": "14.1.1",
+    "prettier": "1.18.2",
+    "prettier-tslint": "0.4.2",
+    "ts-loader": "6.0.4",
+    "ts-node": "8.3.0",
+    "tslint": "5.18.0",
+    "tslint-config-airbnb": "5.11.1",
+    "tslint-config-prettier": "1.18.0",
+    "typescript": "3.5.3",
+    "webpack": "4.39.2",
+    "webpack-cli": "3.3.7"
   },
   "dependencies": {
-    "chart.js": "^2.7.3"
+    "chart.js": "2.8.0"
   },
   "nyc": {
     "include": [
