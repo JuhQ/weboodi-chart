@@ -5,6 +5,8 @@ import {
 } from './averages';
 import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
+import kuukausihistografi from './histografit/kuukausihistografi';
+import viikkohistografi from './histografit/viikkohistografi';
 import { ConvertedCourse, Course, DrawParams } from './interfaces/Interfaces';
 import {
   haluaisinTietääLuennoitsijoista,
@@ -52,7 +54,6 @@ import {
   piirraRumaTagipilvi,
 } from './utils/tagcloud';
 import { isInBetween, isTruthy } from './utils/validators';
-import viikkohistografi from './viikkohistografi';
 
 const getDuplikaattiKurssit = () =>
   getListFromLocalStorage('duplikaattiKurssit');
@@ -644,6 +645,7 @@ const start = () => {
   });
 
   viikkohistografi(stuff);
+  kuukausihistografi(stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };

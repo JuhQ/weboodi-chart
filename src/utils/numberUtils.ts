@@ -24,3 +24,6 @@ export const laskePainotettuKeskiarvo = (data: ConvertedCourse[]): number => {
 
 export const viikkojaAikavälillä = (eka: Date, toka: Date): number =>
   Math.ceil(moment.duration(moment(toka).diff(moment(eka))).asWeeks());
+
+export const kuukausiaAikavälillä = (eka: Date, toka: Date): number =>
+  Math.ceil(moment.duration(moment(toka).diff(moment(eka))).asMonths());
