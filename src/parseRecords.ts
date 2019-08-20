@@ -1,65 +1,14 @@
-import {
-  style,
-  style2,
-  styleBlue,
-  styleBlue2,
-  styleGreen,
-  styleGreen2,
-} from './css';
-import { kurssitietokanta } from './data/courses';
-import {
-  ConvertedCourse,
-  Course,
-  CourseArrToObjParams,
-} from './interfaces/Interfaces';
-import {
-  createDom,
-  drawLuennoitsijat,
-  hommaaMeilleListaAsijoistaDommista,
-  piirraRandomStatistiikkaa,
-  pitäisköDomRakentaa,
-  setHtmlContent,
-} from './utils/dom';
-import { draw, drawPie } from './utils/draw';
+import { ConvertedCourse } from './interfaces/Interfaces';
+import { hommaaMeilleListaAsijoistaDommista } from './utils/dom';
 import { negate } from './utils/helpers';
-import { kuunteleAsijoita } from './utils/listeners';
 import {
   atleastThreeItemsInList,
-  contains,
-  findFromKurssiTietokanta,
-  findOpintoByLyhenne,
-  findPvm,
-  laskeStuffistaHalututJutut,
   map,
-  mapInvoke,
-  max,
   notEmpty,
-  partition,
-  sort,
-  sorttaaStuffLukukausienMukaan,
   takeUntil,
 } from './utils/listUtils';
-import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
-import {
-  add,
-  average,
-  laskePainotettuKeskiarvo,
-  sum,
-} from './utils/numberUtils';
-import {
-  getLaitos,
-  luoKivaAvainReducelle,
-  nameIncludesAvoinYo,
-  poistaAvoinKurssiNimestä,
-  poistaKaksoispisteet,
-  poistaLiianLyhyetNimet,
-  poistaPilkut,
-  poistaSulut,
-  putsaaTeksti,
-  toLowerCase,
-} from './utils/stringUtils';
-import { piirraRumaTagipilvi } from './utils/tagcloud';
-import { isInBetween, isTruthy } from './utils/validators';
+import { average, laskePainotettuKeskiarvo } from './utils/numberUtils';
+import { poistaSulut, putsaaTeksti } from './utils/stringUtils';
 
 const muutaArrayKivaksiObjektiksi = ([
   lyhenne,
