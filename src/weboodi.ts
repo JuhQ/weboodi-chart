@@ -361,11 +361,11 @@ const rakenteleDataSetitKeskiarvoChartille = ({
 const rakenteleDataSetitNoppaChartille = grouped =>
   [
     {
-      label: 'Päivittäiset nopat',
+      label: 'Päivän nopat',
       data: map(grouped, 'op'),
     },
     {
-      label: 'Kumulatiiviset nopat',
+      label: 'Nopat',
       data: map(grouped, 'cumulativeOp'),
       ...style,
       type: 'line',
@@ -386,7 +386,6 @@ const drawGraphs = ({
     draw({
       id: 'chart-nopat',
       customTooltip: true,
-      customTicks: true,
       type: 'bar',
       labels: map(grouped, 'pvm'),
       datasets: rakenteleDataSetitNoppaChartille(grouped),
@@ -474,16 +473,14 @@ const laskeLukukausienNopat = (
   return { ...prev, [vuosiJuttu]: op + (prev[vuosiJuttu] || 0) };
 };
 
-// TODO: Remove any & extract interface
+interface GroupedStuff {
+  pvmDate: Date;
+  op: number;
+}
+
 const laskeKuukausienNopat = (
-  prev: any,
-  {
-    pvmDate,
-    op,
-  }: {
-    pvmDate: Date;
-    op: number;
-  },
+  prev: GroupedStuff,
+  { pvmDate, op }: GroupedStuff,
 ) => {
   const avainOnneen = luoKivaAvainReducelle(pvmDate);
   return { ...prev, [avainOnneen]: op + (prev[avainOnneen] || 0) };
@@ -515,31 +512,32 @@ const piirräPerusGraafiNopille = ({
   labels,
   data,
   secondDataSet,
+  type = secondDataSet ? 'bar' : 'line',
 }: {
   id: string;
   label: string;
   labels: string[];
-  data: any[]; // TODO: Remove any[]
+  data: number[];
   secondDataSet: {
     label: string;
-    data: any[]; // TODO: Remove any[]
+    data: number[];
   };
+  type?: string;
 }) =>
   draw({
     id,
     labels,
-    type: secondDataSet ? 'bar' : 'line',
+    type,
     datasets: hemmettiSentäänTeeDataSetti({ label, data, secondDataSet }),
   });
 
-// TODO: Typings
 const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff: Course[]) => {
   const lukukausiGroups = ryhmitteleStuffKivasti({
     stuff,
     fn: laskeLukukausienNopat,
   });
   const lukukausiKeys = Object.keys(lukukausiGroups);
-  const lukukausiData = Object.values(lukukausiGroups);
+  const lukukausiData: number[] = Object.values(lukukausiGroups);
   const ekaLukukausi = parseInt(lukukausiKeys[0], 10);
   const vainYksiLukukausiSuoritettu = lukukausiKeys.length === 1;
   const labels = vainYksiLukukausiSuoritettu
@@ -555,12 +553,16 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff: Course[]) => {
     ? [0, lukukausiData[0], 0]
     : lukukausiData;
 
-  // @ts-ignore
   piirräPerusGraafiNopille({
     labels,
     data,
     id: 'chart-nopat-vuosi',
-    label: 'Noppia per lukuvuosi',
+    label: 'Lukuvuoden nopat',
+    secondDataSet: {
+      label: 'Haalarimerkki here we come',
+      data: data.map(() => 55),
+    },
+    type: 'line',
   });
 };
 
@@ -571,11 +573,11 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
 }) => {
   piirräPerusGraafiNopille({
     id: 'chart-nopat-kuukaudet',
-    label: 'Noppia per kuukausi',
+    label: 'Kuukauden nopat',
     labels: Object.keys(kuukausiGroups),
     data: Object.values(kuukausiGroups),
     secondDataSet: {
-      label: 'Kumulatiiviset nopat',
+      label: 'Nopat',
       data: Object.values(kumulatiivisetKuukaudetGroups),
     },
   });

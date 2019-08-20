@@ -15,7 +15,6 @@ const countFontSize = ({ val, minValue, maxValue }: Tags): number =>
     ? (maxFontSize * (val - minValue)) / (maxValue - minValue) + minFontSize
     : 1;
 
-// TODO: Typings
 export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
   const values = Object.values(words);
   const minValue = min(values);
