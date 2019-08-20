@@ -99,7 +99,9 @@ const piirraAvoimenSuorituksia = ({ kurssimaara, openUniMaara, openUniOp }) => {
   const openUniPercentage = ((openUniMaara / kurssimaara) * 100).toFixed(2);
   setHtmlContent({
     id: 'open-uni-maara',
-    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi. Yhteensä ${openUniOp} op.`,
+    content: `Olet suorittanut ${openUniMaara} avoimen kurssia, joka on ${openUniPercentage}% opinnoistasi.
+    Yhteensä ${openUniOp} op.
+    `,
   });
 };
 
@@ -121,16 +123,22 @@ const arvioidaanOpintoVuodetDomiin = (op: number) => {
   const vuodet = (op / 60).toFixed(2);
   setHtmlContent({
     id: 'vuodet-arvio',
-    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi. Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.`,
+    content: `Opintopistemäärän mukaan arvioin sinun suorittaneen ${vuodet} vuotta opintojasi.
+    Laskukaava = <span title="Opintopistemäärä / vuoden tavoiteopintopistemäärä">${op} / 60</span>.
+    `,
   });
 };
 
 const prosentitKandilleTaiGradulle = (op: number) => {
   const kandi = ((op / 180) * 100).toFixed(2);
   const gradu = (((op - 180) / 120) * 100).toFixed(2);
+  const graduIlmanKandia = ((op / 120) * 100).toFixed(2);
   setHtmlContent({
     id: 'kandi-gradu-prosentit',
-    content: `Jos opiskelet kandia, arvioin sinun suorittaneen ${kandi}% opinnoistasi. <span title="((nopat - 180 op kandista) / 120) * 100">Jos opiskelet gradua, arvioin sinun suorittaneen ${gradu}% opinnoistasi.</span>`,
+    content: `Jos opiskelet kandia, arvioin sinun suorittaneen ${kandi}% opinnoistasi.
+    <span title="((nopat - 180 op kandista) / 120) * 100">Jos opiskelet maisteria, arvioin sinun suorittaneen ${gradu}% opinnoistasi.</span>
+    <span title="(nopat / 120) * 100">Jos opiskelet maisteria, eikä alla ole kandia täältä, arvioin sinun suorittaneen ${graduIlmanKandia}% opinnoistasi.</span>
+    `,
   });
 };
 
@@ -139,12 +147,24 @@ const arvioidaanKäytetytOpiskelutunnit = (op: number) => {
   const tunnit = (op * 27).toFixed(2);
   setHtmlContent({
     id: 'tunnit-arvio',
-    content: `Opintopistemäärän mukaan arvioin sinun käyttäneen ${tunnit} tehokasta opiskelutuntia. Laskukaava = <span title="Opintopistemäärä * 27 tuntia per opintopiste">${op} * 27</span>.`,
+    content: `Opintopistemäärän mukaan arvioin sinun käyttäneen ${tunnit} tehokasta opiskelutuntia.
+    Laskukaava = <span title="Opintopistemäärä * 27 tuntia per opintopiste">${op} * 27</span>.
+    `,
   });
 };
 
-// TODO: Typings
-const luoTilastoaAineidenKeskiarvoista = ({ key, data }) =>
+interface JepulisData {
+  laitos: string;
+  keskiarvo: number;
+  painotettuKeskiarvo: number;
+}
+
+interface Jepulis {
+  key: string;
+  data: JepulisData;
+}
+
+const luoTilastoaAineidenKeskiarvoista = ({ key, data }: Jepulis) =>
   `${key} ${data.laitos} keskiarvo on ${
     isNaN(data.keskiarvo) ? 'hyv' : data.keskiarvo
   } ja painotettu keskiarvo on ${

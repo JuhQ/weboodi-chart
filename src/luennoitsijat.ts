@@ -1,5 +1,6 @@
 import { ConvertedCourse, LecturerRowParams } from './interfaces/Interfaces';
 import { drawLuennoitsijat } from './utils/dom';
+import { filterArvosana } from './utils/helpers';
 import { map, notEmpty, sort } from './utils/listUtils';
 import { average, sum } from './utils/numberUtils';
 import { putsaaTeksti } from './utils/stringUtils';
@@ -17,10 +18,7 @@ const rakennaListaLuennoitsijoista = (
 ];
 
 const getArvosanat = (luennot: ConvertedCourse[]): number[] =>
-  map(
-    luennot.filter(({ arvosana }) => arvosana !== 'hyv' && !isNaN(arvosana)),
-    'arvosana',
-  ) as number[];
+  map(luennot.filter(filterArvosana), 'arvosana') as number[];
 
 export const haluaisinTietääLuennoitsijoista = (stuff: ConvertedCourse[]) =>
   stuff

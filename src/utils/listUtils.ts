@@ -80,6 +80,12 @@ const findOpintoByLyhenne = ({ opinnot, lyhenne }) =>
 // TODO: Typings
 const atleastThreeItemsInList = list => list && list.length > 3;
 
+// TODO add test
+export const times = (n: number): number[] =>
+  Array(n)
+    .fill(1)
+    .map((_, i) => i);
+
 export {
   notEmpty,
   partition,

@@ -44,7 +44,7 @@ export interface DOMParams {
   sivuaineet: string[];
 }
 
-export interface Course extends ConvertedCourse {
+export interface Course extends ConvertedCourseWithKeskiarvo {
   cumulativeOp: number;
 }
 
@@ -56,7 +56,7 @@ export interface DrawParams {
   id: string;
   labels: any;
   datasets: any[];
-  type: string;
+  type?: 'line' | 'bar';
   customTooltip?: boolean;
   customTicks?: boolean;
 }

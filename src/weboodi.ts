@@ -5,7 +5,7 @@ import {
 } from './averages';
 import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
-import { ConvertedCourse, Course } from './interfaces/Interfaces';
+import { ConvertedCourse, Course, DrawParams } from './interfaces/Interfaces';
 import {
   haluaisinTietääLuennoitsijoista,
   piirräLuennoitsijaListat,
@@ -18,7 +18,7 @@ import {
   setHtmlContent,
 } from './utils/dom';
 import { draw, drawPie } from './utils/draw';
-import { negate } from './utils/helpers';
+import { filterArvosana, negate } from './utils/helpers';
 import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
@@ -52,6 +52,7 @@ import {
   piirraRumaTagipilvi,
 } from './utils/tagcloud';
 import { isInBetween, isTruthy } from './utils/validators';
+import viikkohistografi from './viikkohistografi';
 
 const getDuplikaattiKurssit = () =>
   getListFromLocalStorage('duplikaattiKurssit');
@@ -277,15 +278,38 @@ const laskeKumulatiivisetKuukausienNopat = (
 const ryhmitteleStuffKivasti = ({ fn, stuff }: { fn: any; stuff: Course[] }) =>
   stuff.sort(sorttaaStuffLukukausienMukaan).reduce(fn, {});
 
-// TODO: Typings
-const hemmettiSentäänTeeDataSetti = ({ label, data, secondDataSet }) =>
+interface ChartinData {
+  label: string;
+  data: number[];
+}
+
+interface SecondDataSet extends ChartinData {
+  backgroundColor?: string;
+}
+
+interface HemmetinDataSetti extends ChartinData {
+  secondDataSet: SecondDataSet;
+}
+
+const hemmettiSentäänTeeDataSetti = ({
+  label,
+  data,
+  secondDataSet,
+}: HemmetinDataSetti) =>
   [
     {
       label,
       data,
       ...styleBlue,
     },
-    secondDataSet && { ...secondDataSet, type: 'line', ...styleGreen },
+    secondDataSet && {
+      ...secondDataSet,
+      type: 'line',
+      ...styleGreen,
+      ...(secondDataSet.backgroundColor && {
+        backgroundColor: secondDataSet.backgroundColor,
+      }),
+    },
   ].filter(isTruthy);
 
 interface PerusGraafiNopat {
@@ -293,11 +317,8 @@ interface PerusGraafiNopat {
   label: string;
   labels: string[];
   data: number[];
-  secondDataSet: {
-    label: string;
-    data: number[];
-  };
-  type?: string;
+  secondDataSet: SecondDataSet;
+  type?: DrawParams['type'];
 }
 
 const piirräPerusGraafiNopille = ({
@@ -345,6 +366,7 @@ const piirteleVuosiJuttujaJookosKookosHaliPus = (stuff: Course[]) => {
     secondDataSet: {
       label: 'Haalarimerkki here we come',
       data: data.map(() => 55),
+      backgroundColor: 'transparent',
     },
     type: 'line',
   });
@@ -448,7 +470,7 @@ const grouppaaEriLaitostenKurssit = (stuff: ConvertedCourse[]) =>
     const arvosanat = edellisenKierroksenData
       ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))
       : [arvosana].filter(negate(isNaN));
-    const keskiarvo = average(arvosanat).toFixed(2);
+    const keskiarvo = Number(average(arvosanat).toFixed(2));
     const painotettuKeskiarvo = laskePainotettuKeskiarvo(
       edellisenKierroksenData ? edellisenKierroksenData.kurssit : [kurssi],
     );
@@ -601,24 +623,27 @@ const start = () => {
     maxKuukausi,
     keskiarvo,
     painotettuKeskiarvo,
-    aineJaPerusopintojenSuoritukset: sum(
-      map(aineJaPerusopintojenSuoritukset, 'op'),
-    ),
+    aineJaPerusopintojenSuoritukset: sum(map(
+      aineJaPerusopintojenSuoritukset,
+      'op',
+    ) as number[]),
     kurssimaara: stuff.length,
     pääaine: pääaineenMenestys,
     sivuaineet: sivuaineidenMenestys,
     luennoitsijamaara: luennoitsijat.length,
-    op: sum(map(stuff, 'op')),
-    openUniMaara: map(stuff, 'kurssi')
+    op: sum(map(stuff, 'op') as number[]),
+    openUniMaara: (map(stuff, 'kurssi') as string[])
       .map(toLowerCase)
       .filter(nameIncludesAvoinYo).length,
     openUniOp: stuff
       .filter(({ kurssi }) => nameIncludesAvoinYo(toLowerCase(kurssi)))
       .map(({ op }) => op)
       .reduce(add, 0),
-    hyvMaara: map(stuff, 'arvosana').filter(isNaN).length,
-    hyvOp: sum(map(stuff.filter(({ arvosana }) => isNaN(arvosana)), 'op')),
+    hyvMaara: (map(stuff, 'arvosana') as number[]).filter(isNaN).length,
+    hyvOp: sum(map(stuff.filter(negate(filterArvosana)), 'op') as number[]),
   });
+
+  viikkohistografi(stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };

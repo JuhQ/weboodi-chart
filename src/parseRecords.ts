@@ -1,4 +1,4 @@
-import { ConvertedCourse } from './interfaces/Interfaces';
+import { ConvertedCourse, Course } from './interfaces/Interfaces';
 import { hommaaMeilleListaAsijoistaDommista } from './utils/dom';
 import { negate } from './utils/helpers';
 import {
@@ -31,15 +31,21 @@ type DateArray = [number, number, number];
 const rakenteleDateObjekti = ([paiva, kuukausi, vuosi]: DateArray): Date =>
   new Date(vuosi, kuukausi - 1, paiva);
 
-// TODO: Fix typings
-const lasketaanpaLopuksiKumulatiivisetNopat = (initial, item, i, list) => [
+const lasketaanpaLopuksiKumulatiivisetNopat = (
+  initial: Course[],
+  item: ConvertedCourse,
+  i: number,
+  list: ConvertedCourse[],
+): Course[] => [
   ...initial,
   {
     ...item,
     cumulativeOp: item.op + (i && initial[i - 1].cumulativeOp),
-    keskiarvo: average(
-      takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
-    ).toFixed(2),
+    keskiarvo: Number(
+      average(
+        takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
+      ).toFixed(2),
+    ),
     painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
   },
 ];
@@ -56,7 +62,7 @@ const getPvmArray = (pvm: string) => {
 const hanskaaAvatutPaketit = (row: string[]): boolean =>
   !row[0].includes('   ');
 
-const makeSomeStuff = (duplikaattiKurssit: string[]) =>
+const makeSomeStuff = (duplikaattiKurssit: string[]): Course[] =>
   hommaaMeilleListaAsijoistaDommista()
     .map(item => [...Array.from(item.querySelectorAll('td'))])
     .filter(notEmpty)

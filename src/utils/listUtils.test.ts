@@ -227,29 +227,29 @@ describe('List utils', () => {
     });
   });
 
+  const daa = {
+    arvosana: 0,
+    op: 0,
+    cumulativeOp: 0,
+    kurssi: '',
+    lyhenne: '',
+    luennoitsija: '',
+    pvm: '',
+    painotettuKeskiarvo: 0,
+    keskiarvo: 0,
+  };
+
   describe('sorttaaStuffLukukausienMukaan()', () => {
     it('Should do something here', () => {
       expect(
         sorttaaStuffLukukausienMukaan(
           {
-            arvosana: 0,
-            op: 0,
-            cumulativeOp: 0,
-            kurssi: '',
-            lyhenne: '',
-            luennoitsija: '',
-            pvm: '',
             pvmDate: new Date(1551294958470),
+            ...daa,
           },
           {
-            arvosana: 0,
-            op: 0,
-            cumulativeOp: 0,
-            kurssi: '',
-            lyhenne: '',
-            luennoitsija: '',
-            pvm: '',
             pvmDate: new Date(1551294933470),
+            ...daa,
           },
         ),
       ).to.equal(25000);

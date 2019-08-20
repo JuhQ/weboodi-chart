@@ -10,7 +10,7 @@ import {
   ConvertedCourse,
   ConvertedCourseWithKeskiarvo,
 } from './interfaces/Interfaces';
-import { negate } from './utils/helpers';
+import { filterArvosana, negate } from './utils/helpers';
 import {
   findOpintoByLyhenne,
   map,
@@ -24,15 +24,13 @@ import { isTruthy } from './utils/validators';
 export const annaMulleKeskiarvotKursseista = (
   stuff: ConvertedCourse[],
 ): any[] =>
-  stuff
-    .filter(({ arvosana }) => arvosana !== 'hyv' && !isNaN(arvosana))
-    .map((item, i, list) => ({
-      ...item,
-      keskiarvo: average(
-        takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
-      ).toFixed(2),
-      painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
-    }));
+  stuff.filter(filterArvosana).map((item, i, list) => ({
+    ...item,
+    keskiarvo: average(
+      takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
+    ).toFixed(2),
+    painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
+  }));
 
 // TODO: Typings
 const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
