@@ -167,9 +167,7 @@ describe('List utils', () => {
 
   describe('findPvm()', () => {
     it('Should find a value', () => {
-      expect(findPvm([pvmTestData], '2019')).to.eql({
-        pvm: '2019',
-      });
+      expect(findPvm([pvmTestData], '2019')).to.eql(pvmTestData);
     });
 
     it('Should not find a value', () => {
