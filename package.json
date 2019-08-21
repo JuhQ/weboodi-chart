@@ -12,7 +12,7 @@
     "test": "nyc mocha -r ts-node/register src/**/*.test.ts",
     "remove-zip": "rm -f weboodi-chart.zip",
     "zip": "zip -jr weboodi-chart.zip dist/",
-    "release": "npm run remove-zip && npm test && npm run build && npm run zip"
+    "release": "npm run remove-zip && npm test && npm run build && npm run zip && open ."
   },
   "devDependencies": {
     "@types/chai": "4.2.0",
