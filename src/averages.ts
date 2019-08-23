@@ -9,6 +9,7 @@ import {
 import {
   ConvertedCourse,
   ConvertedCourseWithKeskiarvo,
+  Course,
 } from './interfaces/Interfaces';
 import { filterArvosana, negate } from './utils/helpers';
 import {
@@ -20,30 +21,45 @@ import {
 import { average, laskePainotettuKeskiarvo } from './utils/numberUtils';
 import { isTruthy } from './utils/validators';
 
-// TODO: Typings
 export const annaMulleKeskiarvotKursseista = (
   stuff: ConvertedCourse[],
-): any[] =>
+): ConvertedCourseWithKeskiarvo[] =>
   stuff.filter(filterArvosana).map((item, i, list) => ({
     ...item,
-    keskiarvo: average(
-      takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
-    ).toFixed(2),
+    keskiarvo: Number(
+      average(
+        takeUntil(map(list, 'arvosana'), i + 1).filter(negate(isNaN)),
+      ).toFixed(2),
+    ),
     painotettuKeskiarvo: laskePainotettuKeskiarvo(takeUntil(list, i + 1)),
   }));
 
-// TODO: Typings
-const annaMulleKeskiarvotTietyistäKursseista = ({ kurssit, stuff }) =>
+const annaMulleKeskiarvotTietyistäKursseista = ({
+  kurssit,
+  stuff,
+}: {
+  kurssit: string[];
+  stuff: ConvertedCourse[];
+}) =>
   annaMulleKeskiarvotKursseista(
     stuff.filter(({ lyhenne }) => kurssit.includes(lyhenne)),
   );
 
-// TODO: Typings
+interface Entiedä extends ConvertedCourse {
+  fromOpinnot: boolean;
+}
+
+interface Jup {
+  stuff: ConvertedCourse[];
+  keskiarvot: ConvertedCourse[];
+  kurssit: string[];
+}
+
 const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   stuff,
   keskiarvot,
   kurssit,
-}) => {
+}: Jup) => {
   if (!kurssit.length) {
     return [];
   }
@@ -53,17 +69,22 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
     stuff,
   });
 
-  return keskiarvot.reduce((initial, item) => {
-    const jeejee = findOpintoByLyhenne({ opinnot, lyhenne: item.lyhenne });
+  return keskiarvot.reduce(
+    (initial, item) => {
+      const jeejee = findOpintoByLyhenne({ opinnot, lyhenne: item.lyhenne });
 
-    if (jeejee) {
-      return [...initial, { ...jeejee, fromOpinnot: true }];
-    }
+      if (jeejee) {
+        return [...initial, { ...jeejee, fromOpinnot: true }];
+      }
 
-    const mitäs = initial.filter(({ fromOpinnot }) => fromOpinnot).reverse()[0];
+      const mitäs = initial
+        .filter(({ fromOpinnot }) => fromOpinnot)
+        .reverse()[0];
 
-    return [...initial, { ...mitäs, arvosana: 0 } || item];
-  }, []);
+      return [...initial, { ...mitäs, arvosana: 0 } || item];
+    },
+    [] as Entiedä[],
+  );
 };
 
 // TODO: Typings
