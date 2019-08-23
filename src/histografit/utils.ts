@@ -7,10 +7,13 @@ import {
   viikkojaAikavälillä,
 } from '../utils/numberUtils';
 
+type AikaFunktio = typeof viikkojaAikavälillä | typeof kuukausiaAikavälillä;
 export type Groupattuna = Record<number, number>;
+type TimeAgo = 'weeks' | 'months';
 
 export const buildData = (list: number[], jep: Groupattuna) =>
   list
+    .slice()
     .map((value: number) => jep[value - 1] || 0)
     .reverse()
     .reduce((initial: number[], arvo: number, i: number, list: number[]) => {
@@ -19,27 +22,22 @@ export const buildData = (list: number[], jep: Groupattuna) =>
       return [...initial, arvo || (i && Math.max(...aikaisemmat)) || 0];
     }, []);
 
-type TimeAgo = 'weeks' | 'months';
-
 export const makeLabels = (data: number[], timeAgo: TimeAgo) =>
-  data.map((_, i) => {
-    const viikkoaSitten = Math.abs(i - data.length - 1);
+  data.map((_, i) =>
+    moment()
+      .subtract(Math.abs(i - data.length - 1), timeAgo)
+      .format('D.M.YYYY'),
+  );
 
-    return moment()
-      .subtract(viikkoaSitten, timeAgo)
-      .format('D.M.YYYY');
-  });
-
-type AikaFunktio = typeof viikkojaAikavälillä | typeof kuukausiaAikavälillä;
-
+const nyt = new Date();
 export const groupataanKurssitAjanKanssa = (
   fn: AikaFunktio,
   stuff: Course[],
 ): Groupattuna =>
-  stuff.reduce((initial, item) => {
-    const weeksAgo = fn(item.pvmDate, new Date());
+  stuff.reduce((initial, { pvmDate, cumulativeOp }) => {
+    const timeAgo = fn(pvmDate, nyt);
     return {
       ...initial,
-      [weeksAgo]: item.cumulativeOp,
+      [timeAgo]: cumulativeOp,
     };
   }, {});

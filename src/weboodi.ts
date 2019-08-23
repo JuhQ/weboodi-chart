@@ -5,9 +5,16 @@ import {
 } from './averages';
 import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
+import { piirräDonitsit } from './donitsi';
 import kuukausihistografi from './histografit/kuukausihistografi';
 import viikkohistografi from './histografit/viikkohistografi';
-import { ConvertedCourse, Course, DrawParams } from './interfaces/Interfaces';
+import {
+  ConvertedCourse,
+  Course,
+  DrawParams,
+  Laitos,
+} from './interfaces/Interfaces';
+import { grouppaaEriLaitostenKurssit, piirräLaitosGraafit } from './laitos';
 import {
   haluaisinTietääLuennoitsijoista,
   piirräLuennoitsijaListat,
@@ -17,36 +24,25 @@ import {
   createDom,
   piirraRandomStatistiikkaa,
   pitäisköDomRakentaa,
-  setHtmlContent,
 } from './utils/dom';
-import { draw, drawPie } from './utils/draw';
+import { draw } from './utils/draw';
 import { filterArvosana, negate } from './utils/helpers';
 import { kuunteleAsijoita } from './utils/listeners';
 import {
   contains,
-  findFromKurssiTietokanta,
   findPvm,
   laskeStuffistaHalututJutut,
   map,
   mapInvoke,
   max,
   notEmpty,
-  partition,
-  sort,
   sorttaaStuffLukukausienMukaan,
 } from './utils/listUtils';
 import { getListFromLocalStorage, getLocalStorage } from './utils/localStorage';
+import { add, laskePainotettuKeskiarvo, sum } from './utils/numberUtils';
 import {
-  add,
-  average,
-  laskePainotettuKeskiarvo,
-  sum,
-} from './utils/numberUtils';
-import {
-  getLaitos,
   luoKivaAvainReducelle,
   nameIncludesAvoinYo,
-  poistaAvoinKurssiNimestä,
   toLowerCase,
 } from './utils/stringUtils';
 import {
@@ -91,69 +87,9 @@ const groupThemCourses = (stuff: ConvertedCourse[]) =>
     )
     .map(item => ({
       ...item,
-      op: item.op <= 10 ? item.op * 10 : item.op,
+      op: item.op <= 15 ? item.op * 10 : item.op,
       realOp: item.op,
     }));
-
-// TODO: Typings
-const courseNamesMatch = (kurssi: string) => row => row.kurssi === kurssi;
-
-// TODO: Typings
-const removeDuplicateCourses = coursesDone => (acc, item) =>
-  acc.find(courseNamesMatch(item.kurssi)) ||
-  coursesDone.find(courseNamesMatch(item.kurssi))
-    ? acc
-    : [...acc, item];
-
-// TODO: Typings
-const removeAvoinFromKurssiNimi = item => ({
-  ...item,
-  kurssi: poistaAvoinKurssiNimestä(item.kurssi),
-});
-
-interface CoolBeans {
-  id: string;
-  stuff: any[];
-  data: string[];
-}
-
-const drawOpintoDonitsi = ({ id, stuff, data }: CoolBeans) => {
-  const [coursesDone, coursesNotDone]: Array<CoolBeans['data']> = partition(
-    data,
-    (lyhenne: string) => !stuff.find(course => lyhenne === course.lyhenne),
-  );
-
-  const opintoData = [
-    ...coursesDone.map(lyhenne => ({ lyhenne, done: true })),
-    ...coursesNotDone.map(lyhenne => ({ lyhenne, done: false })),
-  ]
-    .map(({ lyhenne, done }) => ({
-      kurssi:
-        findFromKurssiTietokanta({ db: kurssitietokanta, lyhenne }) || lyhenne,
-      done,
-    }))
-    .reduce(removeDuplicateCourses(coursesDone), [])
-    .map(removeAvoinFromKurssiNimi);
-
-  const greatSuccess =
-    coursesDone.length >= opintoData.length ? 'All done, nice!' : '';
-
-  setHtmlContent({
-    id: `${id}-progress`,
-    content: `${coursesDone.length}/${opintoData.length} ${greatSuccess}`,
-  });
-
-  const percentage = ((1 / opintoData.length) * 100).toFixed(2);
-
-  drawPie({
-    id,
-    labels: map(opintoData, 'kurssi'),
-    datasets: opintoData.map(() => percentage),
-    backgroundColor: opintoData.map(({ done }) =>
-      done ? 'lightgreen' : 'lightgray',
-    ),
-  });
-};
 
 // TODO: Typings
 const rakenteleDataSetitNoppaChartille = grouped =>
@@ -390,20 +326,6 @@ const piirteleKuukausittaisetJututJookosKookosHaliPusJaAdios = ({
   });
 };
 
-interface Donitsi {
-  stuff: any[];
-  aineOpinnot: string[];
-  perusOpinnot: string[];
-}
-// TODO: Typings
-const piirräDonitsit = ({ stuff, aineOpinnot, perusOpinnot }: Donitsi) => {
-  notEmpty(aineOpinnot) &&
-    drawOpintoDonitsi({ id: 'aineopinnot', stuff, data: aineOpinnot });
-
-  notEmpty(perusOpinnot) &&
-    drawOpintoDonitsi({ id: 'perusopinnot', stuff, data: perusOpinnot });
-};
-
 const hommaaMatskutLocalStoragesta = () => ({
   duplikaattiKurssit: getDuplikaattiKurssit(),
   perusOpinnot: getPerusOpinnot(),
@@ -428,77 +350,6 @@ const piirräGraafiNoppienTaiArvosanojenMäärille = ({ id, label, data }) =>
       },
     ],
   });
-
-// TODO: Typings
-const piirräLaitosGraafit = data => {
-  const dataset = sort(Object.values(data), 'op');
-
-  draw({
-    id: 'chart-laitos-graafit',
-    type: 'bar',
-    labels: map(dataset, 'laitos'),
-    datasets: [
-      {
-        label: 'Kursseja',
-        data: map(dataset, 'courseCount'),
-        ...style,
-      },
-      {
-        label: 'Nopat',
-        data: map(dataset, 'op'),
-        ...styleBlue,
-      },
-      {
-        label: 'Keskiarvo',
-        data: map(dataset, 'keskiarvo'),
-        ...styleGreen,
-      },
-      {
-        label: 'Painotettu keskiarvo',
-        data: map(dataset, 'painotettuKeskiarvo'),
-        ...styleGreen2,
-      },
-    ],
-  });
-};
-
-// TODO: Typings
-const grouppaaEriLaitostenKurssit = (stuff: ConvertedCourse[]) =>
-  stuff.reduce((acc, kurssi) => {
-    const { lyhenne, op, arvosana } = kurssi;
-    const laitos = getLaitos(lyhenne);
-    const edellisenKierroksenData = acc[laitos];
-    const arvosanat = edellisenKierroksenData
-      ? [...edellisenKierroksenData.arvosanat, arvosana].filter(negate(isNaN))
-      : [arvosana].filter(negate(isNaN));
-    const keskiarvo = Number(average(arvosanat).toFixed(2));
-    const painotettuKeskiarvo = laskePainotettuKeskiarvo(
-      edellisenKierroksenData ? edellisenKierroksenData.kurssit : [kurssi],
-    );
-
-    const dataJeejee = {
-      op,
-      arvosanat,
-      keskiarvo,
-      painotettuKeskiarvo,
-      laitos,
-      courseCount: 1,
-      kurssit: [kurssi],
-    };
-
-    return {
-      ...acc,
-      [laitos]: edellisenKierroksenData
-        ? {
-          ...edellisenKierroksenData,
-          ...dataJeejee,
-          courseCount: edellisenKierroksenData.courseCount + 1,
-          op: edellisenKierroksenData.op + op,
-          kurssit: [...edellisenKierroksenData.kurssit, kurssi],
-        }
-        : dataJeejee,
-    };
-  }, {});
 
 // tästä tää lähtee!
 const start = () => {
@@ -577,10 +428,10 @@ const start = () => {
 
   const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
 
-  const sivuaineidenMenestys = Object.values(laitostenKurssit).filter(
-    // @ts-ignore
-    ({ laitos }) =>
-      contains(mapInvoke(sivuaineet, 'toUpperCase'), laitos.toUpperCase()),
+  const sivuaineidenMenestys = (Object.values(
+    laitostenKurssit,
+  ) as Laitos[]).filter(({ laitos }) =>
+    contains(mapInvoke(sivuaineet, 'toUpperCase'), laitos.toUpperCase()),
   );
 
   const pääaineenMenestys = pääaine

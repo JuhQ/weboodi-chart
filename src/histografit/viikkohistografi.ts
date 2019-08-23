@@ -13,7 +13,6 @@ const viikkohistografi = (stuff: Course[]) => {
 
   const viikkolista = times(ekaSuoritusViikkojaSitten);
   const jep = groupataanKurssitAjanKanssa(viikkojaAikavälillä, stuff);
-
   const data = buildData(viikkolista, jep);
 
   draw({

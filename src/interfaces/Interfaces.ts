@@ -65,7 +65,7 @@ export interface DrawPieParams {
   id: string;
   labels: any;
   datasets: any;
-  backgroundColor: string;
+  backgroundColor: string | string[];
 }
 
 export interface LecturerRowParams {
@@ -91,10 +91,12 @@ interface SingleCourse {
 type StudyType = Record<string, SingleCourse[]>;
 export type CourseDb = Record<string, StudyType>;
 
-// interface StudyType {
-//   [studyType: string]: SingleCourse[];
-// }
-
-// export interface CourseDb {
-//   [aine: string]: StudyType;
-// }
+export interface Laitos {
+  op: number;
+  courseCount: number;
+  kurssit: ConvertedCourse[];
+  arvosanat: number[];
+  keskiarvo: number;
+  painotettuKeskiarvo: number;
+  laitos: string;
+}
