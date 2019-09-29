@@ -10,6 +10,7 @@ import kuukausihistografi from './histografit/kuukausihistografi';
 import viikkohistografi from './histografit/viikkohistografi';
 import {
   ConvertedCourse,
+  ConvertedCourseWithKeskiarvo,
   Course,
   DrawParams,
   Laitos,
@@ -417,7 +418,12 @@ const start = () => {
     ([_, op]) => op === maxKuukausiNopat,
   );
 
-  const { keskiarvo } = [...keskiarvot].pop() as { keskiarvo: string };
+  const keskiarvoObj: ConvertedCourseWithKeskiarvo | undefined = [
+    ...keskiarvot,
+  ].pop();
+
+  const keskiarvo = keskiarvoObj ? keskiarvoObj.keskiarvo : undefined;
+
   const painotettuKeskiarvo = laskePainotettuKeskiarvo(stuff);
 
   const arvosanatGroupattuna = laskeStuffistaHalututJutut({

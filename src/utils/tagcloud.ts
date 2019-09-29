@@ -21,7 +21,7 @@ interface Tags {
 const countFontSize = ({ val, minValue, maxValue }: Tags): number =>
   val > minValue ? (maxFontSize * (val - minValue)) / (maxValue - minValue) : 0;
 
-export const piirraRumaTagipilvi = (words: { [x: string]: number }) => {
+export const piirraRumaTagipilvi = (words: Record<string, number>) => {
   const values = Object.values(words);
   const minValue = min(values);
   const maxValue = max(values);
@@ -56,6 +56,10 @@ export const haluanRakentaaSanapilvenJa2008SoittiJaHalusiSanapilvenTakaisin = (
     .map(poistaSulut)
     .reduce(
       (list: string[], kurssi: string) => [...list, ...kurssi.split(' ')],
+      [],
+    )
+    .reduce(
+      (list: string[], kurssi: string) => [...list, ...kurssi.split('-')],
       [],
     )
     .filter(poistaLiianLyhyetNimet)
