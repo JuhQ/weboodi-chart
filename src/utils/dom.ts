@@ -6,7 +6,7 @@ import {
   LecturerRowParams,
 } from '../interfaces/Interfaces';
 
-const suoritusTableSelector = '[name=suoritus] + table + table';
+const suoritusTableSelector = '[name=suoritus] + h2 + table + table';
 
 export const setHtmlContent = ({
   id,
@@ -26,7 +26,7 @@ export const setHtmlContent = ({
 export const hommaaMeilleListaAsijoistaDommista = () => [
   ...Array.from(
     document.querySelectorAll(
-      '[name=suoritus] + table + table:not(.eisei) table.eisei tbody tr',
+      '[name=suoritus] + h2 + table + table:not(.eisei) table.eisei tbody tr',
     ),
   ),
 ];
@@ -196,9 +196,7 @@ export const piirraRandomStatistiikkaa = ({
 
   setHtmlContent({
     id: 'max-kuukausi-nopat',
-    content: `Olit tulessa ${kuukausi}ssa ${vuosi}! Suoritit silloin ${
-      maxKuukausi[1]
-    } noppaa! Whoah!`,
+    content: `Olit tulessa ${kuukausi}ssa ${vuosi}! Suoritit silloin ${maxKuukausi[1]} noppaa! Whoah!`,
   });
 
   setHtmlContent({
