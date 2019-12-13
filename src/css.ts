@@ -55,6 +55,11 @@ export const styleBlue = {
   borderColor: 'rgb(88, 76, 173)',
   borderWidth: 1,
 };
+export const styleOrange = {
+  backgroundColor: 'rgba(255, 190, 0, 0.82)',
+  borderColor: 'rgb(88, 76, 173)',
+  borderWidth: 1,
+};
 
 export const styleGreen = {
   backgroundColor: 'rgba(99, 255, 157, 0.2)',

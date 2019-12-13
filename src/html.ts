@@ -57,16 +57,6 @@ const html = ({
         <canvas id="chart-nopat-groupattuna" width="500" height="200"></canvas>
       </div>
     </div>
-
-    <div class="clear margin-bottom-small">
-      <div class="jeejee-pull-left">
-        <canvas id="viikko-histografi" width="${window.innerWidth -
-          70}" height="300"></canvas>
-        <canvas id="kuukausi-histografi" width="${window.innerWidth -
-          70}" height="300"></canvas>
-      </div>
-    </div>
-
     <div id="luennoitsijat"></div>
     <div id="tools" class="margin-bottom-large">
       <p>

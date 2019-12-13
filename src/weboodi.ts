@@ -6,8 +6,8 @@ import {
 import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
 import { piirräDonitsit } from './donitsi';
-import kuukausihistografi from './histografit/kuukausihistografi';
-import viikkohistografi from './histografit/viikkohistografi';
+// import kuukausihistografi from './histografit/kuukausihistografi';
+// import viikkohistografi from './histografit/viikkohistografi';
 import {
   ConvertedCourse,
   ConvertedCourseWithKeskiarvo,
@@ -113,6 +113,8 @@ const drawGraphs = ({
   keskiarvot,
   keskiarvotPerusopinnoista,
   keskiarvotAineopinnoista,
+  keskiarvotPääaineesta,
+  keskiarvotPerusJaAineopinnoista,
 }) => {
   const grouped = groupThemCourses(stuff);
   const arvosanallisetMerkinnät = stuff.filter(({ arvosana }) => arvosana);
@@ -136,6 +138,8 @@ const drawGraphs = ({
         keskiarvot,
         keskiarvotPerusopinnoista,
         keskiarvotAineopinnoista,
+        keskiarvotPääaineesta,
+        keskiarvotPerusJaAineopinnoista,
       }),
     });
 };
@@ -387,10 +391,32 @@ const start = () => {
 
   const keskiarvot = annaMulleKeskiarvotKursseista(stuff);
 
+  const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
+
+  const sivuaineidenMenestys = (Object.values(
+    laitostenKurssit,
+  ) as Laitos[]).filter(({ laitos }) =>
+    contains(mapInvoke(sivuaineet, 'toUpperCase'), laitos.toUpperCase()),
+  );
+
+  const pääaineenMenestys = pääaine
+    ? laitostenKurssit[pääaine.toUpperCase()]
+    : null;
+
   const {
     keskiarvotPerusopinnoista,
     keskiarvotAineopinnoista,
-  } = laskeKeskiarvot({ stuff, keskiarvot, perusOpinnot, aineOpinnot });
+    keskiarvotPääaineesta,
+    keskiarvotPerusJaAineopinnoista,
+  } = laskeKeskiarvot({
+    stuff,
+    keskiarvot,
+    perusOpinnot,
+    aineOpinnot,
+    pääaineopinnot:
+      pääaineenMenestys &&
+      pääaineenMenestys.kurssit.map(({ lyhenne }) => lyhenne),
+  });
 
   const aineJaPerusopintojenSuoritukset = stuff.filter(
     ({ lyhenne }) =>
@@ -432,18 +458,6 @@ const start = () => {
   });
   const nopatGroupattuna = laskeStuffistaHalututJutut({ stuff, key: 'op' });
 
-  const laitostenKurssit = grouppaaEriLaitostenKurssit(stuff);
-
-  const sivuaineidenMenestys = (Object.values(
-    laitostenKurssit,
-  ) as Laitos[]).filter(({ laitos }) =>
-    contains(mapInvoke(sivuaineet, 'toUpperCase'), laitos.toUpperCase()),
-  );
-
-  const pääaineenMenestys = pääaine
-    ? laitostenKurssit[pääaine.toUpperCase()]
-    : null;
-
   piirräLaitosGraafit(laitostenKurssit);
 
   piirräGraafiNoppienTaiArvosanojenMäärille({
@@ -465,6 +479,8 @@ const start = () => {
     keskiarvot,
     keskiarvotPerusopinnoista,
     keskiarvotAineopinnoista,
+    keskiarvotPääaineesta,
+    keskiarvotPerusJaAineopinnoista,
   }); // 📈
 
   piirräDonitsit({ stuff, aineOpinnot, perusOpinnot }); // 🍩
@@ -501,8 +517,8 @@ const start = () => {
     hyvOp: sum(map(stuff.filter(negate(filterArvosana)), 'op') as number[]),
   });
 
-  viikkohistografi(stuff);
-  kuukausihistografi(stuff);
+  // viikkohistografi(stuff);
+  // kuukausihistografi(stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };

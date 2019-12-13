@@ -5,11 +5,11 @@ import {
   styleBlue2,
   styleGreen,
   styleGreen2,
+  styleOrange,
 } from './css';
 import {
   ConvertedCourse,
   ConvertedCourseWithKeskiarvo,
-  Course,
 } from './interfaces/Interfaces';
 import { filterArvosana, negate } from './utils/helpers';
 import {
@@ -93,6 +93,8 @@ export const rakenteleDataSetitKeskiarvoChartille = ({
   keskiarvot,
   keskiarvotPerusopinnoista,
   keskiarvotAineopinnoista,
+  keskiarvotPääaineesta,
+  keskiarvotPerusJaAineopinnoista,
 }) =>
   [
     notEmpty(keskiarvot) && {
@@ -125,6 +127,16 @@ export const rakenteleDataSetitKeskiarvoChartille = ({
       data: map(keskiarvotAineopinnoista, 'painotettuKeskiarvo'),
       ...styleGreen2,
     },
+    notEmpty(keskiarvotPerusJaAineopinnoista) && {
+      label: 'Aine+perusopinnot painotettu keskiarvo',
+      data: map(keskiarvotPerusJaAineopinnoista, 'painotettuKeskiarvo'),
+      ...styleGreen2,
+    },
+    notEmpty(keskiarvotPääaineesta) && {
+      label: 'Pääaineen painotettu keskiarvo',
+      data: map(keskiarvotPääaineesta, 'painotettuKeskiarvo'),
+      ...styleOrange,
+    },
   ].filter(isTruthy);
 
 // TODO: Typings
@@ -133,6 +145,7 @@ export const laskeKeskiarvot = ({
   keskiarvot,
   perusOpinnot,
   aineOpinnot,
+  pääaineopinnot,
 }) => {
   const keskiarvotPerusopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
     {
@@ -150,5 +163,24 @@ export const laskeKeskiarvot = ({
     },
   );
 
-  return { keskiarvotPerusopinnoista, keskiarvotAineopinnoista };
+  const keskiarvotPerusJaAineopinnoista = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai(
+    {
+      stuff,
+      keskiarvot,
+      kurssit: [...aineOpinnot, ...perusOpinnot],
+    },
+  );
+
+  const keskiarvotPääaineesta = hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai({
+    stuff,
+    keskiarvot,
+    kurssit: pääaineopinnot,
+  });
+
+  return {
+    keskiarvotPerusopinnoista,
+    keskiarvotAineopinnoista,
+    keskiarvotPerusJaAineopinnoista,
+    keskiarvotPääaineesta,
+  };
 };
