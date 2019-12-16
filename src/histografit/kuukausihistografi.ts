@@ -18,7 +18,7 @@ const kuukausihistografi = (stuff: Course[]) => {
   draw({
     id: 'kuukausi-histografi',
     type: 'line',
-    labels: makeLabels(data, 'months'),
+    labels: makeLabels(data, 'months', 'M.YYYY'),
     datasets: [
       {
         label: 'noppia',

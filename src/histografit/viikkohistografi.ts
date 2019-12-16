@@ -18,7 +18,7 @@ const viikkohistografi = (stuff: Course[]) => {
   draw({
     id: 'viikko-histografi',
     type: 'line',
-    labels: makeLabels(data, 'weeks'),
+    labels: makeLabels(data, 'weeks', 'W.YYYY'),
     datasets: [
       {
         label: 'noppia',

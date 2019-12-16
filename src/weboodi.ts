@@ -6,8 +6,8 @@ import {
 import { style, styleBlue, styleGreen, styleGreen2 } from './css';
 import { kurssitietokanta } from './data/courses';
 import { piirräDonitsit } from './donitsi';
-// import kuukausihistografi from './histografit/kuukausihistografi';
-// import viikkohistografi from './histografit/viikkohistografi';
+import kuukausihistografi from './histografit/kuukausihistografi';
+import viikkohistografi from './histografit/viikkohistografi';
 import {
   ConvertedCourse,
   ConvertedCourseWithKeskiarvo,
@@ -517,8 +517,8 @@ const start = () => {
     hyvOp: sum(map(stuff.filter(negate(filterArvosana)), 'op') as number[]),
   });
 
-  // viikkohistografi(stuff);
-  // kuukausihistografi(stuff);
+  viikkohistografi(stuff);
+  kuukausihistografi(stuff);
 
   kuunteleAsijoita({ start, kurssitietokanta }); // 👂
 };

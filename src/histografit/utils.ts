@@ -1,7 +1,6 @@
 import moment from 'moment';
 
 import { Course } from '../interfaces/Interfaces';
-import { takeUntil } from '../utils/listUtils';
 import {
   kuukausiaAikavälillä,
   viikkojaAikavälillä,
@@ -11,23 +10,28 @@ type AikaFunktio = typeof viikkojaAikavälillä | typeof kuukausiaAikavälillä;
 export type Groupattuna = Record<number, number>;
 type TimeAgo = 'weeks' | 'months';
 
+const findSmallerFromList = (list: number[], i: number) =>
+  list.filter((arvo, index) => index < i && arvo > 0).reverse()[0];
+
 export const buildData = (list: number[], jep: Groupattuna) =>
   list
     .slice()
-    .map((value: number) => jep[value - 1] || 0)
     .reverse()
-    .reduce((initial: number[], arvo: number, i: number, list: number[]) => {
-      const aikaisemmat = takeUntil(list, i);
+    .map((value: number) => jep[value + 1] || 0)
+    .map((value, i, array) => value || findSmallerFromList(array, i));
 
-      return [...initial, arvo || (i && Math.max(...aikaisemmat)) || 0];
-    }, []);
-
-export const makeLabels = (data: number[], timeAgo: TimeAgo) =>
-  data.map((_, i) =>
-    moment()
-      .subtract(Math.abs(i - data.length - 1), timeAgo)
-      .format('D.M.YYYY'),
-  );
+export const makeLabels = (
+  data: number[],
+  timeAgo: TimeAgo,
+  format = 'D.M.YYYY',
+) =>
+  data
+    .map((_, i) =>
+      moment()
+        .subtract(i, timeAgo)
+        .format(format),
+    )
+    .reverse();
 
 const nyt = new Date();
 export const groupataanKurssitAjanKanssa = (
