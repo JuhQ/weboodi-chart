@@ -60,7 +60,7 @@ const hommaaMulleKeskiarvotTietyistäOpinnoistaThxbai = ({
   keskiarvot,
   kurssit,
 }: Jup) => {
-  if (!kurssit.length) {
+  if (!kurssit || !kurssit.length) {
     return [];
   }
 
