@@ -1,6 +1,7 @@
 import { css } from '../css';
 import yolohtml from '../html';
 import {
+  Course,
   DOMParams,
   DrawLuennoitsijatParams,
   LecturerRowParams,
@@ -157,6 +158,8 @@ interface JepulisData {
   laitos: string;
   keskiarvo: number;
   painotettuKeskiarvo: number;
+  kurssit: Course[];
+  op: number;
 }
 
 interface Jepulis {
@@ -164,12 +167,18 @@ interface Jepulis {
   data: JepulisData;
 }
 
+const monikko = (n: number, s1: string, s2: string) => (n == 1 ? s1 : s2);
+
 const luoTilastoaAineidenKeskiarvoista = ({ key, data }: Jepulis) =>
   `${key} ${data.laitos} keskiarvo on ${
     isNaN(data.keskiarvo) ? 'hyv' : data.keskiarvo
   } ja painotettu keskiarvo on ${
     isNaN(data.painotettuKeskiarvo) ? 'hyv' : data.painotettuKeskiarvo
-  }`;
+  }. ${data.op} op, ${data.kurssit.length} ${monikko(
+    data.kurssit.length,
+    'kurssi',
+    'kurssia',
+  )}.`;
 
 // TODO: Typings
 export const piirraRandomStatistiikkaa = ({
@@ -243,7 +252,7 @@ export const piirraRandomStatistiikkaa = ({
     setHtmlContent({
       id: 'sivuaineet-data',
       content: sivuaineet
-        .map(data =>
+        .map((data) =>
           luoTilastoaAineidenKeskiarvoista({ key: 'Sivuaineesi', data }),
         )
         .join('<br>'),
