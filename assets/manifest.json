@@ -12,7 +12,9 @@
         "https://weboodi.helsinki.fi/hy/omatopinn.jsp?*NaytSuor=1*",
         "https://weboodi.helsinki.fi/hy/opisluehak.jsp*",
         "https://weboodi.uef.fi/weboodi/omatopinn.jsp?*NaytSuor=1*",
-        "https://weboodi.uef.fi/weboodi/opisluehak.jsp*"
+        "https://weboodi.uef.fi/weboodi/opisluehak.jsp*",
+        "https://oodi.aalto.fi/a/omatopinn.jsp?*NaytSuor=1*",
+        "https://oodi.aalto.fi/a/opisluehak.jsp*"
       ]
     }
   ],
