@@ -1,6 +1,6 @@
 {
   "name": "weboodi-chart",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "op chart for weboodi",
   "main": "index.js",
   "license": "MIT",
